@@ -1,0 +1,20 @@
+DB_HOST=103.30.195.110
+DB_USER=remote-idea
+DB_PASSWORD=remoteIdea?213
+DB_NAME=monitorFairDashboard2
+DATABASE_URL=mysql://admin:remoteIdea?213@103.30.195.110:3306/monitorFairDashboard2
+
+
+-- 1. Update kolom client_account
+UPDATE monitorFairDashboard2.dailyFairScores
+SET client_account = 'disparbud@focuson.test'
+WHERE client_account = 'disparbud'
+   OR client_account IS NULL;
+
+-- 2. Update kolom kategori
+UPDATE monitorFairDashboard2.dailyFairScores
+SET kategori = 'disparbud'
+WHERE kategori IS NULL;
+
+
+instagram = d4afac3284d6759319cda542579e9a69

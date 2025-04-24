@@ -1,0 +1,31 @@
+###
+GET http://localhost:3001/reports
+
+###
+GET http://localhost:3001/tindakan
+
+###
+GET http://localhost:3001/reportCount
+
+###
+GET http://localhost:3001/reports/lpraa-87541819
+
+###
+GET http://localhost:3001/tindakan/6805f6780b81ae80bcac6fda
+
+###
+GET http://localhost:3001/tindakan/6805f6780b81ae80bcac6fda
+
+###
+POST http://localhost:3001/tindakan
+Content-Type: application/json
+
+{
+    "reportId": "67ff6f2c427f3248d0cf3f8e",
+    "hasil": "Pohon tumbang terlalu besar, butuh waktu untuk memindahkan",
+    "kesimpulan": "Laporan sedang di kerjakan",
+    "status": "Dalam Proses",
+    "situasi": "Darurat",
+    "opd": "Dinas Kebersihan",
+    "photos": ["https://example.com/photo1.jpg", "https://example.com/photo2.jpg"]
+}

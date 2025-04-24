@@ -1,0 +1,70 @@
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const { createServer } = require("http");
+const { Server } = require("socket.io");
+const path = require("path");
+
+const webhookRoutes = require("./routes/webhookRoutes");
+const messageRoutes = require("./routes/messageRoutes");
+const userRoutes = require("./routes/userRoutes");
+const reportRoutes = require("./routes/reportRoutes");
+const reportCountRoutes = require("./routes/reportCount");
+const tindakanRoutes = require("./routes/tindakanRoutes");
+const tindakanUploadRoute = require("./routes/tindakanUpload");
+
+const app = express();
+const server = createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:3000",
+        methods: ["GET", "POST"]
+    }
+});
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Koneksi ke MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => console.log("✅ MongoDB Connected"))
+  .catch(err => console.error("❌ MongoDB Connection Error:", err));
+
+// 🔵 WebSocket Connection
+io.on("connection", (socket) => {
+    console.log(`🟢 User connected: ${socket.id}`);
+
+    socket.on("disconnect", () => {
+        console.log(`🔴 User disconnected: ${socket.id}`);
+    });
+});
+
+// Simpan WebSocket ke app agar bisa digunakan di route lain
+app.set("io", io);
+
+// Routes
+app.use("/webhook", webhookRoutes);
+app.use("/chat", messageRoutes);
+app.use("/user", userRoutes);
+app.use("/reports", reportRoutes);
+app.use("/reportCount", reportCountRoutes);
+app.use("/tindakan", tindakanRoutes);
+app.use("/api", tindakanUploadRoute);
+
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
+app.use("/uploadsTindakan", express.static(path.join(__dirname, "public/uploadsTindakan")));
+
+// Route default untuk cek server berjalan
+app.get("/", (req, res) => {
+    res.send("✅ Server berjalan dengan baik!");
+});
+
+// Menjalankan server
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`🚀 Server berjalan di port ${PORT}`);
+});

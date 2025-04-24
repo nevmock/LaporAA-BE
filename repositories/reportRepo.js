@@ -1,0 +1,58 @@
+const Report = require("../models/Report");
+const Tindakan = require("../models/Tindakan");
+
+exports.create = async ({ sessionId, from, user, location, message, photos }) => {
+    const newReport = await Report.create({ sessionId, from, user, location, message, photos });
+
+    const defaultTindakan = await Tindakan.create({
+        report: newReport._id,
+        hasil: "",
+        kesimpulan: "",
+        situasi: "Verifikasi Data",
+        status: "Perlu Verifikasi",
+        opd: "",
+        photos: [],
+    });
+
+    newReport.tindakan = defaultTindakan._id;
+    await newReport.save();
+
+    return await Report.findById(newReport._id)
+        .populate("user")
+        .populate("tindakan");
+};
+
+exports.findAll = async () => {
+    return await Report.find()
+        .populate("user")
+        .populate("tindakan")
+        .sort({ createdAt: -1 });
+};
+
+exports.findBySessionId = async (sessionId) => {
+    return await Report.findOne({ sessionId })
+        .populate("user")
+        .populate("tindakan");
+};
+
+exports.findById = async (id) => {
+    return await Report.findById(id)
+        .populate("user")
+        .populate("tindakan");
+};
+
+exports.findByTindakanId = async (tindakanId) => {
+    return await Report.findOne({ tindakan: tindakanId })
+        .populate("user")
+        .populate("tindakan");
+};
+
+exports.updateRatingByTindakanId = async (tindakanId, rating) => {
+    const report = await Report.findOne({ tindakan: tindakanId });
+    if (!report) throw new Error("Report tidak ditemukan untuk tindakan tersebut.");
+
+    report.rating = rating;
+    await report.save();
+
+    return report;
+};
