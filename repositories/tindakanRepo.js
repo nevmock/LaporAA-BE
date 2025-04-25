@@ -23,5 +23,17 @@ exports.findByReportId = async (reportId) => {
 };
 
 exports.findById = async (id) => {
-    return await Tindakan.findById(id);
+    return await Tindakan.findById(id).populate("report");
+};
+
+// ✨ Tambahkan ini:
+exports.updateRatingById = async (tindakanId, rating) => {
+    const tindakan = await Tindakan.findById(tindakanId);
+    if (!tindakan) throw new Error("Tindakan tidak ditemukan.");
+
+    tindakan.rating = rating;
+    tindakan.updatedAt = new Date();
+    await tindakan.save();
+
+    return tindakan;
 };

@@ -48,13 +48,3 @@ exports.findByTindakanId = async (tindakanId) => {
         .populate("user")
         .populate("tindakan");
 };
-
-exports.updateRatingByTindakanId = async (tindakanId, rating) => {
-    const report = await Report.findOne({ tindakan: tindakanId });
-    if (!report) throw new Error("Report tidak ditemukan untuk tindakan tersebut.");
-
-    report.rating = rating;
-    await report.save();
-
-    return report;
-};

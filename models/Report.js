@@ -49,12 +49,6 @@ const reportSchema = new mongoose.Schema({
     tindakan: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Tindakan",
-    },
-    rating: {
-        type: Number,
-        min: 1,
-        max: 5,
-        default: null
     }
 }, {
     timestamps: true,

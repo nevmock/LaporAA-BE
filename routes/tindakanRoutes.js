@@ -43,7 +43,7 @@ router.put("/:reportId", async (req, res) => {
         });
 
         // Jika status diubah jadi "Selesai", kirim notifikasi WA dan minta feedback
-        if (status === "Selesai Penannganan") {
+        if (status === "Selesai Penanganan") {
             const report = await reportRepo.findById(reportId);
             const user = await UserProfile.findById(report.user);
             const from = report.from;

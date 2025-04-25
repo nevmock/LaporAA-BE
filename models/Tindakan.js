@@ -53,7 +53,13 @@ const actionSchema = new mongoose.Schema({
         type: String,
         enum: ["Belum Ditanya", "Sudah Ditanya", "Sudah Jawab Beres", "Sudah Jawab Belum Beres"],
         default: null,
-    }   
+    },
+    rating: {
+        type: Number,
+        min: 1,
+        max: 5,
+        default: null
+    }
 });
 
 module.exports = mongoose.model("Tindakan", actionSchema);
