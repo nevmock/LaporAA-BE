@@ -11,21 +11,21 @@ module.exports = async (from, step, input) => {
             step: "ASK_NIK",
             data: { ...session.data, name: input }
         });
-        return `Masukkan Nomor KTP (16 digit):`;
+        return `Beri tahu user untuk memasukkan Nomor KTP (NIK) sesuai KTP. Pastikan NIK terdiri dari 16 digit angka.`;
     }
 
     // Langkah 2: Validasi dan minta NIK (Nomor Induk Kependudukan)
     if (step === "ASK_NIK") {
         const isValidNik = /^\d{16}$/.test(input);
         if (!isValidNik) {
-            return `NIK tidak valid. Harus terdiri dari 16 digit angka.\nSilakan masukkan ulang Nomor KTP:`;
+            return `Beri tahu user kalau NIK tidak valid. Harus terdiri dari 16 digit angka. dan persilahkan user untuk masukkan ulang Nomor KTP:`;
         }
 
         await userRepo.updateSession(from, {
             step: "ASK_ADDRESS",
             data: { ...session.data, nik: input }
         });
-        return `Masukkan alamat domisili (sesuai KTP):`;
+        return `Beri tahu user untuk memasukkan alamat domisili sesuai KTP.`;
     }
 
     // Langkah 3: Simpan alamat domisili dan lanjut ke konfirmasi
@@ -37,10 +37,10 @@ module.exports = async (from, step, input) => {
 
         const { name, nik, address } = session.data;
 
-        return `Mohon konfirmasi data berikut:\n\n` +
+        return `Beri tahu user untuk verifikasi data berikut` +
             `Nama: ${name}\n` +
             `NIK: ${nik}\n` +
-            `Alamat: ${input}\n\n` +
+            `Alamat: ${address}\n\n` +
             `Ketik *kirim* untuk menyimpan, atau *batal* untuk membatalkan.`;
     }
 
@@ -64,19 +64,19 @@ module.exports = async (from, step, input) => {
                 data: {}
             });
 
-            return `Data berhasil disimpan. Terima kasih, ${name}.\n\nSilakan masukkan lokasi kejadiannya:`;
+            return `Beri tahu user kalau pendaftaran berhasil. Silakan pilih:\n1. Buat laporan baru\n2. Cek status laporan`;
         }
 
         // Batalkan proses jika user mengetik "batal"
         if (input.toLowerCase() === "batal") {
             await userRepo.resetSession(from);
-            return `Pendaftaran dibatalkan. Balas apa saja untuk kembali ke menu utama.`;
+            return `Beri tahu user bahwa pendaftaran dibatalkan. Balas pesan untuk kembali ke menu utama.`;
         }
 
         // Penanganan input selain "kirim" atau "batal"
-        return `Ketik *kirim* untuk menyimpan data, atau *batal* untuk membatalkan.`;
+        return `Beri tahu user untuk mengetik *kirim* untuk menyimpan, atau *batal* untuk membatalkan.`;
     }
 
     // Penanganan fallback jika step tidak dikenal
-    return `Terjadi kesalahan saat proses pendaftaran. Balas apa saja untuk kembali ke menu utama.`;
+    return `ini adalah default jika command tidak dikenali, ucapkan salam juga ya dan Beri tahu user untuk memilih:\n1. Buat laporan baru\n2. Cek status laporan input nya harus 1 atau 2, jelaskan juga ke usernya dengan singkat`;
 };

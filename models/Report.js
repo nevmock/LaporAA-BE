@@ -55,11 +55,6 @@ const reportSchema = new mongoose.Schema({
         min: 1,
         max: 5,
         default: null
-    },
-    statusSelesai:{
-        type: String,
-        enum: ["Selesai Penanganan", "Selesai Pengaduan"],
-        default: null,
     }
 }, {
     timestamps: true,

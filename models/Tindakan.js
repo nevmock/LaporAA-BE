@@ -14,6 +14,10 @@ const actionSchema = new mongoose.Schema({
         type: String, // Kesimpulan atau rekomendasi tindakan
         default: "",
     },
+    trackingId: {
+        type: Number,
+        default: null,
+    },
     prioritas: {
         type: String,
         enum: ["Ya", "Tidak"],
@@ -21,12 +25,12 @@ const actionSchema = new mongoose.Schema({
     },
     situasi: {
         type: String,
-        enum: ["Verifikasi Data", "Darurat", "Permintaan Informasi", "Berpengawasan", "Tidak Berpengawasan"],
-        default: "Verifikasi Data",
+        enum: ["Darurat", "Permintaan Informasi", "Berpengawasan", "Tidak Berpengawasan"],
+        default: null,
     },
     status: {
         type: String,
-        enum: ["Perlu Verifikasi", "Sedang di Verifikasi", "Proses Penyelesaian", "Proses Penyelesaian Ulang", "Selesai"],
+        enum: ["Perlu Verifikasi", "Verifikasi Kelengkapan Berkas", "Proses OPD Terkait", "Selesai Penanganan", "Selesai Pengaduan"],
         default: "Perlu Verifikasi",
     },
     opd: {

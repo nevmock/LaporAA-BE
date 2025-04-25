@@ -15,7 +15,7 @@ exports.handleUserMessage = async ({ from, message }) => {
     // Check for reset keywords to return user to main menu
     if (input === "menu" || input === "reset") {
         await userRepo.resetSession(from);
-        return `Sesi Anda telah direset. Silakan pilih:\n1. Buat laporan baru\n2. Cek status laporan`;
+        return `Beri tahu user kalau Sesi nya telah direset. Silakan pilih:\n1. Buat laporan baru\n2. Cek status laporan`;
     }
 
     const step = session.step;
@@ -26,7 +26,7 @@ exports.handleUserMessage = async ({ from, message }) => {
         const tindakanId = session.pendingFeedbackFor?.[0];
 
         if (isNaN(rating) || rating < 1 || rating > 5) {
-            return `Mohon masukkan angka dari 1 sampai 5 untuk penilaian Anda\n\n`;
+            return `Beri tahu user untuk memberikan rating antara 1 hingga 5.`;
         }
 
         try {
@@ -34,13 +34,11 @@ exports.handleUserMessage = async ({ from, message }) => {
             const report = tindakan?.report;
 
             if (!tindakan || !report) {
-                return "Laporan tidak ditemukan. Mohon coba lagi.";
+                return "Beri tahu user kalau Laporan tidak ditemukan. Mohon coba lagi.";
             }
 
             report.rating = rating;
             await report.save();
-
-            console.info(`Rating ${rating} berhasil disimpan untuk laporan ${report.sessionId}`);
 
             // Remove feedback from queue and reset session step to main menu
             session.pendingFeedbackFor = session.pendingFeedbackFor.filter(id => id.toString() !== tindakanId.toString());
@@ -48,10 +46,10 @@ exports.handleUserMessage = async ({ from, message }) => {
             session.currentAction = null;
             await session.save();
 
-            return `Terima kasih atas rating ${rating} untuk laporan ${report.sessionId}.\nKami akan terus meningkatkan layanan.`;
+            return `Beri tahu user, ucapkan Terima kasih atas rating ${rating} untuk laporan ${report.sessionId}. beri tahu user kalau Kami akan terus meningkatkan layanan.`;
         } catch (err) {
             console.error("Gagal menyimpan rating:", err);
-            return "Terjadi kesalahan saat menyimpan rating. Silakan coba lagi.";
+            return "Beri tahu user kalau Terjadi kesalahan saat menyimpan rating. Silakan coba lagi.";
         }
     }
 
@@ -61,33 +59,34 @@ exports.handleUserMessage = async ({ from, message }) => {
         const tindakan = await Tindakan.findById(tindakanId).populate("report");
 
         if (["ya", "belum"].includes(input)) {
-            if (tindakan?.status === "Selesai" && tindakan.feedbackStatus === "Sudah Ditanya") {
+            if (tindakan?.status === "Selesai Penanganan" && tindakan.feedbackStatus === "Sudah Ditanya") {
                 let reply;
 
                 if (input === "ya") {
                     // User confirms issue is resolved
                     tindakan.feedbackStatus = "Sudah Jawab Beres";
+                    tindakan.status = "Selesai Pengaduan";
                     await tindakan.save();
 
                     session.step = "WAITING_FOR_RATING";
                     await session.save();
 
-                    reply = `Terima kasih atas tanggapan Anda.\nLaporan ${tindakan.report.sessionId} ditutup.\n\n` +
-                        `Sebagai bentuk peningkatan layanan, bolehkah Anda memberi penilaian (1–5)?`;
+                    reply = `sampaikan Terima kasih atas tanggapan user.\nLaporan dengan ID ${tindakan.report.sessionId} ditutup.\n\n` +
+                        `beri tahu user Sebagai bentuk peningkatan layanan, bolehkah user memberi penilaian (1–5)?`;
                 } else {
                     // User requests further follow-up
                     tindakan.feedbackStatus = "Sudah Jawab Belum Beres";
-                    tindakan.status = "Proses Penyelesaian Ulang";
+                    tindakan.status = "Proses OPD Terkait";
                     await tindakan.save();
 
                     session.pendingFeedbackFor = session.pendingFeedbackFor.filter(id => id.toString() !== tindakanId.toString());
                     session.step = "MAIN_MENU";
                     await session.save();
 
-                    reply = `Laporan ${tindakan.report.sessionId} akan ditindaklanjuti ulang.\nTerima kasih atas respon Anda.`;
+                    reply = `beri tahu user bahwa Laporan ${tindakan.report.sessionId} akan ditindaklanjuti ulang. dan ucapkan Terima kasih kepada user atas responnya.`;
 
                     if (session.pendingFeedbackFor.length > 0) {
-                        reply += `\n\nMasih ada ${session.pendingFeedbackFor.length} laporan lain yang menunggu respon.\nSilakan balas ya atau belum.`;
+                        reply += `sampaikkan pada user kalau Masih ada ${session.pendingFeedbackFor.length} laporan lain yang menunggu respon.\nSilakan balas ya atau belum.`;
                     }
                 }
 
@@ -96,8 +95,8 @@ exports.handleUserMessage = async ({ from, message }) => {
         }
 
         // If user skips confirmation and sends unrelated input
-        return `Anda masih memiliki laporan yang menunggu konfirmasi penyelesaian.\n\n` +
-            `Silakan balas ya jika puas, atau belum jika masih perlu ditindaklanjuti.`;
+        return `sampaikan user kalau  masih memiliki laporan yang menunggu konfirmasi penyelesaian.` +
+            `sampaikan ke pada user Silakan balas ya jika puas, atau belum jika masih perlu ditindaklanjuti.`;
     }
 
     // Handle main menu navigation and all structured actions
@@ -108,5 +107,5 @@ exports.handleUserMessage = async ({ from, message }) => {
 
     // Reset session if no matching condition was found
     await userRepo.resetSession(from);
-    return `Sesi user direset.`;
+    return `ini adalah default jika command tidak dikenali, ucapkan salam juga ya dan Beri tahu user untuk memilih:\n1. Buat laporan baru\n2. Cek status laporan input nya harus 1 atau 2, jelaskan juga ke usernya dengan singkat`;
 };

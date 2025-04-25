@@ -13,7 +13,7 @@ module.exports = async (from, input) => {
                 currentAction: "signup",
                 step: "ASK_NAME",
             });
-            return `Sebelum membuat laporan, kami butuh data Anda.\nNama lengkap sesuai KTP:`;
+            return `Beri tahu user kalau Sebelum membuat laporan, kami butuh data Anda. \nNama lengkap sesuai KTP:`;
         }
 
         // Jika sudah terdaftar, mulai proses pembuatan laporan
@@ -23,7 +23,7 @@ module.exports = async (from, input) => {
             data: {},
         });
 
-        return `Silakan bagikan lokasi Anda melalui fitur share location WhatsApp.`;
+        return `Beri tahu user untuk bagikan lokasi Anda melalui fitur share location WhatsApp.`;
     }
 
     // Opsi 2: Cek status laporan berdasarkan sessionId
@@ -32,9 +32,9 @@ module.exports = async (from, input) => {
             currentAction: "check_report",
             step: "ASK_REPORT_ID",
         });
-        return `Silakan masukkan nomor laporan Anda (contoh: LPRAA-387512):`;
+        return `Beri tahu user untuk memasukkan nomor laporannya (contohnya 387512) jadi nomornya aja`;
     }
 
     // Tanggapan default jika input tidak dikenali
-    return `Silakan pilih:\n1. Buat laporan baru\n2. Cek status laporan`;
+    return `ini adalah default jika command tidak dikenali, ucapkan salam juga ya dan Beri tahu user untuk memilih:\n1. Buat laporan baru\n2. Cek status laporan input nya harus 1 atau 2, jelaskan juga ke usernya dengan singkat`;
 };

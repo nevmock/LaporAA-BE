@@ -27,21 +27,23 @@ router.get("/:reportId", async (req, res) => {
 // UPDATE tindakan
 router.put("/:reportId", async (req, res) => {
     const { reportId } = req.params;
-    const { hasil, kesimpulan, status, situasi, opd, photos } = req.body;
+    const { hasil, kesimpulan, trackingId, prioritas, situasi, status, opd, photos } = req.body;
 
     try {
         const tindakan = await tindakanRepo.update({
             reportId,
             hasil,
             kesimpulan,
-            status,
+            trackingId,
+            prioritas,
             situasi,
+            status,
             opd,
             photos,
         });
 
         // Jika status diubah jadi "Selesai", kirim notifikasi WA dan minta feedback
-        if (status === "Selesai") {
+        if (status === "Selesai Penannganan") {
             const report = await reportRepo.findById(reportId);
             const user = await UserProfile.findById(report.user);
             const from = report.from;

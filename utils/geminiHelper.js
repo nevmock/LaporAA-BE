@@ -4,17 +4,13 @@ const genAI = new GoogleGenAI({
 });
 
 const buildPrompt = (rawMessage) => `
-kamu itu seorang admin, buatlah balasan yang lebih manusiawi dan alami sebagai admin untuk pesan berikut:
 
-Tapi kamu harus tetap arahkan user untuk memasukan input sesuai dengan pesan aslinya!
+ini prompt utamanya
 
-Untuk sapaan dan lainnya cukup di menu utama saja. gausah selalu pake sapaan.
+kamu itu seorang admin, buatlah balasan yang lebih manusiawi dan alami sebagai admin untuk semua sub prompt yang kamu terima nanti
+balasannya harus humanis, sopan dan tidak kaku. dan tidak usah panjang panjang chat nya. hindari istilah istilah teknis yang sulit dimengerti oleh orang awam
 
-menu utamanya itu yang ini:
-1. Buat Laporan
-2. Cek Status Laporan
-
-### Pesan aslinya:
+berikut ini adalah sub prompt nya:
 ${rawMessage}
 `;
 

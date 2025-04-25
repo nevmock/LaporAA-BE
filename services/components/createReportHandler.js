@@ -9,7 +9,7 @@ module.exports = async (from, step, input) => {
     // STEP 1: Terima lokasi dari pengguna (wajib menggunakan fitur share location WhatsApp)
     if (step === "ASK_LOCATION") {
         if (typeof input !== "object" || input.type !== "location") {
-            return `Silakan bagikan lokasi Anda melalui fitur share location WhatsApp.`;
+            return `Beri tahu user untuk membagikan lokasi yang ingin dilaporkan keluhannya melalui fitur share location WhatsApp. input dari user harus dari share lokasi whatsapp`;
         }
 
         const { latitude, longitude, description } = input.location;
@@ -26,7 +26,7 @@ module.exports = async (from, step, input) => {
             data: { ...session.data, location: locationData }
         });
 
-        return `Silakan ketik isi laporan Anda:`;
+        return `Beri tahu user untuk menceritakan keluhannya`;
     }
 
     // STEP 2: Terima pesan atau isi keluhan dari pengguna
@@ -36,7 +36,7 @@ module.exports = async (from, step, input) => {
             data: { ...session.data, message: input, photos: [] }
         });
 
-        return `Silakan kirim foto pendukung (maksimal 3 foto). Ketik "selesai" jika sudah cukup.`;
+        return `Beri tahu user untuk mengirim foto pendukung jika ada, atau ketik "selesai" jika sudah.`;
     }
 
     // STEP 3: Terima foto pendukung (maksimal 3 buah), atau lanjut jika pengguna ketik "selesai"
@@ -54,13 +54,13 @@ module.exports = async (from, step, input) => {
             const locText = `Lokasi: ${loc.description} (Lat: ${loc.latitude}, Lon: ${loc.longitude})`;
             const photoList = photos.map((p, i) => `Foto ${i + 1}: ${p}`).join("\n");
 
-            return `${locText}\nIsi: ${session.data.message}\n${photoList}\n\nKetik "kirim" untuk mengirim laporan atau "batal" untuk membatalkan.`;
+            return `beritahu user tentang ${locText} Isi laporannya: ${session.data.message}\n${photoList} user harus input "kirim" untuk mengirim laporan atau "batal" untuk membatalkan.`;
         }
 
         // Jika input adalah foto, simpan dan lanjutkan
         if (typeof input === "object" && input.type === "image") {
             const newPhotoUrl = input.image?.url;
-            if (!newPhotoUrl) return `Gagal mengambil gambar. Silakan coba lagi.`;
+            if (!newPhotoUrl) return `Beri tahu user untuk mengirim foto yang valid. dan ulangi kirim fotonya`;
 
             const updatedPhotos = [...photos, newPhotoUrl];
 
@@ -75,7 +75,7 @@ module.exports = async (from, step, input) => {
                 const locText = `Lokasi: ${loc.description} (Lat: ${loc.latitude}, Lon: ${loc.longitude})`;
                 const photoList = updatedPhotos.map((p, i) => `Foto ${i + 1}: ${p}`).join("\n");
 
-                return `${locText}\nIsi: ${session.data.message}\n${photoList}\n\nKetik "kirim" untuk mengirim laporan atau "batal" untuk membatalkan.`;
+                return `beritahu user tentang ${locText} Isi laporannya: ${session.data.message}\n${photoList} user harus input "kirim" untuk mengirim laporan atau "batal" untuk membatalkan.`;
             }
 
             await userRepo.updateSession(from, {
@@ -83,10 +83,10 @@ module.exports = async (from, step, input) => {
                 data: { ...session.data, photos: updatedPhotos }
             });
 
-            return `Foto berhasil ditambahkan (${updatedPhotos.length}/3). Kirim foto lain atau ketik "selesai".`;
+            return `Beri tahu user untuk mengirim foto pendukung lainnya, beri tahu inputnya harus ketik "selesai" jika sudah.`;
         }
 
-        return `Kirim gambar sebagai foto, atau ketik "selesai" jika tidak ingin menambah.`;
+        return `Beri tahu user untuk mengirim foto pendukung yang valid, atau ketik "selesai" jika sudah.`;
     }
 
     // STEP 4: Konfirmasi akhir dan simpan laporan
@@ -109,18 +109,18 @@ module.exports = async (from, step, input) => {
 
             await userRepo.resetSession(from);
 
-            return `Laporan berhasil dikirim.\nKode laporan Anda: ${sessionId}\n\nBalas apa saja untuk kembali ke menu utama.`;
+            return `Beri tahu user bahwa laporan telah berhasil dikirim dengan ID ${sessionId}. dan sampaikan terima kasih atas laporannya. juga untuk menunggu laporannya di proses`;
         }
 
         // Jika pengguna membatalkan laporan
         if (msg === "batal") {
             await userRepo.resetSession(from);
-            return `Laporan dibatalkan. Balas apa saja untuk kembali ke menu utama.`;
+            return `Beri tahu user bahwa laporan telah dibatalkan. Balas pesan untuk kembali ke menu utama.`;
         }
 
-        return `Ketik "kirim" untuk mengirim laporan, atau "batal" untuk membatalkan.`;
+        return `Beri tahu user untuk mengetik "kirim" untuk mengirim laporan atau "batal" untuk membatalkan.`;
     }
 
     // Penanganan error fallback
-    return `Terjadi kesalahan saat membuat laporan. Balas apa saja untuk kembali ke menu utama.`;
+    return `ini adalah default jika command tidak dikenali, ucapkan salam juga ya dan Beri tahu user untuk memilih:\n1. Buat laporan baru\n2. Cek status laporan input nya harus 1 atau 2, jelaskan juga ke usernya dengan singkat`;
 };
