@@ -3,21 +3,29 @@ const router = express.Router();
 const messageController = require("../controllers/messageController");
 const Message = require("../models/messageModel");
 
-// 🔵 Route untuk mengirim pesan dan broadcast via WebSocket
-router.post("/send/:from", messageController.sendMessageToWhatsApp);
+// 🔵 Kirim pesan ke WhatsApp (dengan deteksi mode bot/manual)
+router.post("/send/:from", messageController.sendMessageHandler);
 
-// 🔵 Endpoint untuk mendapatkan semua chat berdasarkan nomor telepon
+// 🔵 Ambil semua pesan berdasarkan nomor
 router.get("/:from", async (req, res) => {
     try {
-        const messages = await Message.find({ from: req.params.from }).sort({ timestamp: 1 });
-        res.json(messages);
-    } catch (error) {
-        console.error("❌ Error mengambil pesan:", error);
+        const { from } = req.params;
+        const limit = parseInt(req.query.limit) || 20;
+        const skip = parseInt(req.query.skip) || 0;
+
+        const messages = await Message.find({ from })
+            .sort({ timestamp: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.json(messages.reverse());
+    } catch (err) {
+        console.error("❌ Error ambil pesan:", err);
         res.status(500).json({ error: "Gagal mengambil pesan." });
     }
 });
 
-// 🔵 Endpoint untuk mendapatkan daftar pengirim unik berdasarkan database
+// 🔵 Ambil daftar pengirim unik (untuk sidebar/chat list)
 router.get("/", async (req, res) => {
     try {
         const uniqueChats = await Message.aggregate([

@@ -23,6 +23,8 @@ const io = new Server(server, {
     }
 });
 
+global.io = io;
+
 // Middleware
 app.use(cors());
 app.use(express.json());

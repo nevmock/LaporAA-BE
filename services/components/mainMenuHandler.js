@@ -2,10 +2,11 @@ const userRepo = require("../../repositories/userRepo");
 const userProfileRepo = require("../../repositories/userProfileRepo");
 
 module.exports = async (from, input) => {
+    const user = await userProfileRepo.findByFrom(from);
+    const nama = user?.name || "Warga";
+
     // Opsi 1: Buat laporan baru
     if (input === "1") {
-        // Cek apakah pengguna sudah terdaftar
-        const user = await userProfileRepo.findByFrom(from);
         
         // Jika belum terdaftar, alihkan ke proses pendaftaran
         if (!user) {
@@ -13,7 +14,7 @@ module.exports = async (from, input) => {
                 currentAction: "signup",
                 step: "ASK_NAME",
             });
-            return `Beri tahu user kalau Sebelum membuat laporan, kami butuh data Anda. \nNama lengkap sesuai KTP:`;
+            return `Warga belum terdaftar, tapi memilih menu 1 untuk membuat laporan. sebelum warga melanjutkan Minta nama lengkap warga Sesuai Dengan KTP.`;
         }
 
         // Jika sudah terdaftar, mulai proses pembuatan laporan
@@ -23,18 +24,19 @@ module.exports = async (from, input) => {
             data: {},
         });
 
-        return `Beri tahu user untuk bagikan lokasi Anda melalui fitur share location WhatsApp.`;
+        return `Warga dengan nama${nama} memilih menu 1 untuk membuat laporan, dan data dari user: ${nama} sudah ada di database. jadi bisa langsung share lokasi kejadian laporannya dengan cara menggunakan fitur share location di whatsapp.`;
     }
 
     // Opsi 2: Cek status laporan berdasarkan sessionId
     if (input === "2") {
+        
         await userRepo.updateSession(from, {
             currentAction: "check_report",
             step: "ASK_REPORT_ID",
         });
-        return `Beri tahu user untuk memasukkan nomor laporannya (contohnya 387512) jadi nomornya aja`;
+        return `Warga dengan nama ${nama} memilih menu 2. selanjutnya minta user untuk memasukkan ID laporan. contoh formatnya langsung saja angkanya, gausah pake LPRAA-`;
     }
 
     // Tanggapan default jika input tidak dikenali
-    return `ini adalah default jika command tidak dikenali, ucapkan salam juga ya dan Beri tahu user untuk memilih:\n1. Buat laporan baru\n2. Cek status laporan input nya harus 1 atau 2, jelaskan juga ke usernya dengan singkat`;
+    return `Warga dengan nama ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
 };

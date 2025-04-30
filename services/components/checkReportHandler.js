@@ -1,7 +1,10 @@
 const userRepo = require("../../repositories/userRepo");
 const reportRepo = require("../../repositories/reportRepo");
+const userProfileRepo = require("../../repositories/userProfileRepo");
 
 module.exports = async (from, step, input) => {
+    const user = await userProfileRepo.findByFrom(from);
+    const nama = user?.name || "Warga";
     // Langkah pertama: cek apakah sedang dalam tahap pengecekan laporan berdasarkan ID
     if (step === "ASK_REPORT_ID") {
         // Format laporan diasumsikan diawali dengan LPRAA-
@@ -12,7 +15,7 @@ module.exports = async (from, step, input) => {
 
         // Jika laporan tidak ditemukan, beri pesan kegagalan
         if (!report) {
-            return `Beritahu user kalau no laporan ${input} tidak ditemukan.`;
+            return `Beritahu warga ${nama} kalau no laporan ${input} tidak ditemukan.`;
         }
 
         // Ambil informasi tindakan terbaru dari laporan jika tersedia
@@ -21,7 +24,7 @@ module.exports = async (from, step, input) => {
         // Tampilkan detail laporan secara terstruktur
         return (
 `
-Beritahu user tentang detail laporan dengan data seprti dibawah ini:
+Beritahu wagra ${nama} tentang detail laporan dengan data seprti dibawah ini:
 
 Laporan ${report.sessionId}
 
@@ -29,14 +32,16 @@ Lokasi: ${report.location.description}
 Isi Laporan: ${report.message}
 
 Tindakan Terbaru:
-• OPD Terkait: ${tindakan?.opd || "-"}
-• Tingkat Kedaruratan: ${tindakan?.situasi || "-"}
-• Status: ${tindakan?.status || "-"}
+OPD Terkait: ${tindakan?.opd || "-"}
+Tingkat Kedaruratan: ${tindakan?.situasi || "-"}
+Status: ${tindakan?.status || "-"}
+
+Kesimpulan Tindakan: ${tindakan?.kesimpulan || "-"}
 `
         );
     }
 
     // Jika tidak dalam kondisi ASK_REPORT_ID, reset sesi dan kembali ke menu utama
     await userRepo.resetSession(from);
-    return `ini adalah default jika command tidak dikenali, ucapkan salam juga ya dan Beri tahu user untuk memilih:\n1. Buat laporan baru\n2. Cek status laporan input nya harus 1 atau 2, jelaskan juga ke usernya dengan singkat`;
+    return `Warga dengan nama ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
 };

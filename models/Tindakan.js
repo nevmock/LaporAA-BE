@@ -30,10 +30,14 @@ const actionSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Perlu Verifikasi", "Verifikasi Kelengkapan Berkas", "Proses OPD Terkait", "Selesai Penanganan", "Selesai Pengaduan"],
+        enum: ["Perlu Verifikasi", "Verifikasi Kelengkapan Berkas", "Proses OPD Terkait", "Selesai Penanganan", "Selesai Pengaduan", "Ditolak"],
         default: "Perlu Verifikasi",
     },
     opd: {
+        type: String,
+        default: "",
+    },
+    disposisi: {
         type: String,
         default: "",
     },
@@ -51,7 +55,7 @@ const actionSchema = new mongoose.Schema({
     },
     feedbackStatus: {
         type: String,
-        enum: ["Belum Ditanya", "Sudah Ditanya", "Sudah Jawab Beres", "Sudah Jawab Belum Beres"],
+        enum: ["Belum Ditanya", "Sudah Ditanya", "Sudah Jawab Beres", "Sudah Jawab Belum Beres", "Selesai Ditolak"],
         default: null,
     },
     rating: {

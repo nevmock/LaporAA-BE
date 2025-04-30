@@ -4,6 +4,8 @@ const userProfileRepo = require("../../repositories/userProfileRepo");
 module.exports = async (from, step, input) => {
     // Ambil atau buat session baru untuk pengguna
     const session = await userRepo.getOrCreateSession(from);
+    const user = await userProfileRepo.findByFrom(from);
+    const nama = user?.name || "Warga";
 
     // Langkah 1: Minta nama pengguna
     if (step === "ASK_NAME") {
@@ -11,21 +13,21 @@ module.exports = async (from, step, input) => {
             step: "ASK_NIK",
             data: { ...session.data, name: input }
         });
-        return `Beri tahu user untuk memasukkan Nomor KTP (NIK) sesuai KTP. Pastikan NIK terdiri dari 16 digit angka.`;
+        return `Karna Warga Belum Terdaftar, Masukan Nomor Induk Kependudukannya NIK sesuai dengan KTP yang masih berlaku.`;
     }
 
     // Langkah 2: Validasi dan minta NIK (Nomor Induk Kependudukan)
     if (step === "ASK_NIK") {
         const isValidNik = /^\d{16}$/.test(input);
         if (!isValidNik) {
-            return `Beri tahu user kalau NIK tidak valid. Harus terdiri dari 16 digit angka. dan persilahkan user untuk masukkan ulang Nomor KTP:`;
+            return `Beri tahu warga kalau NIK tidak valid. Harus terdiri dari 16 digit angka. dan persilahkan user untuk masukkan ulang Nomor KTP:`;
         }
 
         await userRepo.updateSession(from, {
             step: "ASK_ADDRESS",
             data: { ...session.data, nik: input }
         });
-        return `Beri tahu user untuk memasukkan alamat domisili sesuai KTP.`;
+        return `Beri tahu warga untuk memasukkan alamat domisili sesuai KTP.`;
     }
 
     // Langkah 3: Simpan alamat domisili dan lanjut ke konfirmasi
@@ -37,7 +39,7 @@ module.exports = async (from, step, input) => {
 
         const { name, nik, address } = session.data;
 
-        return `Beri tahu user untuk verifikasi data berikut` +
+        return `Beri tahu warga untuk verifikasi data berikut` +
             `Nama: ${name}\n` +
             `NIK: ${nik}\n` +
             `Alamat: ${address}\n\n` +
@@ -64,19 +66,19 @@ module.exports = async (from, step, input) => {
                 data: {}
             });
 
-            return `Beri tahu user kalau pendaftaran berhasil. Silakan pilih:\n1. Buat laporan baru\n2. Cek status laporan`;
+            return `Beri tahu warga ${nama} bahwa data telah disimpan. Dan bisa langsung Share Lokasi Kejadian Pengaduannya menggunakan fitur share location di WhatsApp.`;
         }
 
         // Batalkan proses jika user mengetik "batal"
         if (input.toLowerCase() === "batal") {
             await userRepo.resetSession(from);
-            return `Beri tahu user bahwa pendaftaran dibatalkan. Balas pesan untuk kembali ke menu utama.`;
+            return `Beri tahu warga bahwa pendaftaran dibatalkan. Balas pesan untuk kembali ke menu utama.`;
         }
 
         // Penanganan input selain "kirim" atau "batal"
-        return `Beri tahu user untuk mengetik *kirim* untuk menyimpan, atau *batal* untuk membatalkan.`;
+        return `Beri tahu warga untuk mengetik *kirim* untuk menyimpan, atau *batal* untuk membatalkan.`;
     }
 
     // Penanganan fallback jika step tidak dikenal
-    return `ini adalah default jika command tidak dikenali, ucapkan salam juga ya dan Beri tahu user untuk memilih:\n1. Buat laporan baru\n2. Cek status laporan input nya harus 1 atau 2, jelaskan juga ke usernya dengan singkat`;
+    return `Warga dengan nama ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
 };
