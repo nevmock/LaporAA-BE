@@ -55,7 +55,7 @@ const actionSchema = new mongoose.Schema({
     },
     feedbackStatus: {
         type: String,
-        enum: ["Belum Ditanya", "Sudah Ditanya", "Sudah Jawab Beres", "Sudah Jawab Belum Beres", "Selesai Ditolak"],
+        enum: ["Belum Ditanya", "Sudah Ditanya", "Sudah Jawab Beres", "Sudah Jawab Belum Beres", "Selesai Ditolak", "Auto Rated"],
         default: null,
     },
     rating: {

@@ -2,6 +2,7 @@ const userRepo = require("../../repositories/userRepo");
 const userProfileRepo = require("../../repositories/userProfileRepo");
 const reportRepo = require("../../repositories/reportRepo");
 const generateSessionId = require("../../utils/generateSessionId");
+const { findWilayahFromPoint } = require("../../utils/findWilayahFromPoint");
 
 module.exports = async (from, step, input) => {
     const session = await userRepo.getOrCreateSession(from);
@@ -13,22 +14,27 @@ module.exports = async (from, step, input) => {
         if (typeof input !== "object" || input.type !== "location") {
             return `Halo ${nama}, mohon kirimkan *lokasi kejadian* menggunakan fitur *Kirim Lokasi* di WhatsApp. Lokasi ini penting untuk kami tindaklanjuti. 🙏`;
         }
-
+    
         const { latitude, longitude, description } = input.location;
+        const wilayah = findWilayahFromPoint(latitude, longitude);
+    
         const locationData = {
             type: "map",
             latitude,
             longitude,
-            description: description || "Lokasi tanpa nama"
+            description: description || "Lokasi tanpa nama",
+            desa: wilayah.desa,
+            kecamatan: wilayah.kecamatan,
+            kabupaten: wilayah.kabupaten
         };
-
+    
         await userRepo.updateSession(from, {
             step: "ASK_MESSAGE",
             data: { ...session.data, location: locationData }
         });
-
+    
         return `Terima kasih ${nama}, lokasi sudah kami terima. Sekarang silakan ceritakan secara singkat apa yang terjadi atau apa yang ingin Anda laporkan.`;
-    }
+    }    
 
     // STEP 2: Pesan keluhan
     if (step === "ASK_MESSAGE") {

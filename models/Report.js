@@ -36,6 +36,18 @@ const reportSchema = new mongoose.Schema({
         description: {
             type: String,
             required: true
+        },
+        desa: {
+            type: String,
+            default: "-"
+        },
+        kecamatan: {
+            type: String,
+            default: "-"
+        },
+        kabupaten: {
+            type: String,
+            default: "-"
         }
     },
     message: {
