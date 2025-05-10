@@ -36,6 +36,18 @@ const reportSchema = new mongoose.Schema({
         description: {
             type: String,
             required: true
+        },
+        desa: {
+            type: String,
+            default: "-"
+        },
+        kecamatan: {
+            type: String,
+            default: "-"
+        },
+        kabupaten: {
+            type: String,
+            default: "-"
         }
     },
     message: {
@@ -49,17 +61,6 @@ const reportSchema = new mongoose.Schema({
     tindakan: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Tindakan",
-    },
-    rating: {
-        type: Number,
-        min: 1,
-        max: 5,
-        default: null
-    },
-    statusSelesai:{
-        type: String,
-        enum: ["Selesai Penanganan", "Selesai Pengaduan"],
-        default: null,
     }
 }, {
     timestamps: true,

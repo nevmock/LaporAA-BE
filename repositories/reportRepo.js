@@ -8,7 +8,9 @@ exports.create = async ({ sessionId, from, user, location, message, photos }) =>
         report: newReport._id,
         hasil: "",
         kesimpulan: "",
-        situasi: "Verifikasi Data",
+        trackingId: null,
+        prioritas: null,
+        situasi: null,
         status: "Perlu Verifikasi",
         opd: "",
         photos: [],
@@ -45,14 +47,4 @@ exports.findByTindakanId = async (tindakanId) => {
     return await Report.findOne({ tindakan: tindakanId })
         .populate("user")
         .populate("tindakan");
-};
-
-exports.updateRatingByTindakanId = async (tindakanId, rating) => {
-    const report = await Report.findOne({ tindakan: tindakanId });
-    if (!report) throw new Error("Report tidak ditemukan untuk tindakan tersebut.");
-
-    report.rating = rating;
-    await report.save();
-
-    return report;
 };

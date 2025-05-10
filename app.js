@@ -5,6 +5,7 @@ const cors = require("cors");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
+const cron = require("node-cron");
 
 const webhookRoutes = require("./routes/webhookRoutes");
 const messageRoutes = require("./routes/messageRoutes");
@@ -13,6 +14,11 @@ const reportRoutes = require("./routes/reportRoutes");
 const reportCountRoutes = require("./routes/reportCount");
 const tindakanRoutes = require("./routes/tindakanRoutes");
 const tindakanUploadRoute = require("./routes/tindakanUpload");
+const dashboardRoute = require("./routes/dashboardRoute");
+const userLogin = require("./routes/userLogin");
+const login = require("./routes/auth");
+
+const autoCloseFeedback = require("./utils/autoCloseFeedback");
 
 const app = express();
 const server = createServer(app);
@@ -22,6 +28,8 @@ const io = new Server(server, {
         methods: ["GET", "POST"]
     }
 });
+
+global.io = io;
 
 // Middleware
 app.use(cors());
@@ -54,6 +62,9 @@ app.use("/reports", reportRoutes);
 app.use("/reportCount", reportCountRoutes);
 app.use("/tindakan", tindakanRoutes);
 app.use("/api", tindakanUploadRoute);
+app.use("/dashboard", dashboardRoute);
+app.use("/userLogin", userLogin);
+app.use("/auth", login);
 
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 app.use("/uploadsTindakan", express.static(path.join(__dirname, "public/uploadsTindakan")));
@@ -61,6 +72,10 @@ app.use("/uploadsTindakan", express.static(path.join(__dirname, "public/uploadsT
 // Route default untuk cek server berjalan
 app.get("/", (req, res) => {
     res.send("✅ Server berjalan dengan baik!");
+});
+
+cron.schedule("0 0 * * *", () => {
+    autoCloseFeedback();
 });
 
 // Menjalankan server

@@ -1,0 +1,83 @@
+###
+GET http://localhost:3001/reports
+
+###
+GET http://localhost:3001/tindakan
+
+###
+GET http://localhost:3001/reportCount
+
+###
+GET http://localhost:3001/reports/680b798d2914fdacfe27faa7
+
+###
+GET http://localhost:3001/tindakan/6805f6780b81ae80bcac6fda
+
+###
+GET http://localhost:3001/tindakan/6805f6780b81ae80bcac6fda
+
+###
+POST http://localhost:3001/tindakan
+Content-Type: application/json
+
+{
+    "reportId": "67ff6f2c427f3248d0cf3f8e",
+    "hasil": "Pohon tumbang terlalu besar, butuh waktu untuk memindahkan",
+    "kesimpulan": "Laporan sedang di kerjakan",
+    "status": "Dalam Proses",
+    "situasi": "Darurat",
+    "opd": "Dinas Kebersihan",
+    "photos": ["https://example.com/photo1.jpg", "https://example.com/photo2.jpg"]
+}
+
+###
+GET http://localhost:3001/dashboard/efisiensi
+
+###
+GET http://localhost:3001/dashboard/effectiveness
+
+###
+GET http://localhost:3001/dashboard/distribusi
+
+###
+GET http://localhost:3001/dashboard/kepuasan
+
+### 📄 Get all user logins
+GET http://localhost:3001/userLogin
+Content-Type: application/json
+
+###
+
+### 🔍 Get user login by ID
+GET http://localhost:3001/userLogin/:userId
+Content-Type: application/json
+
+###
+
+### ➕ Create new user login
+POST http://localhost:3001/userLogin
+Content-Type: application/json
+
+{
+  "username": "bupati",
+  "password": "bupati123",
+  "role": "Bupati"
+}
+
+###
+
+### 📝 Update user login (change password or role)
+PUT http://localhost:3001/userLogin/:userId
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "newpassword123",  // kosongkan atau hapus jika tidak ingin ubah password
+  "role": "Bupati"
+}
+
+###
+
+### ❌ Delete user login
+DELETE http://localhost:3001/userLogin/:userId
+Content-Type: application/json

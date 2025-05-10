@@ -1,0 +1,54 @@
+# Node modules
+node_modules/
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+turbo.log
+
+# Build output
+.next/
+out/
+dist/
+
+# OS/System files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+*.swp
+
+# Optional: ignore test coverage
+coverage/
+
+# Optional: ignore uploads
+public/uploads/
+public/report/
+public/tindakan/
+
+# PM2 logs or runtime
+logs/
+pids/
+*.pid
+
+# Ignore local DBs (optional)
+*.sqlite
+*.db
+
+# Mac M1 node-gyp fix
+*.node
+
+# Turbo repo cache (if used)
+.turbo/
+
+# Next.js telemetry
+.next/telemetry

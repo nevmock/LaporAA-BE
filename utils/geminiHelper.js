@@ -4,17 +4,10 @@ const genAI = new GoogleGenAI({
 });
 
 const buildPrompt = (rawMessage) => `
-kamu itu seorang admin, buatlah balasan yang lebih manusiawi dan alami sebagai admin untuk pesan berikut:
 
-Tapi kamu harus tetap arahkan user untuk memasukan input sesuai dengan pesan aslinya!
+Kamu adalah admin dari Dinas Pemerintahan Kabupaten Bekasi. Balas setiap pesan warga dengan ramah, hangat, dan manusiawi, jangan terlalu panjangn dan kaku, normal sebagai admin yang gaul sopan dan ramah.
 
-Untuk sapaan dan lainnya cukup di menu utama saja. gausah selalu pake sapaan.
-
-menu utamanya itu yang ini:
-1. Buat Laporan
-2. Cek Status Laporan
-
-### Pesan aslinya:
+sub prompt nya:
 ${rawMessage}
 `;
 

@@ -1,33 +1,47 @@
 const userRepo = require("../../repositories/userRepo");
 const reportRepo = require("../../repositories/reportRepo");
+const userProfileRepo = require("../../repositories/userProfileRepo");
 
 module.exports = async (from, step, input) => {
+    const user = await userProfileRepo.findByFrom(from);
+    const nama = user?.name || "Warga";
+    // Langkah pertama: cek apakah sedang dalam tahap pengecekan laporan berdasarkan ID
     if (step === "ASK_REPORT_ID") {
-        const report = await reportRepo.findBySessionId("LPRAA-"+input);
+        // Format laporan diasumsikan diawali dengan LPRAA-
+        const report = await reportRepo.findBySessionId("LPRAA-" + input);
+
+        // Setelah pengecekan, sesi direset agar kembali ke main menu
         await userRepo.resetSession(from);
 
+        // Jika laporan tidak ditemukan, beri pesan kegagalan
         if (!report) {
-            return `Laporan dengan kode *${input}* tidak ditemukan.`;
+            return `Beritahu warga ${nama} kalau no laporan ${input} tidak ditemukan.`;
         }
 
-        const tindakan = report?.tindakan; // Tindakan terbaru (jika ada)
+        // Ambil informasi tindakan terbaru dari laporan jika tersedia
+        const tindakan = report?.tindakan;
 
-        return (`
-📝 *Detail Laporan ${report.sessionId}*
-        
-📍 *Lokasi:* ${report.location.description}
-💬 *Keluhan:* ${report.message}
+        // Tampilkan detail laporan secara terstruktur
+        return (
+`
+Beritahu wagra ${nama} tentang detail laporan dengan data seprti dibawah ini:
 
-📌 *Tindakan Terbaru:*
-• Kesimpulan: ${tindakan?.kesimpulan || "-"}
-• OPD Terkait: ${tindakan?.opd || "-"}
-• Situasi: ${tindakan?.situasi || "-"}
-• Status: ${tindakan?.status || "-"}
+Laporan ${report.sessionId}
 
-Ketik apa saja untuk kembali ke menu utama.
-        `);
+Lokasi: ${report.location.description}
+Isi Laporan: ${report.message}
+
+Tindakan Terbaru:
+OPD Terkait: ${tindakan?.opd || "-"}
+Tingkat Kedaruratan: ${tindakan?.situasi || "-"}
+Status: ${tindakan?.status || "-"}
+
+Kesimpulan Tindakan: ${tindakan?.kesimpulan || "-"}
+`
+        );
     }
 
+    // Jika tidak dalam kondisi ASK_REPORT_ID, reset sesi dan kembali ke menu utama
     await userRepo.resetSession(from);
-    return `Sesi Anda sudah berakhir. Silahkan balas pesan ini untuk kembali ke menu awal.`;
+    return `Warga dengan nama ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
 };

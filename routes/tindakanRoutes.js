@@ -27,41 +27,59 @@ router.get("/:reportId", async (req, res) => {
 // UPDATE tindakan
 router.put("/:reportId", async (req, res) => {
     const { reportId } = req.params;
-    const { hasil, kesimpulan, status, situasi, opd, photos } = req.body;
+    const { hasil, kesimpulan, trackingId, prioritas, situasi, status, opd, disposisi, photos } = req.body;
 
     try {
         const tindakan = await tindakanRepo.update({
             reportId,
             hasil,
             kesimpulan,
-            status,
+            trackingId,
+            prioritas,
             situasi,
+            status,
             opd,
-            photos,
+            disposisi,
+            photos
         });
 
         // Jika status diubah jadi "Selesai", kirim notifikasi WA dan minta feedback
-        if (status === "Selesai") {
+        if (status === "Selesai Penanganan") {
             const report = await reportRepo.findById(reportId);
             const user = await UserProfile.findById(report.user);
             const from = report.from;
-        
+
             const message = `📝 *Laporan ${report.sessionId} telah ditangani.*\n\n` +
                 `📌 *Kesimpulan:* ${kesimpulan || "-"}\n` +
                 `🏢 *OPD Terkait:* ${opd || "-"}\n` +
                 `📅 *Status:* ${status}\n\n` +
                 `Apakah Anda sudah puas dengan penanganan ini?\n` +
                 `Balas *ya* jika puas, atau *belum* jika masih perlu ditindaklanjuti ulang.`;
-        
+
             await sendMessageToWhatsApp(from, message);
-        
+
             // Ambil ulang tindakan untuk memastikan .save() valid
             const tindakanForFeedback = await tindakanRepo.findById(tindakan._id);
             tindakanForFeedback.feedbackStatus = "Sudah Ditanya";
             await tindakanForFeedback.save();
-        
+
             await userRepo.appendPendingFeedback(from, tindakan._id);
-        }        
+        }
+
+        // Jika status diubah jadi "Ditolak", kirim notifikasi WA
+        if (status === "Ditolak") {
+            const report = await reportRepo.findById(reportId);
+            const user = await UserProfile.findById(report.user);
+            const from = report.from;
+
+            const message = `❌ *Laporan ${report.sessionId} ditolak dan tidak dapat ditindaklanjuti.*\n\n` +
+                `📌 *Alasan Penolakan:* ${kesimpulan || "-"}\n\n` +
+                `Terima kasih atas partisipasinya.`;
+
+            await sendMessageToWhatsApp(from, message);
+
+            // Tidak perlu masukkan ke pendingFeedback karena sudah final
+        }
 
         res.status(200).json(tindakan);
     } catch (error) {
