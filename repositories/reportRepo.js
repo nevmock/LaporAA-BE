@@ -7,7 +7,7 @@ exports.create = async ({ sessionId, from, user, location, message, photos }) =>
     const defaultTindakan = await Tindakan.create({
         report: newReport._id,
         hasil: "",
-        kesimpulan: "",
+        kesimpulan: [],
         trackingId: null,
         prioritas: null,
         situasi: null,
