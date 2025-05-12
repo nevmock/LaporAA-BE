@@ -23,7 +23,7 @@ module.exports = async (from, step, input) => {
             step: "ASK_NIK",
             data: { ...session.data, jenis_kelamin: input }
         });
-        return `Masukan Nomor Induk Kependudukannya NIK sesuai dengan KTP yang masih berlaku.`;
+        return `Minta Warga memsukan Nomor Induk Kependudukannya NIK sesuai dengan KTP yang masih berlaku.`;
     }
 
     // Langkah 2: Validasi dan minta NIK (Nomor Induk Kependudukan)
@@ -37,7 +37,7 @@ module.exports = async (from, step, input) => {
             step: "ASK_ADDRESS",
             data: { ...session.data, nik: input }
         });
-        return `Masukkan alamat domisili sesuai KTP.`;
+        return `minta warga untuk Masukkan alamat domisili sesuai KTP.`;
     }
 
     // Langkah 3: Simpan alamat domisili dan lanjut ke konfirmasi
