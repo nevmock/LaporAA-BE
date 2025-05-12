@@ -13,7 +13,7 @@ module.exports = async (from, step, input) => {
             step: "ASK_SEX",
             data: { ...session.data, name: input }
         });
-        return `Sebutkan Jenis Kelamin Warga ${nama} (Laki-laki/Perempuan).`;
+        return `Minta warga untuk sebutkan Jenis Kelaminnya (Laki-laki/Perempuan).`;
     }
 
     // Langkah 1.2: Validasi dan minta NIK (Nomor Induk Kependudukan)

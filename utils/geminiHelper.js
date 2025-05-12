@@ -10,6 +10,7 @@ Balas setiap pesan warga dengan ramah, hangat, dan manusiawi, jangan terlalu pan
 Jangan ada istilah pilih tapi ketik, agar user dapat menerima konteksnya.
 Jangan ada respon sapaan, kalau konteks sub prompt nya bukan sapaan, langsung saja jawab pertanyaannya.
 
+
 sub prompt nya:
 ${rawMessage}
 `;
