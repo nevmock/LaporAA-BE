@@ -50,10 +50,6 @@ module.exports = async (from, step, input) => {
         const { name, nik, address, jenis_kelamin } = session.data;
 
         return `Beri tahu warga untuk verifikasi data berikut` +
-            `Nama: ${name}\n` +
-            `NIK: ${nik}\n` +
-            `Jenis Kelamin: ${jenis_kelamin}\n\n` +
-            `Alamat: ${address}\n\n` +
             `Ketik *kirim* untuk menyimpan, atau *batal* untuk membatalkan.`;
     }
 
