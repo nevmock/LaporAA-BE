@@ -81,3 +81,6 @@ Content-Type: application/json
 ### ❌ Delete user login
 DELETE http://localhost:3001/userLogin/:userId
 Content-Type: application/json
+
+###
+GET http://localhost:3001/dashboard/harian

@@ -2,6 +2,7 @@ const efisiensiService = require("../services/efisiensiService");
 const effectivenessService = require("../services/effectivenessService");
 const distribusiService = require("../services/distribusiService");
 const kepuasanService = require("../services/kepuasanService");
+const Report = require('../models/Report');
 
 async function getEfisiensi(req, res) {
     try {
@@ -43,9 +44,34 @@ async function getKepuasan(req, res) {
     }
 }
 
+async function getDailyReportCount (req, res) {
+    try {
+        const result = await Report.aggregate([
+            {
+                $group: {
+                    _id: {
+                        $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
+                    },
+                    total: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        res.json(result.map(item => ({
+            date: item._id,
+            total: item.total
+        })));
+    } catch (err) {
+        res.status(500).json({ message: 'Gagal mengambil data harian' });
+    }
+};
+
+
 module.exports = {
     getEfisiensi,
     getEffectiveness,
     getDistribusi,
-    getKepuasan
+    getKepuasan,
+    getDailyReportCount
 };
