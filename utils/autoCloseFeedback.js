@@ -14,7 +14,7 @@ async function autoCloseFeedback() {
         tindakan.feedbackStatus = "Auto Rated";
         await tindakan.save();
 
-        const report = await reportRepo.findById(tindakan.reportId);
+        const report = await reportRepo.findById(tindakan.report);
         if (report) {
             report.status = "Selesai Pengaduan";
             await report.save();

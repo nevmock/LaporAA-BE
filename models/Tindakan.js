@@ -68,6 +68,14 @@ const actionSchema = new mongoose.Schema({
         min: 1,
         max: 5,
         default: null
+    },
+    url: {
+        type: String,
+        default: null
+    },
+    keterangan: {
+        type: String,
+        default: null
     }
 });
 

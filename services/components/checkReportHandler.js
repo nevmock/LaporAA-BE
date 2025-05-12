@@ -35,8 +35,6 @@ Tindakan Terbaru:
 OPD Terkait: ${tindakan?.opd || "-"}
 Tingkat Kedaruratan: ${tindakan?.situasi || "-"}
 Status: ${tindakan?.status || "-"}
-
-Kesimpulan Tindakan: ${tindakan?.kesimpulan || "-"}
 `
         );
     }

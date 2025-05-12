@@ -1,6 +1,6 @@
 const Tindakan = require("../models/Tindakan");
 
-exports.update = async ({ reportId, hasil, trackingId, prioritas, situasi, status, opd, disposisi, photos }) => {
+exports.update = async ({ reportId, hasil, trackingId, prioritas, situasi, status, opd, disposisi, photos, url, keterangan }) => {
     const tindakan = await Tindakan.findOne({ report: reportId });
     if (!tindakan) throw new Error("Tindakan belum tersedia untuk report ini.");
 
@@ -13,6 +13,8 @@ exports.update = async ({ reportId, hasil, trackingId, prioritas, situasi, statu
     tindakan.disposisi = disposisi;
     tindakan.photos = photos;
     tindakan.updatedAt = new Date();
+    tindakan.url = url;
+    tindakan.keterangan = keterangan;
 
     await tindakan.save();
     return tindakan;
@@ -70,6 +72,10 @@ exports.findByReportId = async (reportId) => {
 
 exports.findById = async (id) => {
     return await Tindakan.findById(id).populate("report");
+};
+
+exports.findAll = async (query) => {
+    return await Tindakan.find(query).populate("report");
 };
 
 exports.updateRatingById = async (tindakanId, rating) => {

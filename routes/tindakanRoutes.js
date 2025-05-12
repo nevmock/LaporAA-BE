@@ -28,7 +28,7 @@ router.get("/:reportId", async (req, res) => {
 // UPDATE tindakan
 router.put("/:reportId", async (req, res) => {
     const { reportId } = req.params;
-    const { hasil, kesimpulan, trackingId, prioritas, situasi, status, opd, disposisi, photos } = req.body;
+    const { hasil, kesimpulan, trackingId, prioritas, situasi, status, opd, disposisi, photos, url, keterangan } = req.body;
 
     try {
         const tindakan = await tindakanRepo.update({
@@ -41,7 +41,9 @@ router.put("/:reportId", async (req, res) => {
             status,
             opd,
             disposisi,
-            photos
+            photos,
+            url,
+            keterangan
         });
 
         // Jika status diubah jadi "Selesai", kirim notifikasi WA dan minta feedback
@@ -51,9 +53,7 @@ router.put("/:reportId", async (req, res) => {
             const from = report.from;
 
             const message = `📝 *Laporan ${report.sessionId} telah ditangani.*\n\n` +
-                `📌 *Kesimpulan:* ${kesimpulan || "-"}\n` +
                 `🏢 *OPD Terkait:* ${opd || "-"}\n` +
-                `📅 *Status:* ${status}\n\n` +
                 `Apakah Anda sudah puas dengan penanganan ini?\n` +
                 `Balas *ya* jika puas, atau *belum* jika masih perlu ditindaklanjuti ulang.`;
 
@@ -74,7 +74,7 @@ router.put("/:reportId", async (req, res) => {
             const from = report.from;
 
             const message = `❌ *Laporan ${report.sessionId} ditolak dan tidak dapat ditindaklanjuti.*\n\n` +
-                `📌 *Alasan Penolakan:* ${kesimpulan || "-"}\n\n` +
+                `📌 *Alasan Penolakan:* ${keterangan || "-"}\n\n` +
                 `Terima kasih atas partisipasinya.`;
 
             await sendMessageToWhatsApp(from, message);

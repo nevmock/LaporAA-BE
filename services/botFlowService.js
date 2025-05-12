@@ -21,7 +21,7 @@ exports.handleUserMessage = async ({ from, message }) => {
     // Reset session jika user ketik 'menu' atau 'reset'
     if (input === "menu" || input === "reset" || GeminiStartContext == "true") {
         await userRepo.resetSession(from);
-        return `warga ${nama} memilih menu awal. Beri tahu bahwa Opsi 1 adalah untuk membuat laporan baru, opsi 2 adalah untuk mengecek laporan yang sudah ada.`;
+        return `Infokan ${nama} bahwa dia memilih menu awal. Beri tahu bahwa Opsi 1 adalah untuk membuat laporan baru, opsi 2 adalah untuk mengecek laporan yang sudah ada.`;
     }
 
     // Handle Rating setelah laporan selesai
