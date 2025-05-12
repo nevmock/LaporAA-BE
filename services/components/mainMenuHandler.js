@@ -14,7 +14,7 @@ module.exports = async (from, input) => {
                 currentAction: "signup",
                 step: "ASK_NAME",
             });
-            return `Warga belum terdaftar, tapi memilih menu 1 untuk membuat laporan. sebelum warga melanjutkan Minta nama lengkap warga Sesuai Dengan KTP.`;
+            return `Beri tahu warga bahwa data diri warga belum terdaftar, sebelum warga melanjutkan untuk membuat laporan, Minta warga untuk memasukan nama lengkap warga Sesuai Dengan KTP.`;
         }
 
         // Jika sudah terdaftar, mulai proses pembuatan laporan

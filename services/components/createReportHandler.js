@@ -43,7 +43,7 @@ module.exports = async (from, step, input) => {
             data: { ...session.data, message: input, photos: [] }
         });
 
-        return `Baik ${nama}, sekarang mohon kirimkan *foto pendukung* yang berkaitan dengan laporan Anda.\n\n📸 *Minimal 1 foto*, maksimal 3 foto. Jika sudah selesai mengirimkan, balas dengan ketik *selesai*.`;
+        return `minta warga untuk mengirimkan setidaknya 1 foto sebelum melanjutkan dan jangan memberi arahan untuk menunggu yang membuat warga tidak tau langkah selanjutnya`;
     }
 
     // STEP 3: Foto
@@ -52,7 +52,7 @@ module.exports = async (from, step, input) => {
 
         if (typeof input === "string" && input.toLowerCase() === "selesai") {
             if (photos.length === 0) {
-                return `Mohon kirimkan *setidaknya 1 foto* sebelum melanjutkan.`;
+                return `beri tahu warga kalau foto belum dikirim. Silakan kirimkan setidaknya 1 foto sebelum melanjutkan.`;
             }
 
             await userRepo.updateSession(from, {
@@ -60,13 +60,13 @@ module.exports = async (from, step, input) => {
                 data: { ...session.data, photos }
             });
 
-            return `📎 Foto sudah kami terima.\n\n${nama}, jika semua data sudah benar, ketik *kirim* untuk mengirimkan laporan Anda, atau *batal* jika ingin membatalkan.`;
+            return `Beri tahu warga ${nama}, jika fotonya sudah diterima, apakah foto mau ditambahkan lagi, jika tidak maka cukup ketik *selesai*.`;
         }
 
         if (typeof input === "object" && input.type === "image") {
             const newPhotoUrl = input.image?.url;
             if (!newPhotoUrl) {
-                return `Maaf ${nama}, kami tidak dapat memproses foto tersebut. Coba kirim ulang fotonya.`;
+                return `beri tahu ${nama}, kami tidak dapat memproses foto tersebut. Coba kirim ulang fotonya.`;
             }
 
             const updatedPhotos = [...photos, newPhotoUrl];
@@ -77,7 +77,7 @@ module.exports = async (from, step, input) => {
                     data: { ...session.data, photos: updatedPhotos }
                 });
 
-                return `✅ Kami telah menerima 3 foto.\n\n${nama}, jika semua data sudah benar, ketik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`;
+                return `Beri tahu ${nama}, Kami telah menerima 3 foto. jika semua data sudah benar, ketik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`;
             }
 
             await userRepo.updateSession(from, {
@@ -85,10 +85,10 @@ module.exports = async (from, step, input) => {
                 data: { ...session.data, photos: updatedPhotos }
             });
 
-            return `📸 Foto sudah diterima (${updatedPhotos.length}/3).\nJika sudah cukup, ketik *selesai*.`;
+            return `Beri tahu warga ${nama}, jika fotonya sudah diterima, apakah foto mau ditambahkan lagi, jika tidak maka cukup ketik *selesai*.`;
         }
 
-        return `Mohon kirimkan *foto pendukung* atau ketik *selesai* jika sudah selesai mengirim foto.`;
+        return `Beri tahu warga ${nama}, jika fotonya sudah diterima, apakah foto mau ditambahkan lagi, jika tidak maka cukup ketik *selesai*.`;
     }
 
     // STEP 4: Konfirmasi
@@ -110,15 +110,17 @@ module.exports = async (from, step, input) => {
 
             await userRepo.resetSession(from);
 
-            return `🎉 Terima kasih ${nama}, laporan Anda telah berhasil dikirim dengan ID *${sessionId}*.\n\nTim kami akan segera memprosesnya. Anda dapat mengecek status laporan ini kapan saja dengan memasukkan ID-nya. 🙏`;
+            return `Terima kasih ${nama}, laporan Anda telah berhasil dikirim dengan ID *${sessionId}*. 
+            Tim kami akan segera memprosesnya. Anda dapat mengecek status laporan ini kapan saja dengan memasukkan ID-nya.
+            `;
         }
 
         if (msg === "batal") {
             await userRepo.resetSession(from);
-            return `Laporan dibatalkan.\nJika ingin mulai lagi, silakan pilih menu kembali.`;
+            return `Beri tahu warga bahwa pembuatan laporan dibatalkan. Balas pesan untuk kembali ke menu utama.`;
         }
 
-        return `Ketik *kirim* untuk mengirim laporan Anda atau *batal* untuk membatalkan.`;
+        return `Beri tahu warga untuk mengetik *kirim* untuk menyimpan laporan, atau *batal* untuk membatalkan.`;
     }
 
     return `Warga dengan nama ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
