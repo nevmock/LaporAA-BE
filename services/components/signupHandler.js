@@ -10,24 +10,34 @@ module.exports = async (from, step, input) => {
     // Langkah 1: Minta nama pengguna
     if (step === "ASK_NAME") {
         await userRepo.updateSession(from, {
-            step: "ASK_NIK",
+            step: "ASK_SEX",
             data: { ...session.data, name: input }
         });
-        return `Karna Warga Belum Terdaftar, Masukan Nomor Induk Kependudukannya NIK sesuai dengan KTP yang masih berlaku.`;
+        return `Sebutkan Jenis Kelamin Warga ${nama} (Laki-laki/Perempuan).`;
+    }
+
+    // Langkah 1.2: Validasi dan minta NIK (Nomor Induk Kependudukan)
+    if (step === "ASK_SEX") {
+
+        await userRepo.updateSession(from, {
+            step: "ASK_NIK",
+            data: { ...session.data, jenis_kelamin: input }
+        });
+        return `Masukan Nomor Induk Kependudukannya NIK sesuai dengan KTP yang masih berlaku.`;
     }
 
     // Langkah 2: Validasi dan minta NIK (Nomor Induk Kependudukan)
     if (step === "ASK_NIK") {
         const isValidNik = /^\d{16}$/.test(input);
         if (!isValidNik) {
-            return `Beri tahu warga kalau NIK tidak valid. Harus terdiri dari 16 digit angka. dan persilahkan user untuk masukkan ulang Nomor KTP:`;
+            return `NIK tidak valid. Harus terdiri dari 16 digit angka. dan persilahkan user untuk masukkan ulang Nomor KTP:`;
         }
 
         await userRepo.updateSession(from, {
             step: "ASK_ADDRESS",
             data: { ...session.data, nik: input }
         });
-        return `Beri tahu warga untuk memasukkan alamat domisili sesuai KTP.`;
+        return `Masukkan alamat domisili sesuai KTP.`;
     }
 
     // Langkah 3: Simpan alamat domisili dan lanjut ke konfirmasi
@@ -37,11 +47,12 @@ module.exports = async (from, step, input) => {
             data: { ...session.data, address: input }
         });
 
-        const { name, nik, address } = session.data;
+        const { name, nik, address, jenis_kelamin } = session.data;
 
         return `Beri tahu warga untuk verifikasi data berikut` +
             `Nama: ${name}\n` +
             `NIK: ${nik}\n` +
+            `Jenis Kelamin: ${jenis_kelamin}\n\n` +
             `Alamat: ${address}\n\n` +
             `Ketik *kirim* untuk menyimpan, atau *batal* untuk membatalkan.`;
     }
@@ -49,14 +60,15 @@ module.exports = async (from, step, input) => {
     // Langkah 4: Konfirmasi dan simpan data ke database
     if (step === "CONFIRM_DATA") {
         if (input.toLowerCase() === "kirim") {
-            const { name, nik, address } = session.data;
+            const { name, nik, address, jenis_kelamin } = session.data;
 
             // Simpan ke koleksi user profile
             await userProfileRepo.create({
                 from,
                 name,
                 nik,
-                address
+                address,
+                jenis_kelamin
             });
 
             // Update session untuk lanjut ke pembuatan laporan

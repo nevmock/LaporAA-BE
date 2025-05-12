@@ -5,10 +5,12 @@ const checkReportHandler = require("./components/checkReportHandler");
 const userRepo = require("../repositories/userRepo");
 const tindakanRepo = require("../repositories/tindakanRepo");
 const userProfileRepo = require("../repositories/userProfileRepo");
+const { startContext } = require("../utils/geminiHelper");
 
 exports.handleUserMessage = async ({ from, message }) => {
     const user = await userProfileRepo.findByFrom(from);
     const nama = user?.name || "Warga";
+    const GeminiStartContext = await startContext(message);
 
     let session = await userRepo.getOrCreateSession(from);
     if (session.mode === "manual") return null;
@@ -17,7 +19,7 @@ exports.handleUserMessage = async ({ from, message }) => {
     const step = session.step;
 
     // Reset session jika user ketik 'menu' atau 'reset'
-    if (input === "menu" || input === "reset") {
+    if (input === "menu" || input === "reset" || GeminiStartContext == "true") {
         await userRepo.resetSession(from);
         return `warga ${nama} memilih menu awal. pilih 1 untuk membuat laporan dan 2 untuk cek status laporan.`;
     }

@@ -18,6 +18,10 @@ const userProfileSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    jenis_kelamin: {
+        type: String,
+        required: true,
+    },
     reportHistory: {
         type: [String], // Array of sessionId
         default: [],

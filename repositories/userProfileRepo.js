@@ -5,7 +5,7 @@ exports.findByFrom = async (from) => {
 };
 
 exports.create = async ({ from, name, nik, address }) => {
-  return await UserProfile.create({ from, name, nik, address });
+  return await UserProfile.create({ from, name, nik, address, jenis_kelamin });
 };
 
 exports.appendToReportHistory = async (from, sessionId) => {
