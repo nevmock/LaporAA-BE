@@ -52,7 +52,7 @@ module.exports = async (from, step, input) => {
 
         if (typeof input === "string" && input.toLowerCase() === "selesai") {
             if (photos.length === 0) {
-                return `beri tahu warga kalau foto belum dikirim. Silakan kirimkan setidaknya 1dan maksimal 3 foto kejadian sebelum melanjutkan.`;
+                return `beri tahu warga kalau foto belum dikirim. Silakan kirimkan setidaknya 1 dan maksimal 3 foto kejadian sebelum melanjutkan.`;
             }
 
             await userRepo.updateSession(from, {
@@ -60,7 +60,7 @@ module.exports = async (from, step, input) => {
                 data: { ...session.data, photos }
             });
 
-            return `Beri tahu warga ${nama}, jika fotonya sudah diterima, apakah foto mau ditambahkan lagi, jika tidak maka cukup ketik *selesai*.`;
+            return `Beri tahu ${nama}, jika fotonya sudah diterima, apakah foto mau ditambahkan lagi, jika tidak maka cukup ketik *selesai*.`;
         }
 
         if (typeof input === "object" && input.type === "image") {
@@ -87,8 +87,6 @@ module.exports = async (from, step, input) => {
 
             return `Beri tahu warga ${nama}, jika fotonya sudah diterima, apakah foto mau ditambahkan lagi, jika tidak maka cukup ketik *selesai*.`;
         }
-
-        return `Beri tahu warga ${nama}, jika fotonya sudah diterima, apakah foto mau ditambahkan lagi, jika tidak maka cukup ketik *selesai*.`;
     }
 
     // STEP 4: Konfirmasi
