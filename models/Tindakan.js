@@ -11,9 +11,14 @@ const actionSchema = new mongoose.Schema({
         default: "",
     },
     kesimpulan: {
-        type: String, // Kesimpulan atau rekomendasi tindakan
-        default: "",
-    },
+        type: [
+            {
+                text: String,
+                timestamp: { type: Date, default: Date.now }
+            }
+        ],
+        default: [],
+    },       
     trackingId: {
         type: Number,
         default: null,
@@ -30,7 +35,7 @@ const actionSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Perlu Verifikasi", "Verifikasi Kelengkapan Berkas", "Proses OPD Terkait", "Selesai Penanganan", "Selesai Pengaduan", "Ditolak"],
+        enum: ["Perlu Verifikasi", "Verifikasi Situasi", "Verifikasi Kelengkapan Berkas", "Proses OPD Terkait", "Selesai Penanganan", "Selesai Pengaduan", "Ditolak"],
         default: "Perlu Verifikasi",
     },
     opd: {

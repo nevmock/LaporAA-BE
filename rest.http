@@ -11,13 +11,13 @@ GET http://localhost:3001/reportCount
 GET http://localhost:3001/reports/680b798d2914fdacfe27faa7
 
 ###
-GET http://localhost:3001/tindakan/6805f6780b81ae80bcac6fda
+GET http://localhost:3001/tindakan/68218eec0967afbc6b49fa23
 
 ###
 GET http://localhost:3001/tindakan/6805f6780b81ae80bcac6fda
 
 ###
-POST http://localhost:3001/tindakan
+PUT http://localhost:3001/tindakan/68218eec0967afbc6b49fa23
 Content-Type: application/json
 
 {
