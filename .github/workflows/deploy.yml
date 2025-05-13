@@ -3,10 +3,10 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - '**'
+      - 'DEV_Ismail'
   pull_request:
     branches: 
-      - '**'  # Trigger on all branches
+      - 'DEV_Ismail'  # Trigger on all branches
 
 jobs:
   build:
@@ -44,7 +44,7 @@ jobs:
 
           cd /home/kanzen/LaporAA/BE
           git reset --hard HEAD
-          git pull origin main --rebase
+          git pull origin DEV_Ismail --rebase
           npm install
           pm2 restart laporaa-api:service
 
