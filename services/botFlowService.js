@@ -85,9 +85,9 @@ exports.handleUserMessage = async ({ from, message }) => {
                     session.step = "WAITING_FOR_RATING";
                     await session.save();
     
-                    reply = `Beri tahu ${nama} Terima kasih atas konfirmasi Anda! 
-                    Laporan ${tindakan.report.sessionId} ditutup.
-                    Sebagai bentuk peningkatan layanan, mohon berikan rating 1-5.`;
+                    reply = `Beri tahu ${nama} Terima kasih atas tanggapannya.
+                    Laporan ${tindakan.report.sessionId} akan ditutup.
+                    Sebagai bentuk peningkatan layanan, mohon berikan rating 1-5. cukup input angka 1-5 saja`;
                 } else {
                     tindakan.feedbackStatus = "Sudah Jawab Belum Beres";
                     tindakan.status = "Proses OPD Terkait";
@@ -97,7 +97,8 @@ exports.handleUserMessage = async ({ from, message }) => {
                     session.step = "MAIN_MENU";
                     await session.save();
     
-                    reply = `Beri tahu ${nama} Laporan ${tindakan.report.sessionId} akan segera ditindaklanjuti ulang. Terima kasih atas respon Anda!`;
+                    reply = `Beri tahu ${nama} Laporan ${tindakan.report.sessionId} akan segera ditindaklanjuti ulang. 
+                    Mohon maaf atas ketidak puasan penyelesaian laporannya. Terimakasih sudah menanggapi laporannya`;
     
                     if (session.pendingFeedbackFor.length > 0) {
                         reply += `Masih ada ${session.pendingFeedbackFor.length} laporan lain yang menunggu respon. Balas "ya" atau "belum".`;

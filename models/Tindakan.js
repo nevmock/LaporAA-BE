@@ -25,7 +25,7 @@ const actionSchema = new mongoose.Schema({
     },
     prioritas: {
         type: String,
-        enum: ["Ya", "Tidak"],
+        enum: ["Ya", "-"],
         default: null,
     },
     situasi: {

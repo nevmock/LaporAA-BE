@@ -3,7 +3,7 @@ const router = express.Router();
 const tindakanRepo = require("../repositories/tindakanRepo");
 const reportRepo = require("../repositories/reportRepo");
 const UserProfile = require("../models/UserProfile");
-const { sendMessageToWhatsApp } = require("../controllers/messageController");
+const { sendMessageToWhatsApp, sendEvidencePhotosToUser } = require("../controllers/messageController");
 const userRepo = require("../repositories/userRepo");
 const Tindakan = require("../models/Tindakan");
 
@@ -52,14 +52,22 @@ router.put("/:reportId", async (req, res) => {
             const report = await reportRepo.findById(reportId);
             const user = await UserProfile.findById(report.user);
             const from = report.from;
+            const formattedKesimpulan = (tindakan.kesimpulan || [])
+                .map((k, i) => `- ${k.text}`)
+                .join("\n");
+
 
             const message = `
             Beritahu ${user.name} bahwa Laporan ${report.sessionId} telah selesai ditangani.
+            berikut ini adalah hasil penanganan laporannya:
+            ${formattedKesimpulan}
             
-            tanyakan juga kepada ${user.name} apakah laporan ini masih perlu ditindaklanjuti.
-            Jika iya, silakan balas dengan "Ya" dan jika tidak, balas dengan "Tidak" agar laporannya kembali di proses.`;
+            tanyakan juga kepada ${user.name} apakah sudah puas dengan hasil penanganan laporan ini?
+            jika belum puas, balas dengan "belum"
+            jika sudah puas, balas dengan "Ya"`;
 
             await sendMessageToWhatsApp(from, message);
+            await sendEvidencePhotosToUser(tindakan.photos, from);
 
             // Ambil ulang tindakan untuk memastikan .save() valid
             const tindakanForFeedback = await tindakanRepo.findById(tindakan._id);
