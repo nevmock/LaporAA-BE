@@ -4,7 +4,7 @@ const userProfileSchema = new mongoose.Schema({
     from: {
         type: String,
         required: true,
-        unique: true, // Nomor WhatsApp unik untuk setiap user
+        unique: true,
     },
     name: {
         type: String,
