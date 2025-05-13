@@ -27,10 +27,10 @@ exports.generateHumanLikeReply = async (rawMessage) => {
         const chat = await openai.chat.completions.create({
             model: "gpt-3.5-turbo", // atau "gpt-4" kalau kamu punya akses
             messages: [
-                {
-                    role: "system",
-                    content: "Kamu adalah admin ramah dari Dinas Pemerintahan Kabupaten Bekasi.",
-                },
+                // {
+                //     role: "system",
+                //     content: "Kamu adalah admin ramah dari Dinas Pemerintahan Kabupaten Bekasi.",
+                // },
                 {
                     role: "user",
                     content: buildPrompt(rawMessage),
@@ -58,16 +58,16 @@ exports.startContext = async (rawMessage) => {
         const chat = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
             messages: [
-                {
-                    role: "system",
-                    content: "Tugas kamu hanya mengenali apakah sebuah kalimat termasuk sapaan atau bukan. Jawab hanya dengan 'true' atau 'false'.",
-                },
+                // {
+                //     role: "system",
+                //     content: "Tugas kamu hanya mengenali apakah sebuah kalimat termasuk sapaan atau bukan. Jawab hanya dengan 'true' atau 'false'.",
+                // },
                 {
                     role: "user",
                     content: buildStartContextPrompt(rawMessage),
                 },
             ],
-            temperature: 0,
+            temperature: 0.7,
         });
 
         const result = chat.choices[0].message.content.trim().toLowerCase();

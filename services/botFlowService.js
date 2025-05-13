@@ -6,6 +6,7 @@ const userRepo = require("../repositories/userRepo");
 const tindakanRepo = require("../repositories/tindakanRepo");
 const userProfileRepo = require("../repositories/userProfileRepo");
 const { startContext } = require("../utils/openAiHelper");
+// const { startContext } = require("../utils/geminiHelper");
 
 exports.handleUserMessage = async ({ from, message }) => {
     const user = await userProfileRepo.findByFrom(from);
