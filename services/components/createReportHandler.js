@@ -79,6 +79,7 @@ module.exports = async (from, step, input) => {
                 return `Beritahu ${nama} bahwa masih bisa kirim foto keluhan sampai dengan maksimal 3, tapi jika dirasa tidak perlu mengirimkan lagi maka ketik *kirim* untuk mengirimkan laporan Anda, atau *batal* jika ingin membatalkan.`;
             }
         } catch (error) {
+            console.error("Error in photo step:", error);
             return `Beritahu ${nama}, kami tidak dapat memproses foto tersebut. Coba kirimkan foto pendukung atau ketik selesai jika sudah selesai mengirim foto.`;
         }
     }
