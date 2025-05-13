@@ -16,7 +16,7 @@ exports.create = async ({ sessionId, from, user, location, message, photos, url,
         photos: [],
         url: "",
         keterangan: "",
-        status_laporan: "",
+        status_laporan: "Menunggu Verifikasi Admin",
     });
 
     newReport.tindakan = defaultTindakan._id;

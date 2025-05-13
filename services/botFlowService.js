@@ -21,7 +21,7 @@ exports.handleUserMessage = async ({ from, message }) => {
     // Reset session jika user ketik 'menu' atau 'reset'
     if (input === "menu" || input === "reset" || GeminiStartContext == "true") {
         await userRepo.resetSession(from);
-        return `warga ${nama} memilih menu awal. ketik "1" untuk membuat laporan dan "2" untuk cek status laporan.`;
+        return `Beri tahu ${nama} memilih menu awal. ketik "1" untuk membuat laporan dan "2" untuk cek status laporan dan tekankan istilah ketik bukkan pilih`;
     }
 
     // Handle Rating setelah laporan selesai
@@ -30,13 +30,13 @@ exports.handleUserMessage = async ({ from, message }) => {
         const tindakanId = session.pendingFeedbackFor?.[0];
 
         if (isNaN(rating) || rating < 1 || rating > 5) {
-            return `beri tahu warga ${nama} kalau rating tidak valid. Silakan berikan rating antara 1 hingga 5.`;
+            return `Beri tahu ${nama} kalau rating tidak valid. Silakan berikan rating antara 1 hingga 5.`;
         }
 
         try {
             const tindakan = await tindakanRepo.findById(tindakanId);
             if (!tindakan) {
-                return `beri tahu warga ${nama} kalau Laporan tidak ditemukan.`;
+                return `Beri tahu ${nama} kalau Laporan tidak ditemukan.`;
             }
 
             tindakan.rating = rating;
@@ -47,10 +47,10 @@ exports.handleUserMessage = async ({ from, message }) => {
             session.currentAction = null;
             await session.save();
 
-            return `beri tahu warga ${nama} Terima kasih atas rating ${rating} untuk laporan Anda! Kami akan terus meningkatkan layanan.`;
+            return `Beri tahu ${nama} Terima kasih atas rating ${rating} untuk laporan Anda! Kami akan terus meningkatkan layanan.`;
         } catch (err) {
             console.error("Gagal menyimpan rating:", err);
-            return `beri tahu warga ${nama} Terjadi kesalahan saat menyimpan rating. Silakan coba lagi.`;
+            return `Beri tahu ${nama} Terjadi kesalahan saat menyimpan rating. Silakan coba lagi.`;
         }
     }
 
@@ -69,7 +69,7 @@ exports.handleUserMessage = async ({ from, message }) => {
             session.step = "MAIN_MENU";
             await session.save();
     
-            return `beri tahu warga ${nama} Mohon maaf, laporan dengan ID ${tindakan.report.sessionId} *tidak dapat ditindaklanjuti* dan telah *ditolak* oleh petugas.\n\nAlasan penolakan: ${tindakan.kesimpulan || "Tidak tersedia"}\n\nTerima kasih atas partisipasi Anda.`;
+            return `Beri tahu ${nama} laporan dengan ID ${tindakan.report.sessionId} *tidak dapat ditindaklanjuti* dan telah *ditolak* oleh petugas.\n\nAlasan penolakan: ${tindakan.kesimpulan || "Tidak tersedia"}\n\nTerima kasih atas partisipasi Anda.`;
         }
     
         // Kasus laporan selesai normal (dengan rating)
@@ -85,7 +85,9 @@ exports.handleUserMessage = async ({ from, message }) => {
                     session.step = "WAITING_FOR_RATING";
                     await session.save();
     
-                    reply = `beri tahu warga ${nama} Terima kasih atas konfirmasi Anda!\nLaporan ${tindakan.report.sessionId} ditutup.\n\nSebagai bentuk peningkatan layanan, mohon berikan rating 1-5.`;
+                    reply = `Beri tahu ${nama} Terima kasih atas konfirmasi Anda! 
+                    Laporan ${tindakan.report.sessionId} ditutup.
+                    Sebagai bentuk peningkatan layanan, mohon berikan rating 1-5.`;
                 } else {
                     tindakan.feedbackStatus = "Sudah Jawab Belum Beres";
                     tindakan.status = "Proses OPD Terkait";
@@ -95,10 +97,10 @@ exports.handleUserMessage = async ({ from, message }) => {
                     session.step = "MAIN_MENU";
                     await session.save();
     
-                    reply = `beri tahu warga ${nama} Laporan ${tindakan.report.sessionId} akan segera ditindaklanjuti ulang. Terima kasih atas respon Anda!`;
+                    reply = `Beri tahu ${nama} Laporan ${tindakan.report.sessionId} akan segera ditindaklanjuti ulang. Terima kasih atas respon Anda!`;
     
                     if (session.pendingFeedbackFor.length > 0) {
-                        reply += `\nMasih ada ${session.pendingFeedbackFor.length} laporan lain yang menunggu respon. Balas "ya" atau "belum".`;
+                        reply += `Masih ada ${session.pendingFeedbackFor.length} laporan lain yang menunggu respon. Balas "ya" atau "belum".`;
                     }
                 }
     
@@ -106,7 +108,7 @@ exports.handleUserMessage = async ({ from, message }) => {
             }
         }
     
-        return `beri tahu warga ${nama} Anda masih memiliki laporan yang menunggu konfirmasi penyelesaian. Balas "ya" jika sudah selesai, atau "belum" jika masih ada masalah.`;
+        return `Beri tahu ${nama} Anda masih memiliki laporan yang menunggu konfirmasi penyelesaian. Balas "ya" jika sudah selesai, atau "belum" jika masih ada masalah.`;
     }    
 
     // Handle Main Menu dan Langkah-langkah Bot
@@ -117,5 +119,5 @@ exports.handleUserMessage = async ({ from, message }) => {
 
     // Default Reset kalau semua gak cocok
     await userRepo.resetSession(from);
-    return `Warga dengan nama ${nama} memilih menu yang tidak dikenali. Silakan ketik menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
+    return `Beri tahu ${nama} memilih menu yang tidak dikenali. Silakan ketik menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
 };

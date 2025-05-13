@@ -60,6 +60,7 @@ module.exports = async (from, step, input) => {
                 return `Beritahu ${nama}, jika semua data sudah benar, ketik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`
             }
 
+            const updatedPhotos = [...photos, newPhotoUrl];
 
             if (updatedPhotos.length >= 3) {
                 await userRepo.updateSession(from, {
@@ -76,7 +77,7 @@ module.exports = async (from, step, input) => {
                     data: { ...session.data, photos }
                 });
 
-                return `Beritahu ${nama} bahwa masih bisa kirim foto keluhan sampai dengan maksimal 3, tapi jika dirasa tidak perlu mengirimkan lagi maka ketik *kirim* untuk mengirimkan laporan Anda, atau *batal* jika ingin membatalkan.`;
+                return `Beritahu ${nama} bahwa masih bisa kirim foto keluhan, tapi jika dirasa tidak perlu mengirimkan lagi maka ketik *kirim* untuk mengirimkan laporan Anda, atau *batal* jika ingin membatalkan.`;
             }
         } catch (error) {
             console.error("Error in photo step:", error);
@@ -104,8 +105,9 @@ module.exports = async (from, step, input) => {
 
                 await userRepo.resetSession(from);
 
-                return `Terima kasih ${nama}, laporan Anda telah berhasil diproses dengan ID *${sessionId}*. 
-                Tim kami akan segera memprosesnya. Anda dapat mengecek status laporan ini kapan saja dengan memasukkan ID-nya.
+                return `Terima kasih ${nama}, laporan Anda telah berhasil diproses dengan ID ${sessionId}. 
+                Tim kami akan segera memprosesnya. Anda dapat mengecek status laporan dari menu utama, 
+                pastikan informasi laporan id nya di sampaikan dengan jelas kepada ${nama}.
                 `;
             }
 
@@ -118,9 +120,9 @@ module.exports = async (from, step, input) => {
         }
         catch (error) {
             console.error("Error in confirmation step:", error);
-            return `Beri tahu warga ${nama}, terjadi kesalahan saat memproses laporan. Silakan ketik *reset* untuk memulai pembuatan laporan baru.`;
+            return `Beri tahu ${nama}, terjadi kesalahan saat memproses laporan. Silakan ketik *reset* untuk memulai pembuatan laporan baru.`;
         }
     }
 
-    return `Warga dengan nama ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
+    return `Beri tahu ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
 };

@@ -41,5 +41,5 @@ Status: ${tindakan?.status || "-"}
 
     // Jika tidak dalam kondisi ASK_REPORT_ID, reset sesi dan kembali ke menu utama
     await userRepo.resetSession(from);
-    return `Warga dengan nama ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
+    return `Beri tahu ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
 };

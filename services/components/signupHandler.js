@@ -13,7 +13,7 @@ module.exports = async (from, step, input) => {
             step: "ASK_SEX",
             data: { ...session.data, name: input }
         });
-        return `Minta warga untuk sebutkan Jenis Kelaminnya (Laki-laki/Perempuan).`;
+        return `Beri tahu ${nama} untuk sebutkan Jenis Kelaminnya (Laki-laki/Perempuan).`;
     }
 
     // Langkah 1.2: Validasi dan minta NIK (Nomor Induk Kependudukan)
@@ -23,21 +23,21 @@ module.exports = async (from, step, input) => {
             step: "ASK_NIK",
             data: { ...session.data, jenis_kelamin: input }
         });
-        return `Minta Warga memsukan Nomor Induk Kependudukannya NIK sesuai dengan KTP yang masih berlaku.`;
+        return `Beri tahu ${nama} memasukan Nomor Induk Kependudukannya NIK sesuai dengan KTP yang masih berlaku.`;
     }
 
     // Langkah 2: Validasi dan minta NIK (Nomor Induk Kependudukan)
     if (step === "ASK_NIK") {
         const isValidNik = /^\d{16}$/.test(input);
         if (!isValidNik) {
-            return `NIK tidak valid. Harus terdiri dari 16 digit angka. dan persilahkan user untuk masukkan ulang Nomor KTP:`;
+            return `Beri tahu ${nama} NIK tidak valid. Harus terdiri dari 16 digit angka. dan persilahkan user untuk masukkan ulang Nomor KTP:`;
         }
 
         await userRepo.updateSession(from, {
             step: "ASK_ADDRESS",
             data: { ...session.data, nik: input }
         });
-        return `minta warga untuk Masukkan alamat domisili sesuai KTP.`;
+        return `Beri tahu ${nama} untuk Masukkan alamat domisili sesuai KTP.`;
     }
 
     // Langkah 3: Simpan alamat domisili dan lanjut ke konfirmasi
@@ -49,7 +49,7 @@ module.exports = async (from, step, input) => {
 
         const { name, nik, address, jenis_kelamin } = session.data;
 
-        return `Beri tahu warga untuk verifikasi data berikut` +
+        return `Beri tahu ${nama} untuk verifikasi data berikut` +
             `Ketik *kirim* untuk menyimpan, atau *batal* untuk membatalkan.`;
     }
 
@@ -74,19 +74,19 @@ module.exports = async (from, step, input) => {
                 data: {}
             });
 
-            return `Beri tahu warga ${nama} bahwa data telah disimpan. Dan bisa langsung Share Lokasi Kejadian Pengaduannya menggunakan fitur share location di WhatsApp.`;
+            return `Beri tahu ${nama} bahwa data telah disimpan. Dan bisa langsung Share Lokasi Kejadian Pengaduannya menggunakan fitur share location di WhatsApp.`;
         }
 
         // Batalkan proses jika user mengetik "batal"
         if (input.toLowerCase() === "batal") {
             await userRepo.resetSession(from);
-            return `Beri tahu warga bahwa pendaftaran dibatalkan. Balas pesan untuk kembali ke menu utama.`;
+            return `Beri tahu ${nama} bahwa pendaftaran dibatalkan. Balas pesan untuk kembali ke menu utama.`;
         }
 
         // Penanganan input selain "kirim" atau "batal"
-        return `Beri tahu warga untuk mengetik *kirim* untuk menyimpan, atau *batal* untuk membatalkan.`;
+        return `Beri tahu ${nama} untuk mengetik *kirim* untuk menyimpan, atau *batal* untuk membatalkan.`;
     }
 
     // Penanganan fallback jika step tidak dikenal
-    return `Warga dengan nama ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
+    return `Beri tahu ${nama} memilih menu yang tidak dikenali. Silakan ketik "menu" yang tersedia untuk melihat menu utama.`;
 };
