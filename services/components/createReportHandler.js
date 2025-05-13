@@ -51,16 +51,25 @@ module.exports = async (from, step, input) => {
         const photos = session.data.photos || [];
 
         if (typeof input === "string" && input.toLowerCase() === "selesai") {
-            if (photos.length === 0) {
-                return `beri tahu warga kalau foto belum dikirim. Silakan kirimkan setidaknya 1 dan maksimal 3 foto kejadian sebelum melanjutkan.`;
+            if (updatedPhotos.length >= 3) {
+                await userRepo.updateSession(from, {
+                    step: "CONFIRMATION",
+                    data: { ...session.data, photos: updatedPhotos }
+                });
+
+                return `✅ Kami telah menerima 3 foto.\n\n${nama}, jika semua data sudah benar, ketik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`;
             }
 
-            await userRepo.updateSession(from, {
-                step: "CONFIRMATION",
-                data: { ...session.data, photos }
-            });
+            if (photos.length < 3) {
+                await userRepo.updateSession(from, {
+                    step: "CONFIRMATION",
+                    data: { ...session.data, photos }
+                });
 
-            return `Beri tahu ${nama}, jika fotonya sudah diterima, apakah foto mau ditambahkan lagi, jika tidak maka cukup ketik *selesai*.`;
+                return `Beritahu ${nama} bahwa masih bisa kirim foto keluhan sampai dengan maksimal 3, tapi jika dirasa tidak perlu mengirimkan lagi maka ketik *kirim* untuk mengirimkan laporan Anda, atau *batal* jika ingin membatalkan.`;
+            }
+
+            return `📎 Foto sudah kami terima.\n\n${nama}, jika semua data sudah benar, ketik *kirim* untuk mengirimkan laporan Anda, atau *batal* jika ingin membatalkan.`;
         }
 
         if (typeof input === "object" && input.type === "image") {
@@ -71,22 +80,10 @@ module.exports = async (from, step, input) => {
 
             const updatedPhotos = [...photos, newPhotoUrl];
 
-            if (updatedPhotos.length >= 3) {
-                await userRepo.updateSession(from, {
-                    step: "CONFIRMATION",
-                    data: { ...session.data, photos: updatedPhotos }
-                });
-
-                return `Beri tahu ${nama}, Kami telah menerima 3 foto. jika semua data sudah benar, ketik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`;
-            }
-
-            await userRepo.updateSession(from, {
-                step: "ASK_PHOTO",
-                data: { ...session.data, photos: updatedPhotos }
-            });
-
-            return `Beri tahu warga ${nama}, jika fotonya sudah diterima, apakah foto mau ditambahkan lagi, jika tidak maka cukup ketik *selesai*.`;
+            return `📸 Foto sudah diterima (${updatedPhotos.length}/3).\nJika sudah cukup, ketik *selesai*.`;
         }
+
+        return `Mohon kirimkan *foto pendukung* atau ketik *selesai* jika sudah selesai mengirim foto.`;
     }
 
     // STEP 4: Konfirmasi
@@ -97,7 +94,7 @@ module.exports = async (from, step, input) => {
             if (msg === "kirim") {
                 const user = await userProfileRepo.findByFrom(from);
                 const sessionId = generateSessionId(from);
-    
+
                 await reportRepo.create({
                     sessionId,
                     from,
@@ -106,19 +103,19 @@ module.exports = async (from, step, input) => {
                     message: session.data.message,
                     photos: session.data.photos || []
                 });
-    
+
                 await userRepo.resetSession(from);
-    
+
                 return `Terima kasih ${nama}, laporan Anda telah berhasil dikirim dengan ID *${sessionId}*. 
                 Tim kami akan segera memprosesnya. Anda dapat mengecek status laporan ini kapan saja dengan memasukkan ID-nya.
                 `;
             }
-    
+
             if (msg === "batal") {
                 await userRepo.resetSession(from);
                 return `Beri tahu warga bahwa pembuatan laporan dibatalkan. Balas pesan untuk kembali ke menu utama.`;
             }
-    
+
             return `Beri tahu warga untuk mengetik *kirim* untuk menyimpan laporan, atau *batal* untuk membatalkan.`;
         }
         catch (error) {
