@@ -96,7 +96,11 @@ module.exports = async (from, step, input) => {
             data: session.data
         });
 
-        return `Tampilkan ringkasan laporan yang akan dikirim:\n\n📍 Lokasi: ${session.data.location.description}\n📝 Keluhan: ${session.data.message}\n📸 Jumlah Foto: ${session.data.photos.length}\n\nMinta ${nama} untuk mengetik *konfirmasi* untuk mengirim laporan, atau *batal* untuk membatalkan.`;
+        return `Tampilkan ringkasan laporan yang akan dikirim:\n\n
+        📍 Lokasi: ${session.data.location.desa}, ${session.data.location.kecamatan}, ${session.data.location.kabupaten} \n
+        📝 Keluhan: ${session.data.message}\n
+        📸 Jumlah Foto: ${session.data.photos.length}\n\n
+        Minta ${nama} untuk mengetik *konfirmasi* untuk mengirim laporan, atau *batal* untuk membatalkan.`;
     }
 
     // STEP 4: Review sebelum simpan
