@@ -3,7 +3,6 @@ const userProfileRepo = require("../../repositories/userProfileRepo");
 const reportRepo = require("../../repositories/reportRepo");
 const generateSessionId = require("../../utils/generateSessionId");
 const { findWilayahFromPoint } = require("../../utils/findWilayahFromPoint");
-const downloadMediaFromMeta = require("../../utils/downloadMediaFromMeta");
 
 module.exports = async (from, step, input) => {
     const session = await userRepo.getOrCreateSession(from);
@@ -59,12 +58,11 @@ module.exports = async (from, step, input) => {
                 return `Beritahu ${nama}, hanya kirimkan foto kejadian menggunakan fitur *Kirim Foto* di WhatsApp.`;
             }
 
-            const mediaId = input.image?.id;
-            if (!mediaId) {
+            const newPhotoUrl = input.image?.url;
+            if (!newPhotoUrl) {
                 return `Beritahu ${nama}, kami tidak dapat memproses foto tersebut. Coba kirim ulang menggunakan fitur *Kirim Foto*.`;
             }
 
-            const newPhotoUrl = await downloadMediaFromMeta(mediaId);
             const updatedPhotos = [...photos, newPhotoUrl];
 
             if (updatedPhotos.length >= 3) {

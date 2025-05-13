@@ -29,7 +29,7 @@ exports.handleIncomingMessages = async (req, res) => {
                             if (messageType === "text") {
                                 parsedMessage = msg.text.body;
                                 messagePreviewForLog = parsedMessage;
-                            } 
+                            }
                             else if (messageType === "location") {
                                 const loc = msg.location;
                                 parsedMessage = {
@@ -41,7 +41,7 @@ exports.handleIncomingMessages = async (req, res) => {
                                     }
                                 };
                                 messagePreviewForLog = `[Location] ${parsedMessage.location.description}`;
-                            } 
+                            }
                             else if (messageType === "image") {
                                 const mediaId = msg.image.id;
                                 const caption = msg.image?.caption || "";
@@ -52,13 +52,14 @@ exports.handleIncomingMessages = async (req, res) => {
                                 parsedMessage = {
                                     type: "image",
                                     image: {
-                                        url: imagePath,
+                                        id: mediaId,        // <--- tambahkan id-nya biar bisa dipakai lagi
+                                        url: imagePath,     // hasil download
                                         caption
                                     }
                                 };
 
                                 messagePreviewForLog = `[Image] ${caption}`;
-                            } 
+                            }
                             else {
                                 parsedMessage = "Pesan dengan format tidak didukung.";
                                 messagePreviewForLog = `[${messageType}]`;
