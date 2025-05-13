@@ -54,13 +54,14 @@ module.exports = async (from, step, input) => {
         try {
             const photos = session.data.photos || [];
 
-            if (typeof input === "string" && input.toLowerCase()) {
+            // Tolak semua input string (bukan gambar)
+            if (typeof input === "string") {
                 return `Beritahu ${nama}, hanya kirimkan foto kejadian menggunakan fitur *Kirim Foto* di WhatsApp.`;
             }
 
             const mediaId = input.image?.id;
             if (!mediaId) {
-                return `Beritahu ${nama}, kami tidak dapat memproses foto tersebut. Coba kirim ulang fotonya.`;
+                return `Beritahu ${nama}, kami tidak dapat memproses foto tersebut. Coba kirim ulang menggunakan fitur *Kirim Foto*.`;
             }
 
             const newPhotoUrl = await downloadMediaFromMeta(mediaId);
@@ -72,7 +73,7 @@ module.exports = async (from, step, input) => {
                     data: { ...session.data, photos: updatedPhotos }
                 });
 
-                return `Beritahu ${nama}, kami telah menerima 3 foto sebagai batas maksimum. ketik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`;
+                return `Beritahu ${nama}, kami telah menerima 3 foto sebagai batas maksimum. Ketik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`;
             }
 
             await userRepo.updateSession(from, {
@@ -80,11 +81,11 @@ module.exports = async (from, step, input) => {
                 data: { ...session.data, photos: updatedPhotos }
             });
 
-            return `Beritahu ${nama}, kami telah menerima foto Anda. Masih bisa mengirim hingga ${3 - updatedPhotos.length} foto lagi, atau ketik *kirim* jika sudah cukup dan melanjutkan atau *batal* untuk membatalkan.`;
+            return `Beritahu ${nama}, kami telah menerima foto Anda. Masih bisa mengirim hingga ${3 - updatedPhotos.length} foto lagi, atau ketik *kirim* jika sudah cukup dan ingin melanjutkan, atau *batal* untuk membatalkan.`;
 
         } catch (error) {
             console.error("Error in photo step:", error);
-            return `Beritahu ${nama}, kami tidak dapat memproses foto tersebut. Coba kirimkan ulang atau ketik *batal* untuk membatalkan.`;
+            return `Beritahu ${nama}, kami tidak dapat memproses foto tersebut. Coba kirim ulang atau ketik *batal* untuk membatalkan.`;
         }
     }
 
