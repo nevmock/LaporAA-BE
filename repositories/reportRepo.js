@@ -1,8 +1,8 @@
 const Report = require("../models/Report");
 const Tindakan = require("../models/Tindakan");
 
-exports.create = async ({ sessionId, from, user, location, message, photos, url, keterangan }) => {
-    const newReport = await Report.create({ sessionId, from, user, location, message, photos, url, keterangan });
+exports.create = async ({ sessionId, from, user, location, message, photos, url, keterangan, status_laporan }) => {
+    const newReport = await Report.create({ sessionId, from, user, location, message, photos, url, keterangan, status_laporan });
 
     const defaultTindakan = await Tindakan.create({
         report: newReport._id,
@@ -15,7 +15,8 @@ exports.create = async ({ sessionId, from, user, location, message, photos, url,
         opd: "",
         photos: [],
         url: "",
-        keteerangan: "",
+        keterangan: "",
+        status_laporan: "",
     });
 
     newReport.tindakan = defaultTindakan._id;

@@ -28,7 +28,7 @@ router.get("/:reportId", async (req, res) => {
 // UPDATE tindakan
 router.put("/:reportId", async (req, res) => {
     const { reportId } = req.params;
-    const { hasil, kesimpulan, trackingId, prioritas, situasi, status, opd, disposisi, photos, url, keterangan } = req.body;
+    const { hasil, kesimpulan, trackingId, prioritas, situasi, status, opd, disposisi, photos, url, keterangan, status_laporan } = req.body;
 
     try {
         const tindakan = await tindakanRepo.update({
@@ -43,7 +43,8 @@ router.put("/:reportId", async (req, res) => {
             disposisi,
             photos,
             url,
-            keterangan
+            keterangan,
+            status_laporan
         });
 
         // Jika status diubah jadi "Selesai", kirim notifikasi WA dan minta feedback
@@ -52,10 +53,11 @@ router.put("/:reportId", async (req, res) => {
             const user = await UserProfile.findById(report.user);
             const from = report.from;
 
-            const message = `📝 *Laporan ${report.sessionId} telah ditangani.*\n\n` +
-                `🏢 *OPD Terkait:* ${opd || "-"}\n` +
-                `Apakah Anda sudah puas dengan penanganan ini?\n` +
-                `Balas *ya* jika puas, atau *belum* jika masih perlu ditindaklanjuti ulang.`;
+            const message = `
+            Beritahu ${user.name} bahwa Laporan ${report.sessionId} telah selesai ditangani.
+            
+            tanyakan juga kepada ${user.name} apakah laporan ini masih perlu ditindaklanjuti.
+            Jika iya, silakan balas dengan "Ya" dan jika tidak, balas dengan "Tidak" agar laporannya kembali di proses.`;
 
             await sendMessageToWhatsApp(from, message);
 
@@ -73,9 +75,9 @@ router.put("/:reportId", async (req, res) => {
             const user = await UserProfile.findById(report.user);
             const from = report.from;
 
-            const message = `❌ *Laporan ${report.sessionId} ditolak dan tidak dapat ditindaklanjuti.*\n\n` +
-                `📌 *Alasan Penolakan:* ${keterangan || "-"}\n\n` +
-                `Terima kasih atas partisipasinya.`;
+            const message = `
+            Beritahu ${user.name} bahwa Laporan ${report.sessionId} ditolak dan tidak dapat ditindaklanjuti.
+            Karena ${keterangan || "-"}, dan beritahu untuk membuat laporan baru dengan memperbaiki kesalahan ${keterangan} `;
 
             await sendMessageToWhatsApp(from, message);
 

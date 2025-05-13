@@ -76,7 +76,12 @@ const actionSchema = new mongoose.Schema({
     keterangan: {
         type: String,
         default: null
-    }
+    },
+    status_laporan: {
+        type: String,
+        enum: ["Menunggu Verifikasi Admin", "Sedang Diproses OPD Terkait", "Telah Diproses OPD Terkait"],
+        default: "Menunggu Verifikasi Admin",
+    },
 });
 
 module.exports = mongoose.model("Tindakan", actionSchema);

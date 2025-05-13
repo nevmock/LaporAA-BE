@@ -15,7 +15,7 @@ module.exports = async (from, step, input) => {
 
         // Jika laporan tidak ditemukan, beri pesan kegagalan
         if (!report) {
-            return `Beritahu warga ${nama} kalau no laporan ${input} tidak ditemukan.`;
+            return `Beritahu ${nama} kalau no laporan LPRAA-${input} tidak ditemukan.`;
         }
 
         // Ambil informasi tindakan terbaru dari laporan jika tersedia
@@ -24,7 +24,7 @@ module.exports = async (from, step, input) => {
         // Tampilkan detail laporan secara terstruktur
         return (
 `
-Beritahu wagra ${nama} tentang detail laporan dengan data seprti dibawah ini:
+Beritahu ${nama} tentang detail laporan dengan data seprti dibawah ini:
 
 Laporan ${report.sessionId}
 
