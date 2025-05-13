@@ -3,6 +3,7 @@ const userProfileRepo = require("../../repositories/userProfileRepo");
 const reportRepo = require("../../repositories/reportRepo");
 const generateSessionId = require("../../utils/generateSessionId");
 const { findWilayahFromPoint } = require("../../utils/findWilayahFromPoint");
+const downloadMediaFromMeta = require("../../utils/downloadMediaFromMeta");
 
 module.exports = async (from, step, input) => {
     const session = await userRepo.getOrCreateSession(from);
@@ -33,7 +34,9 @@ module.exports = async (from, step, input) => {
             data: { ...session.data, location: locationData }
         });
 
-        return `Beritahu ${nama}, lokasi sudah kami terima. Sekarang silakan ceritakan secara singkat apa yang terjadi atau apa yang ingin Anda laporkan.`;
+        return `Beritahu ${nama}, lokasi sudah kami terima. 
+        Sekarang silakan ceritakan secara singkat apa yang terjadi atau apa yang ingin di laporkan.
+        Berikan juga contoh cerita pengaduannya, misalnya "Ada jalan berlubang di depan rumah saya" atau "Lampu jalan mati di depan kantor desa".`;
     }
 
     // STEP 2: Pesan keluhan
@@ -51,15 +54,16 @@ module.exports = async (from, step, input) => {
         try {
             const photos = session.data.photos || [];
 
-            const newPhotoUrl = input.image?.url;
-            if (!newPhotoUrl) {
+            if (typeof input === "string" && input.toLowerCase()) {
+                return `Beritahu ${nama}, hanya kirimkan foto kejadian menggunakan fitur *Kirim Foto* di WhatsApp.`;
+            }
+
+            const mediaId = input.image?.id;
+            if (!mediaId) {
                 return `Beritahu ${nama}, kami tidak dapat memproses foto tersebut. Coba kirim ulang fotonya.`;
             }
 
-            if (typeof input === "string" && input.toLowerCase() === "selesai") {
-                return `Beritahu ${nama}, jika semua data sudah benar, ketik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`
-            }
-
+            const newPhotoUrl = await downloadMediaFromMeta(mediaId);
             const updatedPhotos = [...photos, newPhotoUrl];
 
             if (updatedPhotos.length >= 3) {
@@ -68,20 +72,19 @@ module.exports = async (from, step, input) => {
                     data: { ...session.data, photos: updatedPhotos }
                 });
 
-                return `Beritahu ${nama}, Foto sudah kami terima maksimal batas yaitu 3, jika semua data sudah benar, ketik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`;
+                return `Beritahu ${nama}, kami telah menerima 3 foto sebagai batas maksimum. ketik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`;
             }
 
-            if (photos.length < 3) {
-                await userRepo.updateSession(from, {
-                    step: "CONFIRMATION",
-                    data: { ...session.data, photos }
-                });
+            await userRepo.updateSession(from, {
+                step: "ASK_PHOTO",
+                data: { ...session.data, photos: updatedPhotos }
+            });
 
-                return `Beritahu ${nama} bahwa masih bisa kirim foto keluhan, tapi jika dirasa tidak perlu mengirimkan lagi maka ketik *kirim* untuk mengirimkan laporan Anda, atau *batal* jika ingin membatalkan.`;
-            }
+            return `Beritahu ${nama}, kami telah menerima foto Anda. Masih bisa mengirim hingga ${3 - updatedPhotos.length} foto lagi, atau ketik *kirim* jika sudah cukup dan melanjutkan atau *batal* untuk membatalkan.`;
+
         } catch (error) {
             console.error("Error in photo step:", error);
-            return `Beritahu ${nama}, kami tidak dapat memproses foto tersebut. Coba kirimkan foto pendukung atau ketik selesai jika sudah selesai mengirim foto.`;
+            return `Beritahu ${nama}, kami tidak dapat memproses foto tersebut. Coba kirimkan ulang atau ketik *batal* untuk membatalkan.`;
         }
     }
 
