@@ -5,12 +5,16 @@ const checkReportHandler = require("./components/checkReportHandler");
 const userRepo = require("../repositories/userRepo");
 const tindakanRepo = require("../repositories/tindakanRepo");
 const userProfileRepo = require("../repositories/userProfileRepo");
-const { startContext } = require("../utils/geminiHelper");
+const { startContext } = require("../utils/openAiHelper");
 
 exports.handleUserMessage = async ({ from, message }) => {
     const user = await userProfileRepo.findByFrom(from);
     const nama = user?.name || "Warga";
     const GeminiStartContext = await startContext(message);
+    // const isGreeting = await startContext(message);
+    // if (isGreeting === "true") {
+    //     return `Halo ${nama}, Selamat Datang Di Lapor AA, ketik "1" untuk membuat laporan dan "2" untuk cek status laporan`;
+    // }
 
     let session = await userRepo.getOrCreateSession(from);
     if (session.mode === "manual") return null;
@@ -19,7 +23,7 @@ exports.handleUserMessage = async ({ from, message }) => {
     const step = session.step;
 
     // Reset session jika user ketik 'menu' atau 'reset'
-    if (input === "menu" || input === "reset" || GeminiStartContext == "true") {
+    if (input === "menu" || input === "reset" || GeminiStartContext === "true") {
         await userRepo.resetSession(from);
         return `Beri tahu ${nama} memilih menu awal. ketik "1" untuk membuat laporan dan "2" untuk cek status laporan dan tekankan istilah ketik bukkan pilih`;
     }
@@ -58,33 +62,33 @@ exports.handleUserMessage = async ({ from, message }) => {
     if (session.pendingFeedbackFor && session.pendingFeedbackFor.length > 0) {
         const tindakanId = session.pendingFeedbackFor[0];
         const tindakan = await tindakanRepo.findById(tindakanId);
-    
+
         // Kasus laporan Ditolak
         if (tindakan?.status === "Ditolak" && tindakan.feedbackStatus === "Sudah Ditanya") {
             // Tandai laporan sebagai selesai tanpa rating
             tindakan.feedbackStatus = "Selesai Ditolak";
             await tindakan.save();
-    
+
             session.pendingFeedbackFor = session.pendingFeedbackFor.filter(id => id.toString() !== tindakanId.toString());
             session.step = "MAIN_MENU";
             await session.save();
-    
+
             return `Beri tahu ${nama} laporan dengan ID ${tindakan.report.sessionId} *tidak dapat ditindaklanjuti* dan telah *ditolak* oleh petugas.\n\nAlasan penolakan: ${tindakan.kesimpulan || "Tidak tersedia"}\n\nTerima kasih atas partisipasi Anda.`;
         }
-    
+
         // Kasus laporan selesai normal (dengan rating)
         if (["ya", "belum"].includes(input)) {
             if (tindakan?.status === "Selesai Penanganan" && tindakan.feedbackStatus === "Sudah Ditanya") {
                 let reply;
-    
+
                 if (input === "ya") {
                     tindakan.feedbackStatus = "Sudah Jawab Beres";
                     tindakan.status = "Selesai Pengaduan";
                     await tindakan.save();
-    
+
                     session.step = "WAITING_FOR_RATING";
                     await session.save();
-    
+
                     reply = `Beri tahu ${nama} Terima kasih atas tanggapannya.
                     Laporan ${tindakan.report.sessionId} akan ditutup.
                     Sebagai bentuk peningkatan layanan, mohon berikan rating 1-5. cukup input angka 1-5 saja`;
@@ -92,25 +96,25 @@ exports.handleUserMessage = async ({ from, message }) => {
                     tindakan.feedbackStatus = "Sudah Jawab Belum Beres";
                     tindakan.status = "Proses OPD Terkait";
                     await tindakan.save();
-    
+
                     session.pendingFeedbackFor = session.pendingFeedbackFor.filter(id => id.toString() !== tindakanId.toString());
                     session.step = "MAIN_MENU";
                     await session.save();
-    
+
                     reply = `Beri tahu ${nama} Laporan ${tindakan.report.sessionId} akan segera ditindaklanjuti ulang. 
                     Mohon maaf atas ketidak puasan penyelesaian laporannya. Terimakasih sudah menanggapi laporannya`;
-    
+
                     if (session.pendingFeedbackFor.length > 0) {
                         reply += `Masih ada ${session.pendingFeedbackFor.length} laporan lain yang menunggu respon. Balas "ya" atau "belum".`;
                     }
                 }
-    
+
                 return reply;
             }
         }
-    
+
         return `Beri tahu ${nama} Anda masih memiliki laporan yang menunggu konfirmasi penyelesaian. Balas "ya" jika sudah selesai, atau "belum" jika masih ada masalah.`;
-    }    
+    }
 
     // Handle Main Menu dan Langkah-langkah Bot
     if (!session.currentAction && step === "MAIN_MENU") return await mainMenuHandler(from, input);

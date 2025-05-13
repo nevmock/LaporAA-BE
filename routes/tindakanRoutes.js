@@ -58,11 +58,11 @@ router.put("/:reportId", async (req, res) => {
 
 
             const message = `
-            Beritahu ${user.name} bahwa Laporan ${report.sessionId} telah selesai ditangani.
+            Terimakasih ${user.name} Laporan ${report.sessionId} telah selesai ditangani.
             berikut ini adalah hasil penanganan laporannya:
             ${formattedKesimpulan}
-            
-            tanyakan juga kepada ${user.name} apakah sudah puas dengan hasil penanganan laporan ini?
+
+            Terimaksih ${user.name} apakah sudah puas dengan hasil penanganan laporan ini?
             jika belum puas, balas dengan "belum"
             jika sudah puas, balas dengan "Ya"`;
 

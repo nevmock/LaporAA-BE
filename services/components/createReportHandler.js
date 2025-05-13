@@ -12,7 +12,7 @@ module.exports = async (from, step, input) => {
     // STEP 1: Lokasi
     if (step === "ASK_LOCATION") {
         if (typeof input !== "object" || input.type !== "location") {
-            return `Beritahu ${nama}, mohon kirimkan *lokasi kejadian* menggunakan fitur *Kirim Lokasi* di WhatsApp. Lokasi ini diperlukan untuk memproses laporan.`;
+            return `Beritahu ${nama}, unntuk mengirimkan *lokasi kejadian* menggunakan fitur *Kirim Lokasi* di WhatsApp. Lokasi ini diperlukan untuk memproses laporan.`;
         }
 
         const { latitude, longitude, description } = input.location;
@@ -33,7 +33,7 @@ module.exports = async (from, step, input) => {
             data: { ...session.data, location: locationData }
         });
 
-        return `Beritahu ${nama}, lokasi sudah diterima.\nSekarang minta ${nama} untuk menjelaskan secara singkat keluhan atau kejadian yang ingin dilaporkan. Contohnya: "Ada jalan berlubang di depan rumah saya" atau "Lampu jalan mati di depan kantor desa".`;
+        return `Beritahu ${nama}, bahwa lokasi sudah diterima.\nSekarang minta ${nama} untuk menjelaskan secara singkat keluhan atau kejadian yang ingin dilaporkan. Contohnya: "Ada jalan berlubang di depan rumah saya" atau "Lampu jalan mati di depan kantor desa".`;
     }
 
     // STEP 2: Pesan keluhan
@@ -46,16 +46,42 @@ module.exports = async (from, step, input) => {
         return `Minta ${nama} untuk mengirimkan *setidaknya 1 foto dan maksimal 3 foto* kejadian. Jangan memberi arahan menunggu; pastikan ${nama} tahu bahwa bisa langsung lanjut setelah mengirim 1 foto.`;
     }
 
-    // STEP 3: Foto
+    // STEP 3: Foto (termasuk "kirim" atau "batal")
     if (step === "ASK_PHOTO") {
         try {
             const photos = session.data.photos || [];
 
-            // Tolak semua input string (bukan gambar)
+            // Jika input berupa string (bisa jadi "kirim" atau "batal")
             if (typeof input === "string") {
-                return `Beritahu ${nama}, hanya kirimkan foto kejadian menggunakan fitur *Kirim Foto* di WhatsApp.`;
+                const msg = input.toLowerCase();
+
+                if (msg === "kirim") {
+                    if (photos.length < 1) {
+                        return `Beritahu ${nama}, minimal perlu 1 foto sebelum bisa melanjutkan.`;
+                    }
+
+                    await userRepo.updateSession(from, {
+                        step: "REVIEW",
+                        data: session.data
+                    });
+
+                    return `
+                    Beritahu ${nama} ringkasan laporan yang akan dikirim:
+                    Lokasi: ${session.data.location.desa}, ${session.data.location.kecamatan}, ${session.data.location.kabupaten}
+                    Keluhan: ${session.data.message}
+                    Jumlah Foto: ${session.data.photos.length}
+                    Beritahu ${nama} untuk mengetik *konfirmasi* untuk mengirim laporan, atau *batal* untuk membatalkan.`;
+                }
+
+                if (msg === "batal") {
+                    await userRepo.resetSession(from);
+                    return `Beritahu ${nama} bahwa laporan dibatalkan. Balas pesan ini kapan saja untuk membuat laporan baru.`;
+                }
+
+                return `Beritahu ${nama}, hanya kirimkan foto kejadian menggunakan fitur *Kirim Foto* di WhatsApp, atau ketik *kirim* jika sudah cukup, atau *batal* untuk membatalkan.`;
             }
 
+            // Jika input berupa foto
             const newPhotoUrl = input.image?.url;
             if (!newPhotoUrl) {
                 return `Beritahu ${nama}, kami tidak dapat memproses foto tersebut. Coba kirim ulang menggunakan fitur *Kirim Foto*.`;
@@ -63,14 +89,13 @@ module.exports = async (from, step, input) => {
 
             const updatedPhotos = [...photos, newPhotoUrl];
 
-            // Sudah 3 foto, langsung lanjut ke REVIEW
             if (updatedPhotos.length >= 3) {
                 await userRepo.updateSession(from, {
                     step: "REVIEW",
                     data: { ...session.data, photos: updatedPhotos }
                 });
 
-                return `Beritahu ${nama}, kami telah menerima 3 foto sebagai batas maksimum.\nTampilkan ringkasan laporan dan minta ${nama} untuk konfirmasi.`;
+                return `Beritahu ${nama}, kami telah menerima 3 foto sebagai batas maksimum. ketik *kirim* jika sudah cukup, atau *batal* untuk membatalkan.`;
             }
 
             await userRepo.updateSession(from, {
@@ -78,29 +103,11 @@ module.exports = async (from, step, input) => {
                 data: { ...session.data, photos: updatedPhotos }
             });
 
-            return `Beritahu ${nama}, foto berhasil diterima (${updatedPhotos.length}/3).\nMasih bisa kirim ${3 - updatedPhotos.length} foto lagi, atau ketik *kirim* jika sudah cukup, atau *batal* untuk membatalkan.`;
+            return `Beritahu ${nama}, foto berhasil diterima. dan masih bisa kirim ${3 - updatedPhotos.length} foto lagi, atau ketik *kirim* jika sudah cukup, atau *batal* untuk membatalkan.`;
         } catch (error) {
             console.error("Error in photo step:", error);
             return `Beritahu ${nama}, kami tidak dapat memproses foto tersebut. Coba kirim ulang atau ketik *batal* untuk membatalkan.`;
         }
-    }
-
-    // STEP 3.5: Lanjut ke REVIEW jika user ketik "kirim"
-    if (step === "ASK_PHOTO" && typeof input === "string" && input.toLowerCase() === "kirim") {
-        if (!session.data.photos || session.data.photos.length < 1) {
-            return `Beritahu ${nama}, minimal perlu 1 foto sebelum bisa melanjutkan.`;
-        }
-
-        await userRepo.updateSession(from, {
-            step: "REVIEW",
-            data: session.data
-        });
-
-        return `Tampilkan ringkasan laporan yang akan dikirim:\n\n
-        📍 Lokasi: ${session.data.location.desa}, ${session.data.location.kecamatan}, ${session.data.location.kabupaten} \n
-        📝 Keluhan: ${session.data.message}\n
-        📸 Jumlah Foto: ${session.data.photos.length}\n\n
-        Minta ${nama} untuk mengetik *konfirmasi* untuk mengirim laporan, atau *batal* untuk membatalkan.`;
     }
 
     // STEP 4: Review sebelum simpan
@@ -134,7 +141,12 @@ module.exports = async (from, step, input) => {
             return `Beritahu ${nama} bahwa laporan dibatalkan. Balas pesan ini kapan saja untuk membuat laporan baru.`;
         }
 
-        return `Beritahu ${nama}, ketik *konfirmasi* untuk mengirim laporan, atau *batal* untuk membatalkan.`;
+        return `
+        Beritahu ${nama} ringkasan laporan yang akan dikirim:
+        Lokasi: ${session.data.location.desa}, ${session.data.location.kecamatan}, ${session.data.location.kabupaten}
+        Keluhan: ${session.data.message}
+        Jumlah Foto: ${session.data.photos.length}
+        Beritahu ${nama} untuk mengetik *konfirmasi* untuk mengirim laporan, atau *batal* untuk membatalkan.`;
     }
 
     // Catch all fallback
