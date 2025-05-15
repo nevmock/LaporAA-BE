@@ -12,7 +12,7 @@ module.exports = async (from, step, input) => {
     // STEP 1: Lokasi
     if (step === "ASK_LOCATION") {
         if (typeof input !== "object" || input.type !== "location") {
-            return `Beritahu ${nama}, untuk mengirimkan *lokasi kejadian* menggunakan fitur *Kirim Lokasi* di WhatsApp. Lokasi ini diperlukan untuk memproses laporan.`;
+            return `Minta ${nama} untuk share lokasi kejadian laporannya hanya dengan cara menggunakan fitur share location di whatsapp.`;
         }
 
         const { latitude, longitude, description } = input.location;
@@ -33,7 +33,7 @@ module.exports = async (from, step, input) => {
             data: { ...session.data, location: locationData }
         });
 
-        return `Beritahu ${nama}, untuk menjelaskan secara singkat keluhan atau kejadian yang ingin dilaporkan. Contohnya: "Ada jalan berlubang di depan rumah saya" atau "Lampu jalan mati di depan kantor desa".`;
+        return `Minta ${nama}, untuk menjelaskan secara singkat keluhan atau kejadian yang ingin dilaporkan. Contohnya: "Ada jalan berlubang di depan rumah saya" atau "Lampu jalan mati di depan kantor desa".`;
     }
 
     // STEP 2: Pesan keluhan
@@ -43,7 +43,7 @@ module.exports = async (from, step, input) => {
             data: { ...session.data, message: input, photos: [] }
         });
 
-        return `Beritahu ${nama} untuk mengirimkan *setidaknya 1 foto dan maksimal 3 foto* kejadian. Jangan memberi arahan menunggu; pastikan ${nama} tahu bahwa bisa langsung lanjut setelah mengirim 1 foto.`;
+        return `Minta ${nama} untuk mengirimkan *setidaknya 1 foto dan maksimal 3 foto* kejadian. Jangan memberi arahan menunggu; pastikan ${nama} tahu bahwa bisa langsung lanjut setelah mengirim 1 foto.`;
     }
 
     // STEP 3: Foto (termasuk "kirim" atau "batal")

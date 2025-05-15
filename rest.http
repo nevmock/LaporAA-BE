@@ -84,3 +84,6 @@ Content-Type: application/json
 
 ###
 GET http://localhost:3001/dashboard/harian
+
+###
+GET http://localhost:3001/user/user-mode/6281385138754

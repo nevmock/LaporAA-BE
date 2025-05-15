@@ -16,7 +16,7 @@ module.exports = async (from, input) => {
                 currentAction: "signup",
                 step: "ASK_NAME",
             });
-            return `Beri tahu ${nama} bahwa data diri warga belum terdaftar, sebelum warga melanjutkan untuk membuat laporan, Minta warga untuk memasukan nama lengkap warga Sesuai Dengan KTP.`;
+            return `Beritahu ${nama} bahwa data diri warga belum terdaftar, sebelum warga melanjutkan untuk membuat laporan, Minta warga untuk memasukan nama lengkap warga Sesuai Dengan KTP.`;
         }
 
         // Jika sudah terdaftar, mulai proses pembuatan laporan
@@ -26,7 +26,7 @@ module.exports = async (from, input) => {
             data: {},
         });
 
-        return `Beri tahu ${nama} untuk share lokasi kejadian laporannya hanya dengan cara menggunakan fitur share location di whatsapp.`;
+        return `Minta ${nama} untuk share lokasi kejadian laporannya hanya dengan cara menggunakan fitur share location di whatsapp.`;
     }
 
     // Opsi 2: Cek status laporan berdasarkan sessionId
@@ -36,9 +36,9 @@ module.exports = async (from, input) => {
             currentAction: "check_report",
             step: "ASK_REPORT_ID",
         });
-        return `Beri tahu ${nama} untuk memasukkan ID laporan. contohnya 12345678. `;
+        return `Minta ${nama} untuk memasukkan ID laporan. contohnya 12345678. `;
     }
 
     // Tanggapan default jika input tidak dikenali
-    return `Beri tahu ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
+    return `Beritahu ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
 };

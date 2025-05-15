@@ -13,16 +13,18 @@ module.exports = async (from, step, input) => {
         // Jika user ingin kembali ke menu utama
         if (msg === "menu" || msg === "kembali") {
             await userRepo.resetSession(from);
-            return `Beri tahu ${nama} memilih menu awal. ketik "1" untuk membuat laporan dan "2" untuk cek status laporan dan tekankan istilah ketik bukan pilih`;
+            return `Sapa ${nama}. dan arahkan ${nama} apakah ingin membuat laporan atau cek status laporan?`;
         }
 
         // Format laporan diasumsikan LPRAA-{kode}
         const sessionId = `LPRAA-${input}`;
         const report = await reportRepo.findBySessionId(sessionId);
+        const nomorLaporan = sessionId.split("-")[1];
 
         // Jika tidak ditemukan → tetap di ASK_REPORT_ID agar user bisa coba lagi
         if (!report) {
-            return `Beritahu ${nama} kalau nomor laporan *${sessionId}* tidak ditemukan.\nSilakan cek kembali dan kirim ulang nomornya, atau ketik *menu* untuk kembali ke menu utama.`;
+            return `Beritahu ${nama} kalau nomor laporan *${nomorLaporan}* tidak ditemukan.
+            Silakan cek kembali dan kirim ulang nomornya, atau ketik *menu* untuk kembali ke menu utama.`;
         }
 
         // Jika ditemukan → tampilkan detail lalu reset sesi
@@ -32,7 +34,7 @@ module.exports = async (from, step, input) => {
 
         return (
 `Beritahu ${nama} tentang detail laporan berikut:\n
-🆔 *Laporan ${report.sessionId}*
+🆔 *Laporan ${nomorLaporan}*
 
 📍 Lokasi: ${report.location.desa}, ${report.location.kecamatan}, ${report.location.kabupaten}
 📅 Tanggal: ${report.createdAt.toLocaleDateString("id-ID")}

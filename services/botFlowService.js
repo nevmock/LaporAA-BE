@@ -75,15 +75,17 @@ exports.handleUserMessage = async ({ from, message }) => {
             session.step = "MAIN_MENU";
             await session.save();
 
-            return `Beri tahu ${nama} laporan dengan ID ${tindakan.report.sessionId} *tidak dapat ditindaklanjuti* dan telah *ditolak* oleh petugas.\n\nAlasan penolakan: ${tindakan.kesimpulan || "Tidak tersedia"}\n\nTerima kasih atas partisipasi Anda.`;
+            return `Beri tahu ${nama} laporan dengan ID ${tindakan.report.sessionId} *tidak dapat ditindaklanjuti* dan telah *ditolak* oleh petugas.
+            Alasan penolakan: ${tindakan.kesimpulan || "Tidak tersedia"}
+            Terima kasih atas partisipasi Anda.`;
         }
 
         // Kasus laporan selesai normal (dengan rating)
-        if (["ya", "belum"].includes(input)) {
+        if (["puas", "belum"].includes(input)) {
             if (tindakan?.status === "Selesai Penanganan" && tindakan.feedbackStatus === "Sudah Ditanya") {
                 let reply;
 
-                if (input === "ya") {
+                if (input === "puas") {
                     tindakan.feedbackStatus = "Sudah Jawab Beres";
                     tindakan.status = "Selesai Pengaduan";
                     await tindakan.save();
@@ -103,19 +105,17 @@ exports.handleUserMessage = async ({ from, message }) => {
                     session.step = "MAIN_MENU";
                     await session.save();
 
-                    reply = `Beri tahu ${nama} Laporan ${tindakan.report.sessionId} akan segera ditindaklanjuti ulang. 
+                    reply = `Beri tahu ${nama} Laporan ${tindakan.report.sessionId} akan segera ditindak lanjuti ulang. 
                     Mohon maaf atas ketidak puasan penyelesaian laporannya. Terimakasih sudah menanggapi laporannya`;
 
                     if (session.pendingFeedbackFor.length > 0) {
-                        reply += `Masih ada ${session.pendingFeedbackFor.length} laporan lain yang menunggu respon. Balas "ya" atau "belum".`;
+                        reply += `Beri tahu ${nama} Masih ada ${session.pendingFeedbackFor.length} laporan lain yang menunggu respon. Balas "puas" atau "belum". untuk melakukan penyelesaian laporan ${tindakan.report.sessionId}.`;
                     }
                 }
-
                 return reply;
             }
         }
-
-        return `Beri tahu ${nama} Anda masih memiliki laporan yang menunggu konfirmasi penyelesaian. Balas "ya" jika sudah selesai, atau "belum" jika masih ada masalah.`;
+        return `Beri tahu ${nama} Anda masih memiliki laporan yang menunggu konfirmasi penyelesaian. Balas "puas" jika sudah selesai, atau "belum" jika masih ada masalah.`;
     }
 
     // Handle Main Menu dan Langkah-langkah Bot

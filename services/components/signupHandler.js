@@ -49,8 +49,12 @@ module.exports = async (from, step, input) => {
 
         const { name, nik, address, jenis_kelamin } = session.data;
 
-        return `Beri tahu ${nama} untuk verifikasi data berikut` +
-            `Ketik *kirim* untuk menyimpan, atau *batal* untuk membatalkan.`;
+        return `Beri tahu ${nama} untuk verifikasi data berikut
+        Nama: ${name}
+        NIK: ${nik}
+        Alamat: ${address}
+        Jenis Kelamin: ${jenis_kelamin}
+        Ketik *kirim* untuk menyimpan, atau *batal* untuk membatalkan.`;
     }
 
     // Langkah 4: Konfirmasi dan simpan data ke database
@@ -74,7 +78,7 @@ module.exports = async (from, step, input) => {
                 data: {}
             });
 
-            return `Beri tahu ${nama} bahwa data telah disimpan. Dan bisa langsung Share Lokasi Kejadian Pengaduannya menggunakan fitur share location di WhatsApp.`;
+            return `Beritahu ${nama}, untuk mengirimkan *lokasi kejadian* menggunakan fitur *Kirim Lokasi* di WhatsApp. Lokasi ini diperlukan untuk memproses laporan.`;
         }
 
         // Batalkan proses jika user mengetik "batal"

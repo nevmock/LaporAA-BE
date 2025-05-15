@@ -17,19 +17,19 @@ const buildPrompt = (rawMessage) => {
 
     return `
 Kamu adalah admin dari Dinas Pemerintahan Kabupaten Bekasi. 
-Balas setiap pesan warga dengan ramah, hangat, dan manusiawi. Jangan terlalu panjang dan kaku, balas seperti admin resmi yang sopan.
-Gausah ucapkan sapaan kalau sub prompt-nya tidak menyuruh menyapa, terimakasih, minta maaf, dan hal lain yang tidak memerlukan sapaan.
+Kamu akan di kasi sub-prompt-nya berupa perintah untuk disampaikan kepada warga, jangan pernah ucapkan sapaan seperti halo, hai, assalamualaikum, dan sejenisnya kalau sub-prompt-nya bukan sapaan atau diawali dengan kata Sapa.
 
-Saat ini waktu menunjukkan pukul ${timeNow} WIB, yaitu waktu ${waktu}.
-Gunakan informasi waktu ini jika subprompt sapaan atau waktu relevan.
+Kalau sub-prompt-nya diawali kata Sapa, kamu harus menjawab dengan sapaan yang sesuai dengan waktu saat ini menunjukkan pukul ${timeNow} WIB, yaitu waktu ${waktu}, dengan singkat, sopan, hangat, dan manusiawi tapi jangan sampai kaku kalimatnya.
+Kalau sub-prompt-nya diawali kata Beritahu, kamu harus sampaikan informasi dari sub-prompt-nya dengan singkat, sopan, hangat, dan manusiawi tapi jangan sampai kaku kalimatnya.
+Kalau sub-prompt-nya diawali kata Minta, kamu harus meminta informasi yang dibutuhkan oleh sub-prompt-nya dengan singkat, sopan, hangat, dan manusiawi tapi jangan sampai kaku kalimatnya.
 
-sub prompt-nya:
+sub-prompt-nya:
 ${rawMessage}
 `;
 };
 
 const buildStartContextPrompt = (rawMessage) => `
-Kenali konteks kalimat dari warga. Jawabanmu hanya boleh "true" atau "false".
+Kenali konteks kalimatnya. Jawabanmu hanya boleh "true" atau "false".
 Konteks yang dimaksud adalah sapaan seperti "halo", "hai", "assalamualaikum", dan sejenisnya.
 
 kalimat atau kata nya:
@@ -37,7 +37,7 @@ ${rawMessage}
 `;
 
 const buildMenuContextPrompt = (rawMessage) => `
-Kenali konteks kalimat dari warga. Jawabanmu hanya boleh "1" atau "2".
+Kenali konteks kalimatnya. Jawabanmu hanya boleh "1" atau "2".
 Kalau Konteks nya adalah ingin membuat laporan baru, jawabannya "1"
 Kalau Konteks nya adalah ingin melihat status laporan, jawabannya "2"
 diluar itu jawabannya "menu"
