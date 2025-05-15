@@ -12,10 +12,6 @@ exports.handleUserMessage = async ({ from, message }) => {
     const user = await userProfileRepo.findByFrom(from);
     const nama = user?.name || "Warga";
     const GeminiStartContext = await startContext(message);
-    // const isGreeting = await startContext(message);
-    // if (isGreeting === "true") {
-    //     return `Halo ${nama}, Selamat Datang Di Lapor AA, ketik "1" untuk membuat laporan dan "2" untuk cek status laporan`;
-    // }
 
     let session = await userRepo.getOrCreateSession(from);
     if (session.mode === "manual") return null;
@@ -23,10 +19,15 @@ exports.handleUserMessage = async ({ from, message }) => {
     const input = typeof message === "string" ? message.trim().toLowerCase() : message;
     const step = session.step;
 
+    if (step === "MAIN_MENU" && GeminiStartContext === "true" ) {
+        return `Sapa ${nama} dan sambut ${nama} di Lapor AA, disini ${nama} bisa membuat laporan keluhan di wilayah kabupaten bekasi, dan juga bisa cek status laporan yang sudah di buat.
+        apa yang bisa di bantu, apakah ingin buat laporan atau check laporan?`;
+    }
+
     // Reset session jika user ketik 'menu' atau 'reset'
-    if (input === "menu" || input === "reset" || GeminiStartContext === "true") {
+    if (input === "menu" || input === "reset") {
         await userRepo.resetSession(from);
-        return `Beri tahu ${nama} memilih menu awal. ketik "1" untuk membuat laporan dan "2" untuk cek status laporan dan tekankan istilah ketik bukkan pilih`;
+        return `Sapa ${nama}. dan arahkan ${nama} apakah ingin membuat laporan atau cek status laporan?`;
     }
 
     // Handle Rating setelah laporan selesai
@@ -125,5 +126,5 @@ exports.handleUserMessage = async ({ from, message }) => {
 
     // Default Reset kalau semua gak cocok
     await userRepo.resetSession(from);
-    return `Beri tahu ${nama} memilih menu yang tidak dikenali. Silakan ketik menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
+    // return `Sapa ${nama}. dan arahkan  ${nama} untuk ketik "1" untuk membuat laporan dan "2" untuk cek status laporan dan tekankan istilah ketik bukkan pilih`;
 };

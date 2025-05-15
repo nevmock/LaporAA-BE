@@ -12,7 +12,7 @@ module.exports = async (from, step, input) => {
     // STEP 1: Lokasi
     if (step === "ASK_LOCATION") {
         if (typeof input !== "object" || input.type !== "location") {
-            return `Beritahu ${nama}, unntuk mengirimkan *lokasi kejadian* menggunakan fitur *Kirim Lokasi* di WhatsApp. Lokasi ini diperlukan untuk memproses laporan.`;
+            return `Beritahu ${nama}, untuk mengirimkan *lokasi kejadian* menggunakan fitur *Kirim Lokasi* di WhatsApp. Lokasi ini diperlukan untuk memproses laporan.`;
         }
 
         const { latitude, longitude, description } = input.location;
@@ -33,7 +33,7 @@ module.exports = async (from, step, input) => {
             data: { ...session.data, location: locationData }
         });
 
-        return `Beritahu ${nama}, bahwa lokasi sudah diterima.\nSekarang minta ${nama} untuk menjelaskan secara singkat keluhan atau kejadian yang ingin dilaporkan. Contohnya: "Ada jalan berlubang di depan rumah saya" atau "Lampu jalan mati di depan kantor desa".`;
+        return `Beritahu ${nama}, untuk menjelaskan secara singkat keluhan atau kejadian yang ingin dilaporkan. Contohnya: "Ada jalan berlubang di depan rumah saya" atau "Lampu jalan mati di depan kantor desa".`;
     }
 
     // STEP 2: Pesan keluhan
@@ -43,7 +43,7 @@ module.exports = async (from, step, input) => {
             data: { ...session.data, message: input, photos: [] }
         });
 
-        return `Minta ${nama} untuk mengirimkan *setidaknya 1 foto dan maksimal 3 foto* kejadian. Jangan memberi arahan menunggu; pastikan ${nama} tahu bahwa bisa langsung lanjut setelah mengirim 1 foto.`;
+        return `Beritahu ${nama} untuk mengirimkan *setidaknya 1 foto dan maksimal 3 foto* kejadian. Jangan memberi arahan menunggu; pastikan ${nama} tahu bahwa bisa langsung lanjut setelah mengirim 1 foto.`;
     }
 
     // STEP 3: Foto (termasuk "kirim" atau "batal")
@@ -129,7 +129,9 @@ module.exports = async (from, step, input) => {
 
                 await userRepo.resetSession(from);
 
-                return `Beritahu ${nama}, laporan telah berhasil dikirim dengan ID *${sessionId}*. Arahkan ${nama} untuk menyimpan ID ini agar dapat mengecek status laporan.`;
+                const nomorLaporan = sessionId.split("-")[1];
+
+                return `Beritahu ${nama}, laporan telah berhasil dikirim dengan ID *${nomorLaporan}*. Arahkan ${nama} untuk menyimpan ID ini agar dapat mengecek status laporan.`;
             } catch (err) {
                 console.error("Error in saving report:", err);
                 return `Beritahu ${nama}, terjadi kesalahan saat menyimpan laporan. Silakan ketik *reset* untuk memulai ulang.`;

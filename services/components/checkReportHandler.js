@@ -13,7 +13,7 @@ module.exports = async (from, step, input) => {
         // Jika user ingin kembali ke menu utama
         if (msg === "menu" || msg === "kembali") {
             await userRepo.resetSession(from);
-            return `Beri tahu ${nama} memilih menu awal. ketik "1" untuk membuat laporan dan "2" untuk cek status laporan dan tekankan istilah ketik bukkan pilih`;
+            return `Beri tahu ${nama} memilih menu awal. ketik "1" untuk membuat laporan dan "2" untuk cek status laporan dan tekankan istilah ketik bukan pilih`;
         }
 
         // Format laporan diasumsikan LPRAA-{kode}

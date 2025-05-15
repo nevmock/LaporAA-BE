@@ -56,18 +56,17 @@ router.put("/:reportId", async (req, res) => {
                 .map((k, i) => `- ${k.text}`)
                 .join("\n");
 
-
             const message = `
-            Terimakasih ${user.name} Laporan ${report.sessionId} telah selesai ditangani.
+            Terimakasih ${user.name} (jenis kelaminnya ${user.jenis_kelamin}, jadi ibu / bapak / kak), Laporan ${report.sessionId} telah selesai ditangani.
             berikut ini adalah hasil penanganan laporannya:
             ${formattedKesimpulan}
 
-            Terimaksih ${user.name} apakah sudah puas dengan hasil penanganan laporan ini?
-            jika belum puas, balas dengan "belum"
-            jika sudah puas, balas dengan "Ya"`;
+            Apakah sudah puas dengan hasil penanganan laporan ini?
+            jika belum puas, cukup balas dengan "belum"
+            jika sudah puas, cukup balas dengan "puas"`;
 
-            await sendMessageToWhatsApp(from, message);
             await sendEvidencePhotosToUser(tindakan.photos, from);
+            await sendMessageToWhatsApp(from, message);
 
             // Ambil ulang tindakan untuk memastikan .save() valid
             const tindakanForFeedback = await tindakanRepo.findById(tindakan._id);
@@ -84,8 +83,8 @@ router.put("/:reportId", async (req, res) => {
             const from = report.from;
 
             const message = `
-            Beritahu ${user.name} bahwa Laporan ${report.sessionId} ditolak dan tidak dapat ditindaklanjuti.
-            Karena ${keterangan || "-"}, dan beritahu untuk membuat laporan baru dengan memperbaiki kesalahan ${keterangan} `;
+            Beritahu ${user.name} (jenis kelaminnya ${user.jenis_kelamin}, jadi ibu / bapak / kak), bahwa Laporan ${report.sessionId} ditolak dan tidak dapat ditindak lanjuti.
+            Karena ${keterangan || "Tidak ada jalasan jelas"}, dan beritahu untuk membuat laporan baru dengan memperbaiki kesalahan ${keterangan || "Tidak ada alasan jelas, jadi langsung arahkan buat laporan baru saja"} `;
 
             await sendMessageToWhatsApp(from, message);
 

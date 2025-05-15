@@ -1,12 +1,14 @@
 const userRepo = require("../../repositories/userRepo");
 const userProfileRepo = require("../../repositories/userProfileRepo");
+const { menuContext } = require("../../utils/openAiHelper");
 
 module.exports = async (from, input) => {
     const user = await userProfileRepo.findByFrom(from);
     const nama = user?.name || "Warga";
+    const GeminiMenuContext = await menuContext(input);
 
     // Opsi 1: Buat laporan baru
-    if (input === "1") {
+    if (input === "1" || GeminiMenuContext === "1") {
         
         // Jika belum terdaftar, alihkan ke proses pendaftaran
         if (!user) {
@@ -24,17 +26,17 @@ module.exports = async (from, input) => {
             data: {},
         });
 
-        return `Beri tahu ${nama} memilih menu 1 untuk membuat laporan, dan data dari user: ${nama} sudah ada di database. jadi bisa langsung share lokasi kejadian laporannya dengan cara menggunakan fitur share location di whatsapp.`;
+        return `Beri tahu ${nama} untuk share lokasi kejadian laporannya hanya dengan cara menggunakan fitur share location di whatsapp.`;
     }
 
     // Opsi 2: Cek status laporan berdasarkan sessionId
-    if (input === "2") {
+    if (input === "2" || GeminiMenuContext === "2") {
         
         await userRepo.updateSession(from, {
             currentAction: "check_report",
             step: "ASK_REPORT_ID",
         });
-        return `Beri tahu ${nama} memilih menu 2. selanjutnya minta user untuk memasukkan ID laporan. contoh formatnya langsung saja angkanya, gausah pake LPRAA-`;
+        return `Beri tahu ${nama} untuk memasukkan ID laporan. contohnya 12345678. `;
     }
 
     // Tanggapan default jika input tidak dikenali
