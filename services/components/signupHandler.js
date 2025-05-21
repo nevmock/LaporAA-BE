@@ -23,7 +23,7 @@ module.exports = async (from, step, input) => {
             step: "ASK_NIK",
             data: { ...session.data, jenis_kelamin: input }
         });
-        return `Beri tahu ${nama} memasukan Nomor Induk Kependudukannya NIK sesuai dengan KTP yang masih berlaku. Harus terdiri dari 16 digit angka.`;
+        return `Beri tahu ${nama} untukk menyebutkkan Nomor Induk Kependudukannya NIK sesuai dengan KTP yang masih berlaku. Harus terdiri dari 16 digit angka.`;
     }
 
     // Langkah 2: Validasi dan minta NIK (Nomor Induk Kependudukan)

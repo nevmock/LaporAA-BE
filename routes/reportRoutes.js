@@ -19,27 +19,26 @@ const Report = require("../models/Report");
 //     }
 // });
 
-const STATUS_ORDER = [
-    "Perlu Verifikasi",
-    "Verifikasi Situasi",
-    "Verifikasi Kelengkapan Berkas",
-    "Proses OPD Terkait",
-    "Selesai Penanganan",
-    "Selesai Pengaduan",
-    "Ditolak"
-];
-
 router.get("/", async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
+        const statusFilter = req.query.status;
 
-        // Hitung total dokumen
-        const totalReports = await Report.countDocuments();
+        const matchStage = [];
 
-        // Query data + populate manual karena aggregate tidak bisa pakai .populate()
-        const reports = await Report.aggregate([
+        // Filter hanya jika status dikirim dan bukan 'Semua'
+        if (statusFilter && statusFilter !== "Semua") {
+            matchStage.push({
+                $match: {
+                    "tindakan.status": statusFilter
+                }
+            });
+        }
+
+        // Pipeline dasar
+        const basePipeline = [
             {
                 $lookup: {
                     from: "tindakans",
@@ -48,15 +47,43 @@ router.get("/", async (req, res) => {
                     as: "tindakan"
                 }
             },
-            { $unwind: { path: "$tindakan", preserveNullAndEmptyArrays: true } },
             {
-                $addFields: {
-                    prioritasScore: { $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0] },
-                    statusScore: {
-                        $indexOfArray: [STATUS_ORDER, "$tindakan.status"]
-                    }
+                $unwind: {
+                    path: "$tindakan",
+                    preserveNullAndEmptyArrays: true
                 }
             },
+            ...matchStage,
+            {
+                $addFields: {
+                    prioritasScore: {
+                        $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
+                    },
+                    statusScore: {
+                        $indexOfArray: [
+                            [
+                                "Perlu Verifikasi",
+                                "Verifikasi Situasi",
+                                "Verifikasi Kelengkapan Berkas",
+                                "Proses OPD Terkait",
+                                "Selesai Penanganan",
+                                "Selesai Pengaduan",
+                                "Ditolak"
+                            ],
+                            "$tindakan.status"
+                        ]
+                    }
+                }
+            }
+        ];
+
+        // Hitung total sesuai filter
+        const countResult = await Report.aggregate([...basePipeline, { $count: "total" }]);
+        const totalReports = countResult[0]?.total || 0;
+
+        // Tambahkan pagination dan sorting ke pipeline utama
+        const paginatedPipeline = [
+            ...basePipeline,
             {
                 $sort: {
                     prioritasScore: -1,
@@ -66,9 +93,11 @@ router.get("/", async (req, res) => {
             },
             { $skip: skip },
             { $limit: limit }
-        ]);
+        ];
 
-        // Populate user secara manual (karena aggregate tidak bisa populate user langsung)
+        const reports = await Report.aggregate(paginatedPipeline);
+
+        // Populate user (manual karena aggregate tidak support populate langsung)
         const populatedReports = await Report.populate(reports, { path: "user" });
 
         res.status(200).json({
@@ -80,6 +109,39 @@ router.get("/", async (req, res) => {
         });
     } catch (error) {
         console.error("❌ Error fetching reports:", error);
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+router.get("/summary", async (req, res) => {
+    try {
+        const summary = await Report.aggregate([
+            {
+                $lookup: {
+                    from: "tindakans",
+                    localField: "tindakan",
+                    foreignField: "_id",
+                    as: "tindakan"
+                }
+            },
+            { $unwind: { path: "$tindakan", preserveNullAndEmptyArrays: true } },
+            {
+                $group: {
+                    _id: "$tindakan.status",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        // Ubah ke format { status: jumlah }
+        const result = {};
+        summary.forEach(item => {
+            result[item._id || "Tanpa Status"] = item.count;
+        });
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.error("❌ Error summary:", error);
         res.status(500).json({ message: "Terjadi kesalahan pada server" });
     }
 });

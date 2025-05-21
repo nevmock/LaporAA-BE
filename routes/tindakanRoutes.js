@@ -47,6 +47,29 @@ router.put("/:reportId", async (req, res) => {
             status_laporan
         });
 
+        // Jika Situasi Darurat Langsung Hubungi Call Center
+        if (situasi === "Darurat") {
+            const report = await reportRepo.findById(reportId);
+            const user = await UserProfile.findById(report.user);
+            const from = report.from;
+
+            const message = `
+            Terimakasih ${user.name} telah menghubungi kami.
+            Karna situasi nya darurat jadi silahkan untuk langsung hubungi:
+
+            `;
+
+            await sendMessageToWhatsApp(from, message);
+
+            const tindakanDarurat = await tindakanRepo.findById(tindakan._id);
+            tindakanDarurat.status = "Selesai Pengaduan";
+            tindakanDarurat.status_laporan = "Telah Diproses OPD Terkait";
+            tindakanDarurat.kesimpulan = "Status Darurat";
+            tindakanDarurat.keterangan = "Status Darurat";
+            tindakanDarurat.rating = "5"
+            await tindakanDarurat.save();
+        }
+
         // Jika status diubah jadi "Selesai", kirim notifikasi WA dan minta feedback
         if (status === "Selesai Penanganan") {
             const report = await reportRepo.findById(reportId);
@@ -69,9 +92,9 @@ router.put("/:reportId", async (req, res) => {
             await sendMessageToWhatsApp(from, message);
 
             // Ambil ulang tindakan untuk memastikan .save() valid
-            const tindakanForFeedback = await tindakanRepo.findById(tindakan._id);
-            tindakanForFeedback.feedbackStatus = "Sudah Ditanya";
-            await tindakanForFeedback.save();
+            const tindakanFromDb = await tindakanRepo.findById(tindakan._id);
+            tindakanFromDb.feedbackStatus = "Sudah Ditanya";
+            await tindakanFromDb.save();
 
             await userRepo.appendPendingFeedback(from, tindakan._id);
         }
