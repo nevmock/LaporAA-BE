@@ -1,6 +1,6 @@
-// routes/userRoutes.js
 const express = require("express");
 const router = express.Router();
+const userProfileRepo = require("../repositories/userProfileRepo");
 const UserSession = require("../models/UserSession");
 
 // PATCH /user-mode/:from
@@ -46,5 +46,16 @@ router.get("/user-mode/:from", async (req, res) => {
     }
 });
 
-module.exports = router;
+// DELETE /user/:from → hapus seluruh data user
+router.delete("/user/:from", async (req, res) => {
+    try {
+        const { from } = req.params;
+        const result = await userProfileRepo.deleteUserByFrom(from);
+        res.json(result);
+    } catch (err) {
+        console.error("❌ Gagal hapus user:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
 
+module.exports = router;

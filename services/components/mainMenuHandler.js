@@ -16,17 +16,17 @@ module.exports = async (from, input) => {
                 currentAction: "signup",
                 step: "ASK_NAME",
             });
-            return `Beritahu ${nama} bahwa data diri warga belum terdaftar, sebelum warga melanjutkan untuk membuat laporan, Minta warga untuk memasukan nama lengkap warga Sesuai Dengan KTP.`;
+            return `Data diri Anda belum terdaftar di sistem kami. Sebelum melanjutkan untuk membuat laporan, tolong masukkan nama lengkap Anda sesuai dengan KTP. Terima kasih atas kerjasamanya.`;
         }
 
         // Jika sudah terdaftar, mulai proses pembuatan laporan
         await userRepo.updateSession(from, {
             currentAction: "create_report",
-            step: "ASK_LOCATION",
+            step: "ASK_MESSAGE",
             data: {},
         });
 
-        return `Minta ${nama} untuk share lokasi kejadian laporannya hanya dengan cara menggunakan fitur share location di whatsapp.`;
+        return `Silahkan ceritakan keluhan atau kejadian yang ingin anda laporkan`;
     }
 
     // Opsi 2: Cek status laporan berdasarkan sessionId
@@ -40,5 +40,5 @@ module.exports = async (from, input) => {
     }
 
     // Tanggapan default jika input tidak dikenali
-    return `Beritahu ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
+    return `Mohon maaf ${nama} pilihan anda tidak dikenali. Silakan ketik "menu" yang tersedia untuk melihat menu utama.`;
 };

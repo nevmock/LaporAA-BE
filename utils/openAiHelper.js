@@ -58,7 +58,7 @@ exports.generateHumanLikeReply = async (rawMessage) => {
                     content: buildPrompt(rawMessage),
                 },
             ],
-            temperature: 0.7,
+            temperature: 1.0,
         });
 
         return chat.choices[0].message.content.trim();

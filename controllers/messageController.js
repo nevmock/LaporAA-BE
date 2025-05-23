@@ -123,3 +123,25 @@ exports.sendEvidencePhotosToUser = async (photos = [], to) => {
     }
 };
 
+exports.sendTutorialImagesToUser = async (to) => {
+    const tutorialImages = [
+        "tutorial-lokasi-1.jpeg",
+        "tutorial-lokasi-2.jpeg",
+        "tutorial-lokasi-3.jpeg"
+    ];
+
+    for (const filename of tutorialImages) {
+        const fullUrl = `${process.env.BASE_URL}/assets/${filename}`;
+        console.log(`📍 Kirim tutorial lokasi ke ${to}: ${fullUrl}`);
+
+        try {
+            await exports.sendMessageToWhatsApp(to, {
+                type: "image",
+                link: fullUrl,
+                caption: "Contoh kirim lokasi",
+            });
+        } catch (err) {
+            console.error("❌ Gagal kirim gambar tutorial:", err.response?.data || err.message);
+        }
+    }
+};

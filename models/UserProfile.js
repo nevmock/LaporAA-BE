@@ -10,6 +10,10 @@ const userProfileSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    umur: {
+        type: Number,
+        required: true,
+    },
     nik: {
         type: String,
         required: true,

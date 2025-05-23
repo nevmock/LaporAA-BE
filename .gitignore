@@ -30,11 +30,6 @@ Thumbs.db
 # Optional: ignore test coverage
 coverage/
 
-# Optional: ignore uploads
-public/uploads/
-public/report/
-public/tindakan/
-
 # PM2 logs or runtime
 logs/
 pids/

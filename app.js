@@ -40,7 +40,7 @@ mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => console.log("✅ MongoDB Connected"))
-  .catch(err => console.error("❌ MongoDB Connection Error:", err));
+    .catch(err => console.error("❌ MongoDB Connection Error:", err));
 
 // 🔵 WebSocket Connection
 io.on("connection", (socket) => {
@@ -68,6 +68,7 @@ app.use("/auth", login);
 
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 app.use("/uploadsTindakan", express.static(path.join(__dirname, "public/uploadsTindakan")));
+app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
 // Route default untuk cek server berjalan
 app.get("/", (req, res) => {
