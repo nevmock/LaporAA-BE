@@ -6,13 +6,22 @@ const { findWilayahFromPoint } = require("../../utils/findWilayahFromPoint");
 const response = require("../../utils/response");
 const responseError = require("../../utils/responseError");
 
+/**
+ * Menangani alur pembuatan laporan warga.
+ * Mulai dari lokasi, deskripsi, foto, hingga konfirmasi akhir laporan.
+ * 
+ * @param {string} from - Nomor WhatsApp pengguna
+ * @param {string} step - Langkah aktif dalam session
+ * @param {string|Object} input - Pesan teks atau media dari pengguna
+ * @returns {Promise<string>}
+ */
 module.exports = async (from, step, input) => {
     try {
         const session = await userRepo.getOrCreateSession(from);
         const user = await userProfileRepo.findByFrom(from);
         const nama = user?.name || "Warga";
 
-        // STEP 1: Lokasi
+        // === STEP 1: Lokasi kejadian ===
         if (step === "ASK_LOCATION") {
             if (typeof input !== "object" || input.type !== "location") {
                 return response.report.askLocationInvalid(nama);
@@ -28,55 +37,54 @@ module.exports = async (from, step, input) => {
                 description: description || "Lokasi tanpa nama",
                 desa: wilayah.desa,
                 kecamatan: wilayah.kecamatan,
-                kabupaten: wilayah.kabupaten,
+                kabupaten: wilayah.kabupaten
             };
 
             await userRepo.updateSession(from, {
                 step: "ASK_MESSAGE",
-                data: { ...session.data, location: locationData },
+                data: { ...session.data, location: locationData }
             });
 
             return response.report.askMessage(nama);
         }
 
-        // STEP 2: Pesan keluhan
+        // === STEP 2: Deskripsi keluhan ===
         if (step === "ASK_MESSAGE") {
             await userRepo.updateSession(from, {
                 step: "ASK_PHOTO",
-                data: { ...session.data, message: input, photos: [] },
+                data: { ...session.data, message: input, photos: [] }
             });
 
             return response.report.askPhoto(nama);
         }
 
-        // STEP 3: Foto (termasuk "kirim" atau "batal")
+        // === STEP 3: Kirim foto (max 3) ===
         if (step === "ASK_PHOTO") {
             const photos = session.data.photos || [];
 
-            // === Jika input adalah command
             if (typeof input === "string") {
-                const msg = input.toLowerCase();
+                const command = input.toLowerCase();
 
-                if (msg === "kirim") {
+                if (command === "kirim") {
                     if (photos.length < 1) return response.report.minPhotoRequired(nama);
 
                     await userRepo.updateSession(from, {
                         step: "REVIEW",
-                        data: session.data,
+                        data: session.data
                     });
 
-                    return response.report.reportPreview(nama, session.data.location);
+                    return response.report.reportPreview(nama, session.data);
                 }
 
-                if (msg === "batal") {
+                if (command === "batal") {
                     await userRepo.resetSession(from);
                     return response.report.reportCancelled(nama);
                 }
 
-                return response.report.photoError(nama);
+                return response.report.askPhoto(nama);
             }
 
-            // === Jika input berupa foto
+            // Jika berupa gambar
             const newPhotoUrl = input.image?.url;
             if (!newPhotoUrl) return response.report.photoError(nama);
 
@@ -85,7 +93,7 @@ module.exports = async (from, step, input) => {
             if (updatedPhotos.length >= 3) {
                 await userRepo.updateSession(from, {
                     step: "REVIEW",
-                    data: { ...session.data, photos: updatedPhotos },
+                    data: { ...session.data, photos: updatedPhotos }
                 });
 
                 return response.report.photoLimitReached(nama);
@@ -93,52 +101,54 @@ module.exports = async (from, step, input) => {
 
             await userRepo.updateSession(from, {
                 step: "ASK_PHOTO",
-                data: { ...session.data, photos: updatedPhotos },
+                data: { ...session.data, photos: updatedPhotos }
             });
 
             return response.report.photoReceived(nama, 3 - updatedPhotos.length);
         }
 
-        // STEP 4: Review dan Simpan
+        // === STEP 4: Konfirmasi & Simpan laporan ===
         if (step === "REVIEW") {
-            const msg = typeof input === "string" ? input.toLowerCase() : "";
+            const command = typeof input === "string" ? input.toLowerCase() : "";
 
-            if (msg === "konfirmasi") {
-                try {
-                    const sessionId = generateSessionId(from);
+            if (command === "konfirmasi") {
+                const sessionId = generateSessionId(from);
 
-                    await reportRepo.create({
-                        sessionId,
-                        from,
-                        user: user._id,
-                        location: session.data.location,
-                        message: session.data.message,
-                        photos: session.data.photos,
-                    });
+                await reportRepo.create({
+                    sessionId,
+                    from,
+                    user: user._id,
+                    location: session.data.location,
+                    message: session.data.message,
+                    photos: session.data.photos
+                });
 
-                    await userRepo.resetSession(from);
-                    const nomorLaporan = sessionId.split("-")[1];
+                await userRepo.resetSession(from);
 
-                    return response.report.reportSuccess(nama, nomorLaporan);
-                } catch (err) {
-                    console.error("Error saving report:", err);
-                    return response.report.reportSaveError(nama);
-                }
+                const nomor = sessionId.split("-")[1];
+                return response.report.reportSuccess(nama, nomor);
             }
 
-            if (msg === "batal") {
+            if (command === "batal") {
                 await userRepo.resetSession(from);
                 return response.report.reportCancelled(nama);
             }
 
-            return response.report.reportPreview(nama, session.data.location);
+            return response.report.reportPreview(nama, session.data);
         }
 
-        return response.invalidMenuMessage(nama);
+        // === Fallback jika step tidak dikenali ===
+        return response.checkReport.unknownStep(nama);
+
     } catch (err) {
-        console.error("Error in createReportHandler:", err);
-        const user = await userProfileRepo.findByFrom(from);
-        const nama = user?.name || "Warga";
-        return responseError.defaultErrorMessage(nama);
+        console.error("Error di createReportHandler:", err);
+
+        try {
+            const session = await userRepo.getOrCreateSession(from);
+            const fallbackName = session.data?.name || "Warga";
+            return responseError.defaultErrorMessage(fallbackName);
+        } catch {
+            return "Terjadi kesalahan. Silakan coba lagi nanti.";
+        }
     }
 };

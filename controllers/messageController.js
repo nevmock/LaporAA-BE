@@ -19,12 +19,7 @@ exports.sendMessageToWhatsApp = async (to, rawMessage, mode = "bot") => {
         let message = rawMessage;
 
         if (mode === "bot") {
-            try {
-                message = await generateHumanLikeReply(rawMessage);
-            } catch (err) {
-                console.error("❌ Gagal generate dari Gemini, fallback ke raw message");
-                message = rawMessage;
-            }
+            message = rawMessage;
         }
 
         payload = {

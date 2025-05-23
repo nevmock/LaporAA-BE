@@ -1,16 +1,26 @@
 const userRepo = require("../../repositories/userRepo");
 const userProfileRepo = require("../../repositories/userProfileRepo");
 const { menuContext } = require("../../utils/openAiHelper");
-const response = require("../../utils/response");
-const responseError = require("../../utils/responseError");
+const response = require("../../../utils/response");
+const responseError = require("../../../utils/responseError");
 
+/**
+ * Menangani input dari pengguna ketika berada di step MAIN_MENU.
+ * Fungsi ini akan menentukan apakah pengguna ingin membuat laporan atau mengecek laporan.
+ * 
+ * @param {string} from - Nomor WhatsApp pengguna
+ * @param {string} input - Pesan teks dari pengguna
+ * @returns {Promise<string>} - Respon teks yang akan dikirimkan ke pengguna
+ */
 module.exports = async (from, input) => {
     try {
         const user = await userProfileRepo.findByFrom(from);
         const nama = user?.name || "Warga";
+
+        // Gunakan AI untuk mengenali konteks menu jika input bukan angka langsung
         const GeminiMenuContext = await menuContext(input);
 
-        // === Opsi 1: Buat laporan baru ===
+        // === Buat laporan baru (Opsi 1) ===
         if (input === "1" || GeminiMenuContext === "1") {
             if (!user) {
                 await userRepo.updateSession(from, {
@@ -29,7 +39,7 @@ module.exports = async (from, input) => {
             return response.mainMenu.askLocation(nama);
         }
 
-        // === Opsi 2: Cek status laporan ===
+        // === Cek status laporan (Opsi 2) ===
         if (input === "2" || GeminiMenuContext === "2") {
             await userRepo.updateSession(from, {
                 currentAction: "check_report",
@@ -41,10 +51,17 @@ module.exports = async (from, input) => {
 
         // === Input tidak dikenali ===
         return response.mainMenu.unknownOption(nama);
+
     } catch (err) {
-        console.error("Error in mainMenuHandler:", err);
-        const user = await userProfileRepo.findByFrom(from);
-        const nama = user?.name || "Warga";
-        return responseError.defaultErrorMessage(nama);
+        console.error("Error di mainMenuHandler:", err);
+
+        // Tangani error fallback jika terjadi kesalahan di atas
+        try {
+            const user = await userProfileRepo.findByFrom(from);
+            const nama = user?.name || "Warga";
+            return responseError.defaultErrorMessage(nama);
+        } catch {
+            return "Terjadi kesalahan. Silakan coba lagi nanti.";
+        }
     }
 };
