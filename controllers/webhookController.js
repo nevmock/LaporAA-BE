@@ -25,12 +25,12 @@ exports.handleIncomingMessages = async (req, res) => {
 
                             let parsedMessage = "Pesan tidak dikenal";
                             let messagePreviewForLog = "";
+                            let imagePath;
 
                             if (messageType === "text") {
                                 parsedMessage = msg.text.body;
                                 messagePreviewForLog = parsedMessage;
-                            }
-                            else if (messageType === "location") {
+                            } else if (messageType === "location") {
                                 const loc = msg.location;
                                 parsedMessage = {
                                     type: "location",
@@ -41,48 +41,45 @@ exports.handleIncomingMessages = async (req, res) => {
                                     }
                                 };
                                 messagePreviewForLog = `[Location] ${parsedMessage.location.description}`;
-                            }
-                            else if (messageType === "image") {
+                            } else if (messageType === "image") {
                                 const mediaId = msg.image.id;
                                 const caption = msg.image?.caption || "";
 
                                 // ✅ Download foto ke local
-                                const imagePath = await downloadMediaFromMeta(mediaId);
+                                imagePath = await downloadMediaFromMeta(mediaId);
 
                                 parsedMessage = {
                                     type: "image",
                                     image: {
-                                        id: mediaId,        // <--- tambahkan id-nya biar bisa dipakai lagi
-                                        url: imagePath,     // hasil download
+                                        id: mediaId,
+                                        url: imagePath,
                                         caption
                                     }
                                 };
 
                                 messagePreviewForLog = `[Image] ${caption}`;
-                            }
-                            else {
+                            } else {
                                 parsedMessage = "Pesan dengan format tidak didukung.";
                                 messagePreviewForLog = `[${messageType}]`;
                             }
 
-                            // Simpan pesan masuk ke DB
-                            await Message.create({
+                            // ✅ SIMPAN SEKALI, EMIT SEKALI
+                            const messagePayload = {
                                 from,
                                 senderName: name,
                                 message: messagePreviewForLog,
-                                timestamp: new Date(),
-                            });
+                                type: messageType,
+                                mediaUrl: messageType === "image" ? imagePath : undefined,
+                                timestamp: new Date()
+                            };
 
-                            // Emit ke dashboard FE
+                            await Message.create(messagePayload);
+
                             if (io) {
-                                io.emit("newMessage", {
-                                    from,
-                                    senderName: name,
-                                    message: messagePreviewForLog,
-                                });
+                                io.emit("newMessage", messagePayload);
                             }
 
-                            // Jalankan bot (jika mode = bot)
+                            // Jalankan bot
                             const botReply = await botFlowService.handleUserMessage({ from, message: parsedMessage });
 
                             if (botReply) {
@@ -91,11 +88,11 @@ exports.handleIncomingMessages = async (req, res) => {
                                         from,
                                         senderName: "Bot",
                                         message: botReply,
+                                        timestamp: new Date()
                                     });
                                 }
 
                                 const session = await UserSession.findOne({ from, status: "in_progress" });
-
                                 if (!session || session.mode === "bot") {
                                     await sendMessageToWhatsApp(from, botReply);
                                 } else {
