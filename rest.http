@@ -89,5 +89,5 @@ GET http://localhost:3001/dashboard/harian
 GET http://localhost:3001/user/user-mode/6281385138754
 
 ### ❌ Hapus seluruh data user (profile, laporan, tindakan, session)
-DELETE http://localhost:3001/user/user/6288218868251
+DELETE http://localhost:3001/user/user/6285793247636
 Content-Type: application/json
