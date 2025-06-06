@@ -1,10 +1,13 @@
 const userRepo = require("../../repositories/userRepo");
 const userProfileRepo = require("../../repositories/userProfileRepo");
 const { menuContext } = require("../../utils/openAiHelper");
+const mainMenuResponse = require("../responseMessage/mainMenuResponse");
 
 module.exports = async (from, input) => {
     const user = await userProfileRepo.findByFrom(from);
     const nama = user?.name || "Warga";
+    const jenisKelamin = user?.jenis_kelamin || "";
+    const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
     const GeminiMenuContext = await menuContext(input);
 
     // Opsi 1: Buat laporan baru
@@ -16,7 +19,7 @@ module.exports = async (from, input) => {
                 currentAction: "signup",
                 step: "ASK_NAME",
             });
-            return `Data diri Anda belum terdaftar di sistem kami. Sebelum melanjutkan untuk membuat laporan, tolong masukkan nama lengkap Anda sesuai dengan KTP. Terima kasih atas kerjasamanya.`;
+            return mainMenuResponse.belumTerdaftar();
         }
 
         // Jika sudah terdaftar, mulai proses pembuatan laporan
@@ -26,7 +29,7 @@ module.exports = async (from, input) => {
             data: {},
         });
 
-        return `Silahkan ceritakan keluhan atau kejadian yang ingin anda laporkan`;
+        return mainMenuResponse.mulaiLaporan(sapaan, nama);
     }
 
     // Opsi 2: Cek status laporan berdasarkan sessionId
@@ -36,9 +39,9 @@ module.exports = async (from, input) => {
             currentAction: "check_report",
             step: "ASK_REPORT_ID",
         });
-        return `Minta ${nama} untuk memasukkan ID laporan. contohnya 12345678. `;
+        return mainMenuResponse.mintaIdLaporan(sapaan, nama);
     }
 
     // Tanggapan default jika input tidak dikenali
-    return `Mohon maaf ${nama} pilihan anda tidak dikenali. Silakan ketik "menu" yang tersedia untuk melihat menu utama.`;
+    return mainMenuResponse.mainMenuDefault();
 };

@@ -2,8 +2,6 @@ const axios = require("axios");
 const path = require("path");
 const Message = require("../models/messageModel");
 const UserSession = require("../models/UserSession");
-// const { generateHumanLikeReply } = require("../utils/geminiHelper");
-const { generateHumanLikeReply } = require("../utils/openAiHelper");
 const { convertWebpToJpegIfNeeded } = require("../utils/imageHelper");
 
 const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID;
@@ -20,7 +18,7 @@ exports.sendMessageToWhatsApp = async (to, rawMessage, mode = "bot") => {
 
         if (mode === "bot") {
             try {
-                message = await generateHumanLikeReply(rawMessage);
+                message = rawMessage;
             } catch (err) {
                 console.error("❌ Gagal generate dari Gemini, fallback ke raw message");
                 message = rawMessage;

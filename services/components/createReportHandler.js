@@ -4,11 +4,14 @@ const reportRepo = require("../../repositories/reportRepo");
 const generateSessionId = require("../../utils/generateSessionId");
 const { findWilayahFromPoint } = require("../../utils/findWilayahFromPoint");
 const messageController = require("../../controllers/messageController");
+const createReportResponse = require("../responseMessage/createReportReponse");
 
 module.exports = async (from, step, input) => {
     const session = await userRepo.getOrCreateSession(from);
     const user = await userProfileRepo.findByFrom(from);
     const nama = user?.name || "Warga";
+    const jenisKelamin = user?.jenis_kelamin || "";
+    const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
 
     // STEP: Keluhan pertama
     if (step === "ASK_MESSAGE") {
@@ -17,7 +20,7 @@ module.exports = async (from, step, input) => {
             step: "APPEND_MESSAGE",
             data: { ...session.data, message: newMessage }
         });
-        return `Apakah ada keluhan tambahan?\nJika sudah cukup, ketik *kirim*.`;
+        return createReportResponse.mintaKeluhan();
     }
 
     // STEP: Tambah keluhan
@@ -31,12 +34,12 @@ module.exports = async (from, step, input) => {
                 data: { ...session.data }
             });
 
-            return `Saya simpulkan keluhan anda sebagai berikut:\n\n${session.data.message}\n\nJika sudah sesuai, ketik *kirim* untuk lanjut ke lokasi kejadian, atau *batal* untuk mengulang.`;
+            return createReportResponse.konfirmasiKeluhan(session.data.message);
         }
 
         if (msg === "batal") {
             await userRepo.resetSession(from);
-            return `Baik ${nama}, laporan dibatalkan. Ketik *menu* untuk memulai kembali.`;
+            return createReportResponse.laporanDibatalkan(sapaan, nama);
         }
 
         const updated = `${currentMessage}\n- ${input}`;
@@ -45,7 +48,7 @@ module.exports = async (from, step, input) => {
             data: { ...session.data, message: updated }
         });
 
-        return `Keluhan ditambahkan. Jika ada lagi, silakan tulis. Jika sudah cukup, ketik *kirim*.`;
+        return createReportResponse.keluhanDitambahkan();
     }
 
     // STEP: Konfirmasi keluhan
@@ -59,7 +62,7 @@ module.exports = async (from, step, input) => {
             });
 
             await messageController.sendTutorialImagesToUser(from);
-            return `Baik ${nama}, silakan kirimkan *lokasi kejadian* menggunakan fitur *Kirim Lokasi* di WhatsApp.`;
+            return createReportResponse.mintaLokasi(sapaan, nama);
         }
 
         if (msg === "batal") {
@@ -68,20 +71,28 @@ module.exports = async (from, step, input) => {
                 data: session.data
             });
 
-            return `Baik ${nama}, silakan jelaskan kembali keluhan Anda.`;
+            return createReportResponse.ulangKeluhan(sapaan, nama);
         }
 
-        return `Silakan ketik *kirim* jika sudah sesuai, atau *batal* untuk mengulang.`;
+        return createReportResponse.konfirmasiAtauBatal();
     }
 
     // STEP: Lokasi
     if (step === "ASK_LOCATION") {
         if (typeof input !== "object" || input.type !== "location") {
-            return `Mohon untuk kirim lokasi kejadian menggunakan fitur *Kirim Lokasi* di WhatsApp.`;
+            return createReportResponse.mintaLokasi(sapaan, nama);
         }
 
         const { latitude, longitude, description } = input.location;
         const wilayah = findWilayahFromPoint(latitude, longitude);
+
+        if (!wilayah) {
+            return createReportResponse.mintaLokasi(sapaan, nama);
+        }
+
+        if (wilayah.kabupaten.toUpperCase() !== "BEKASI") {
+            return createReportResponse.lokasiBukanBekasi(sapaan, nama, wilayah.kabupaten);
+        }
 
         const locationData = {
             type: "map",
@@ -98,7 +109,7 @@ module.exports = async (from, step, input) => {
             data: { ...session.data, location: locationData }
         });
 
-        return `Berikut lokasi yang Anda kirim:\n${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten}\n\nKetik *kirim* jika sudah sesuai, atau *batal* untuk kirim ulang.`;
+        return createReportResponse.lokasiDiterima(wilayah);
     }
 
     // STEP: Konfirmasi lokasi
@@ -111,7 +122,7 @@ module.exports = async (from, step, input) => {
                 data: { ...session.data, photos: [] }
             });
 
-            return `Silakan kirim *1–3 foto* pendukung. Cek kembali apakah foto yang dikirim sudah jelas dan relevan.`;
+            return createReportResponse.mintaFoto();
         }
 
         if (msg === "batal") {
@@ -120,10 +131,10 @@ module.exports = async (from, step, input) => {
                 data: session.data
             });
 
-            return `Silakan kirim ulang lokasi kejadian dengan fitur *Kirim Lokasi* di WhatsApp.`;
+            return createReportResponse.ulangLokasi();
         }
 
-        return `Ketik *kirim* jika lokasi sudah benar, atau *batal* untuk kirim ulang.`;
+        return createReportResponse.konfirmasiLokasi();
     }
 
     // STEP: Foto (1–3, konfirmasi setelah upload)
@@ -135,7 +146,7 @@ module.exports = async (from, step, input) => {
 
             if (msg === "kirim") {
                 if (photos.length < 1) {
-                    return `Mohon maaf ${nama}, minimal perlu 1 foto sebelum melanjutkan.`;
+                    return createReportResponse.minimalFoto(sapaan, nama);
                 }
 
                 await userRepo.updateSession(from, {
@@ -143,22 +154,22 @@ module.exports = async (from, step, input) => {
                     data: session.data
                 });
 
-                return `Berikut ringkasan laporan Anda:\n\n📍 Lokasi: ${session.data.location.desa}, ${session.data.location.kecamatan}, ${session.data.location.kabupaten}\n📝 Keluhan:\n${session.data.message}\n📷 Jumlah Foto: ${session.data.photos.length}\n\nJika sudah benar, ketik *konfirmasi* untuk mengirim atau *batal* untuk mengulang.`;
+                return createReportResponse.ringkasanLaporan(session.data);
             }
 
             if (msg === "batal") {
                 await userRepo.resetSession(from);
-                return `Laporan dibatalkan. Ketik *menu* untuk memulai kembali.`;
+                return createReportResponse.laporanDibatalkanMenu();
             }
 
-            return `Mohon hanya kirim foto atau ketik *kirim* jika sudah cukup, atau *batal* untuk mengulang.`;
+            return createReportResponse.hanyaFoto();
         }
 
-        const newPhotoUrl = input.image?.url;
-        if (!newPhotoUrl) {
-            return `Kami tidak dapat memproses foto tersebut. Coba kirim ulang menggunakan fitur *Kirim Foto*.`;
+        if (!input || typeof input !== "object" || !input.image || !input.image.url) {
+            return createReportResponse.gagalProsesFoto();
         }
 
+        const newPhotoUrl = input.image.url;
         const updatedPhotos = [...photos, newPhotoUrl];
 
         if (updatedPhotos.length >= 3) {
@@ -167,7 +178,7 @@ module.exports = async (from, step, input) => {
                 data: { ...session.data, photos: updatedPhotos }
             });
 
-            return `Kami telah menerima 3 foto. Coba periksa kembali, apakah foto yang Anda kirim sudah sesuai? Jika sudah, ketik *kirim*, atau ketik *batal* untuk mengulang.`;
+            return createReportResponse.sudah3Foto();
         }
 
         await userRepo.updateSession(from, {
@@ -175,7 +186,7 @@ module.exports = async (from, step, input) => {
             data: { ...session.data, photos: updatedPhotos }
         });
 
-        return `Foto berhasil diterima. Masih bisa kirim ${3 - updatedPhotos.length} foto lagi. Ketik *kirim* jika sudah cukup, atau *batal* untuk mengulang.`;
+        return createReportResponse.fotoBerhasilDiterima(3 - updatedPhotos.length);
     }
 
     // STEP: Review sebelum simpan
@@ -185,6 +196,10 @@ module.exports = async (from, step, input) => {
         if (msg === "konfirmasi") {
             try {
                 const sessionId = generateSessionId(from);
+
+                if (!user) {
+                    return createReportResponse.gagalSimpanLaporan();
+                }
 
                 await reportRepo.create({
                     sessionId,
@@ -198,20 +213,20 @@ module.exports = async (from, step, input) => {
                 await userRepo.resetSession(from);
 
                 const nomorLaporan = sessionId.split("-")[1];
-                return `Terima kasih ${nama}, laporan berhasil dikirim dengan ID *${nomorLaporan}*. Simpan ID ini untuk cek status laporan.`;
+                return createReportResponse.laporanBerhasil(sapaan, nama, nomorLaporan);
             } catch (err) {
                 console.error("❌ Gagal simpan laporan:", err);
-                return `Terjadi kesalahan saat menyimpan laporan. Silakan ketik *reset* untuk mengulang.`;
+                return createReportResponse.gagalSimpanLaporan();
             }
         }
 
         if (msg === "batal") {
             await userRepo.resetSession(from);
-            return `Laporan dibatalkan. Ketik *menu* untuk memulai dari awal.`;
+            return createReportResponse.ulangLaporan();
         }
 
-        return `Ketik *konfirmasi* jika laporan sudah benar, atau *batal* untuk membatalkan.`;
+        return createReportResponse.konfirmasiReview();
     }
 
-    return `Pilihan tidak dikenali. Silakan ketik *menu* untuk kembali ke menu utama.`;
+    return createReportResponse.handlerDefault();
 };

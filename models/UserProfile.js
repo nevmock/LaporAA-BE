@@ -10,18 +10,6 @@ const userProfileSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    umur: {
-        type: Number,
-        required: true,
-    },
-    nik: {
-        type: String,
-        required: true,
-    },
-    address: {
-        type: String,
-        required: true,
-    },
     jenis_kelamin: {
         type: String,
         required: true,

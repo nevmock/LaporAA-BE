@@ -42,10 +42,6 @@ const actionSchema = new mongoose.Schema({
         type: String,
         default: "",
     },
-    disposisi: {
-        type: String,
-        default: "",
-    },
     photos: {
         type: [String], // URL foto (kalau pakai upload ke cloud)
         default: [],
@@ -79,8 +75,8 @@ const actionSchema = new mongoose.Schema({
     },
     status_laporan: {
         type: String,
-        enum: ["Menunggu Verifikasi Admin", "Sedang Diproses OPD Terkait", "Telah Diproses OPD Terkait"],
-        default: "Menunggu Verifikasi Admin",
+        enum: ["Menunggu Diproses OPD Terkait", "Sedang Diproses OPD Terkait", "Telah Diproses OPD Terkait"],
+        default: "Menunggu Diproses OPD Terkait",
     },
 });
 

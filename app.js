@@ -17,22 +17,25 @@ const tindakanUploadRoute = require("./routes/tindakanUpload");
 const dashboardRoute = require("./routes/dashboardRoute");
 const userLogin = require("./routes/userLogin");
 const login = require("./routes/auth");
+const authMiddleware = require("./middlewares/authMiddleware");
 
 const autoCloseFeedback = require("./utils/autoCloseFeedback");
 
 const app = express();
 const server = createServer(app);
+const corsOptions = {
+    origin: '*',
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+};
+
 const io = new Server(server, {
-    cors: {
-        origin: 'https://laporaa.nevmock.id',
-        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
-    }
+    cors: corsOptions
 });
 
 global.io = io;
 
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Koneksi ke MongoDB
@@ -56,6 +59,10 @@ app.set("io", io);
 
 // Routes
 app.use("/webhook", webhookRoutes);
+
+// Apply authMiddleware to all routes except /webhook
+app.use(authMiddleware);
+
 app.use("/chat", messageRoutes);
 app.use("/user", userRoutes);
 app.use("/reports", reportRoutes);

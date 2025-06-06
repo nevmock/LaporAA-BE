@@ -6,6 +6,7 @@ const UserProfile = require("../models/UserProfile");
 const { sendMessageToWhatsApp, sendEvidencePhotosToUser } = require("../controllers/messageController");
 const userRepo = require("../repositories/userRepo");
 const Tindakan = require("../models/Tindakan");
+const tindakanResponse = require("../services/responseMessage/tindakanResponse");
 
 // GET tindakan berdasarkan reportId
 router.get("/:reportId", async (req, res) => {
@@ -28,7 +29,7 @@ router.get("/:reportId", async (req, res) => {
 // UPDATE tindakan
 router.put("/:reportId", async (req, res) => {
     const { reportId } = req.params;
-    const { hasil, kesimpulan, trackingId, prioritas, situasi, status, opd, disposisi, photos, url, keterangan, status_laporan } = req.body;
+    const { hasil, kesimpulan, trackingId, prioritas, situasi, status, opd, photos, url, keterangan, status_laporan } = req.body;
 
     try {
         const tindakan = await tindakanRepo.update({
@@ -40,7 +41,6 @@ router.put("/:reportId", async (req, res) => {
             situasi,
             status,
             opd,
-            disposisi,
             photos,
             url,
             keterangan,
@@ -52,12 +52,10 @@ router.put("/:reportId", async (req, res) => {
             const report = await reportRepo.findById(reportId);
             const user = await UserProfile.findById(report.user);
             const from = report.from;
+            const jenisKelamin = user?.jenis_kelamin || "";
+            const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
 
-            const message = `
-            Terimakasih ${user.name} telah menghubungi kami.
-            Karna situasi nya darurat jadi silahkan untuk langsung hubungi:
-
-            `;
+            const message = tindakanResponse.daruratMessage(sapaan, user.name);
 
             await sendMessageToWhatsApp(from, message);
 
@@ -75,18 +73,13 @@ router.put("/:reportId", async (req, res) => {
             const report = await reportRepo.findById(reportId);
             const user = await UserProfile.findById(report.user);
             const from = report.from;
+            const jenisKelamin = user?.jenis_kelamin || "";
+            const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
             const formattedKesimpulan = (tindakan.kesimpulan || [])
                 .map((k, i) => `- ${k.text}`)
                 .join("\n");
 
-            const message = `
-            Terimakasih ${user.name} (jenis kelaminnya ${user.jenis_kelamin}, jadi ibu / bapak / kak), Laporan ${report.sessionId} telah selesai ditangani.
-            berikut ini adalah hasil penanganan laporannya:
-            ${formattedKesimpulan}
-
-            Apakah sudah puas dengan hasil penanganan laporan ini?
-            jika belum puas, cukup balas dengan "belum"
-            jika sudah puas, cukup balas dengan "puas"`;
+            const message = tindakanResponse.selesaiPenangananMessage(sapaan, user.name, report.sessionId, formattedKesimpulan);
 
             await sendEvidencePhotosToUser(tindakan.photos, from);
             await sendMessageToWhatsApp(from, message);
@@ -104,10 +97,10 @@ router.put("/:reportId", async (req, res) => {
             const report = await reportRepo.findById(reportId);
             const user = await UserProfile.findById(report.user);
             const from = report.from;
+            const jenisKelamin = user?.jenis_kelamin || "";
+            const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
 
-            const message = `
-            Beritahu ${user.name} (jenis kelaminnya ${user.jenis_kelamin}, jadi ibu / bapak / kak), bahwa Laporan ${report.sessionId} ditolak dan tidak dapat ditindak lanjuti.
-            Karena ${keterangan || "Tidak ada jalasan jelas"}, dan beritahu untuk membuat laporan baru dengan memperbaiki kesalahan ${keterangan || "Tidak ada alasan jelas, jadi langsung arahkan buat laporan baru saja"} `;
+            const message = tindakanResponse.ditolakMessage(sapaan, user.name, report.sessionId, keterangan);
 
             await sendMessageToWhatsApp(from, message);
 
@@ -150,6 +143,19 @@ router.post("/:id/kesimpulan", async (req, res) => {
 
     try {
         const updated = await tindakanRepo.appendKesimpulan(id, text.trim());
+
+        // Send notification to user
+        const tindakan = await tindakanRepo.findById(id);
+        const report = await reportRepo.findById(tindakan.report);
+        const user = await UserProfile.findById(report.user);
+        const from = report.from;
+        const jenisKelamin = user?.jenis_kelamin || "";
+        const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
+        const kesimpulanList = updated.kesimpulan || [];
+
+        const message = tindakanReponse.tindakLanjutLaporanMessage(sapaan, user.name, report.sessionId, kesimpulanList);
+        await sendMessageToWhatsApp(from, message);
+
         res.status(200).json(updated);
     } catch (error) {
         console.error("Error menambahkan kesimpulan:", error);
@@ -167,6 +173,19 @@ router.put("/:id/kesimpulan/:index", async (req, res) => {
 
     try {
         const updated = await tindakanRepo.updateKesimpulanByIndex(id, parseInt(index), text.trim());
+
+        // Send notification to user
+        const tindakan = await tindakanRepo.findById(id);
+        const report = await reportRepo.findById(tindakan.report);
+        const user = await UserProfile.findById(report.user);
+        const from = report.from;
+        const jenisKelamin = user?.jenis_kelamin || "";
+        const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
+        const kesimpulanList = updated.kesimpulan || [];
+
+        const message = tindakanReponse.tindakLanjutLaporanMessage(sapaan, user.name, report.sessionId, kesimpulanList);
+        await sendMessageToWhatsApp(from, message);
+
         res.status(200).json(updated);
     } catch (error) {
         console.error("Error update kesimpulan:", error);
@@ -179,6 +198,19 @@ router.delete("/:id/kesimpulan/:index", async (req, res) => {
 
     try {
         const updated = await tindakanRepo.deleteKesimpulanByIndex(id, parseInt(index));
+
+        // Send notification to user
+        const tindakan = await tindakanRepo.findById(id);
+        const report = await reportRepo.findById(tindakan.report);
+        const user = await UserProfile.findById(report.user);
+        const from = report.from;
+        const jenisKelamin = user?.jenis_kelamin || "";
+        const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
+        const kesimpulanList = updated.kesimpulan || [];
+
+        const message = tindakanReponse.tindakLanjutLaporanMessage(sapaan, user.name, report.sessionId, kesimpulanList);
+        await sendMessageToWhatsApp(from, message);
+
         res.status(200).json(updated);
     } catch (error) {
         console.error("Error delete kesimpulan:", error);

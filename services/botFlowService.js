@@ -6,11 +6,13 @@ const userRepo = require("../repositories/userRepo");
 const tindakanRepo = require("../repositories/tindakanRepo");
 const userProfileRepo = require("../repositories/userProfileRepo");
 const { startContext } = require("../utils/openAiHelper");
-// const { startContext } = require("../utils/geminiHelper");
+const botFlowResponse = require("./responseMessage/botFlowResponse");
 
 exports.handleUserMessage = async ({ from, message }) => {
     const user = await userProfileRepo.findByFrom(from);
     const nama = user?.name || "Warga";
+    const jenisKelamin = user?.jenis_kelamin || "";
+    const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
     const GeminiStartContext = await startContext(message);
 
     let session = await userRepo.getOrCreateSession(from);
@@ -20,21 +22,13 @@ exports.handleUserMessage = async ({ from, message }) => {
     const step = session.step;
 
     if (step === "MAIN_MENU" && GeminiStartContext === "true" ) {
-        return `Halo ${nama} selamat datang di Lapor AA Pemerintahan Kabupaten Bekasi. 
-
-Apabila situasi anda darurat, bisa menghubungi nomer berikut :
-- 119 : PSC  (Untuk Kegawat Daruratan Medis)
-- 113 : Pemadam Kebakaran
-- 110 : Kepolisian (Kriminal dll)
-- 081219071900 : BPBD (Untuk Bantuan Penanggulangan Bencana)
-
-Jika tidak dalam keadaan darurat, apakah ingin membuat laporan, atau cek status laporan?`;
+        return botFlowResponse.mainSapaan(sapaan, nama);
     }
 
     // Reset session jika user ketik 'menu' atau 'reset'
     if (input === "menu" || input === "reset") {
         await userRepo.resetSession(from);
-        return `Halo ${nama} selamat datang di Lapor AA Pemerintahan Kabupaten Bekasi. apakah ingin membuat laporan, atau cek status laporan?`;
+        return botFlowResponse.mainSapaan(sapaan, nama);
     }
 
     // Handle Rating setelah laporan selesai
@@ -43,13 +37,13 @@ Jika tidak dalam keadaan darurat, apakah ingin membuat laporan, atau cek status 
         const tindakanId = session.pendingFeedbackFor?.[0];
 
         if (isNaN(rating) || rating < 1 || rating > 5) {
-            return `Mohon Maaf ${nama} rating tidak valid. Silakan berikan rating antara 1 hingga 5.`;
+            return botFlowResponse.ratingInvalid(sapaan, nama);
         }
 
         try {
             const tindakan = await tindakanRepo.findById(tindakanId);
             if (!tindakan) {
-                return `Mohon Maaf ${nama}, laporan tidak di temukan.`;
+                return botFlowResponse.laporanTidakDitemukan(sapaan, nama);
             }
 
             tindakan.rating = rating;
@@ -60,10 +54,10 @@ Jika tidak dalam keadaan darurat, apakah ingin membuat laporan, atau cek status 
             session.currentAction = null;
             await session.save();
 
-            return `Terima kasih atas rating ${rating} untuk laporan Anda ${nama}! Kami akan terus meningkatkan layanan.`;
+            return botFlowResponse.ratingSuccess(sapaan, nama, rating);
         } catch (err) {
             console.error("Gagal menyimpan rating:", err);
-            return `Terjadi kesalahan saat menyimpan rating. Silakan berikan rating antara 1 hingga 5.`;
+            return botFlowResponse.gagalSimpanRating();
         }
     }
 
@@ -82,10 +76,7 @@ Jika tidak dalam keadaan darurat, apakah ingin membuat laporan, atau cek status 
             session.step = "MAIN_MENU";
             await session.save();
 
-            return `Mohon Maaf ${nama}, laporan dengan ID ${tindakan.report.sessionId} *tidak dapat ditindaklanjuti* dan telah *ditolak* oleh petugas.
-            Alasan penolakan: ${tindakan.kesimpulan || "Tidak tersedia"}
-            Silahkan untuk membuat laporan ulang dengan memperbaiki kesalahannya
-            Terimakasih.`;
+            return botFlowResponse.laporanDitolak(sapaan, nama, tindakan.report.sessionId, tindakan.kesimpulan);
         }
 
         // Kasus laporan selesai normal (dengan rating)
@@ -101,9 +92,7 @@ Jika tidak dalam keadaan darurat, apakah ingin membuat laporan, atau cek status 
                     session.step = "WAITING_FOR_RATING";
                     await session.save();
 
-                    reply = `Terima kasih ${nama}, atas tanggapannya.
-                    Laporan ${tindakan.report.sessionId} akan ditutup.
-                    Sebagai bentuk peningkatan layanan, mohon berikan rating 1-5. cukup input angka 1-5 saja`;
+                    reply = botFlowResponse.puasReply(sapaan, nama, tindakan.report.sessionId);
                 } else {
                     tindakan.feedbackStatus = "Sudah Jawab Belum Beres";
                     tindakan.status = "Proses OPD Terkait";
@@ -113,17 +102,12 @@ Jika tidak dalam keadaan darurat, apakah ingin membuat laporan, atau cek status 
                     session.step = "MAIN_MENU";
                     await session.save();
 
-                    reply = `Terima kasih ${nama}, Laporan ${tindakan.report.sessionId} akan segera kita tindak lanjuti ulang. 
-                    Mohon maaf atas ketidak puasan penyelesaian laporannya. Terimakasih sudah menanggapi laporannya`;
-
-                    if (session.pendingFeedbackFor.length > 0) {
-                        reply += `Masih ada ${session.pendingFeedbackFor.length} laporan lain yang menunggu respon. Balas "puas" atau "belum". untuk melakukan penyelesaian laporan ${tindakan.report.sessionId}.`;
-                    }
+                    reply = botFlowResponse.belumReply(sapaan, nama, tindakan.report.sessionId, session.pendingFeedbackFor.length);
                 }
                 return reply;
             }
         }
-        return `Mohon maaf ${nama}, anda masih memiliki laporan yang menunggu konfirmasi penyelesaian. Balas "puas" jika sudah selesai, atau "belum" jika masih ada masalah.`;
+        return botFlowResponse.pendingKonfirmasi(sapaan, nama);
     }
 
     // Handle Main Menu dan Langkah-langkah Bot
