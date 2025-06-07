@@ -7,8 +7,8 @@ exports.findByFrom = async (from) => {
   return await UserProfile.findOne({ from });
 };
 
-exports.create = async ({ from, name, umur, nik, address, jenis_kelamin }) => {
-  return await UserProfile.create({ from, name, umur, nik, address, jenis_kelamin });
+exports.create = async ({ from, name, jenis_kelamin }) => {
+  return await UserProfile.create({ from, name, jenis_kelamin });
 };
 
 exports.appendToReportHistory = async (from, sessionId) => {

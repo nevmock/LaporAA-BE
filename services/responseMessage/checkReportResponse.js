@@ -48,6 +48,7 @@ function handlerDefault() {
     `Silakan mengikuti tahapan pembuatan laporan. Untuk mengikuti tahapan tersebut, ketik "menu".`,
     `Proses pembuatan laporan mesti sesuai dengan tahapan, ketik "menu" untuk menyesuaikan.`,
     `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik "menu".`
+    // `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik "menu". (checkReportResponse DEFAULT)`
   ];
   return randomResponse(responses);
 }

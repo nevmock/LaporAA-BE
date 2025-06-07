@@ -1,9 +1,7 @@
 const userRepo = require("../../repositories/userRepo");
-const reportRepo = require("../../repositories/reportRepo");
 const userProfileRepo = require("../../repositories/userProfileRepo");
+const reportRepo = require("../../repositories/reportRepo");
 const checkReportResponse = require("../responseMessage/checkReportResponse");
-
-const spamHandler = require("./spamHandler");
 
 module.exports = async (from, step, input, sendReply) => {
     const user = await userProfileRepo.findByFrom(from);
@@ -11,41 +9,46 @@ module.exports = async (from, step, input, sendReply) => {
     const jenisKelamin = user?.jenis_kelamin || "";
     const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
 
-    const messageHandler = async () => {
-        // STEP: Pengecekan Laporan
-        if (step === "ASK_REPORT_ID") {
-            const msg = input?.toString().toLowerCase();
+    const msg = input?.toString().toLowerCase();
 
-            // Jika user ingin kembali ke menu utama
-            if (msg === "menu" || msg === "kembali") {
-                await userRepo.resetSession(from);
-                return sendReply(from, checkReportResponse.kembaliKeMenu(sapaan, nama));
-            }
+    // Step 1: Ask for the report ID
+    if (step === "ASK_REPORT_ID") {
+        // Handle if the user wants to go back to the main menu
+        if (msg === "menu" || msg === "kembali") {
+            await userRepo.resetSession(from);
+            return sendReply(from, checkReportResponse.kembaliKeMenu(sapaan, nama));
+        }
 
-            // Format laporan diasumsikan LPRAA-{kode}
-            const sessionId = `LPRAA-${input}`;
+        // Validate if the input matches the expected session ID format: LPRAA-{code}
+        const sessionId = `LPRAA-${input.trim()}`;
+        const nomorLaporan = sessionId.split("-")[1];
+
+        if (!nomorLaporan || isNaN(nomorLaporan)) {
+            // If session ID is invalid, prompt the user to enter a valid report ID
+            return sendReply(from, checkReportResponse.laporanTidakValid(sapaan, nama));
+        }
+
+        try {
+            // Try to find the report by session ID
             const report = await reportRepo.findBySessionId(sessionId);
-            const nomorLaporan = sessionId.split("-")[1];
 
-            // Jika tidak ditemukan → tetap di ASK_REPORT_ID agar user bisa coba lagi
             if (!report) {
+                // If no report found, inform the user
                 return sendReply(from, checkReportResponse.laporanTidakDitemukan(sapaan, nama, nomorLaporan));
             }
 
-            // Jika ditemukan → tampilkan detail lalu reset sesi
+            // If report is found, display the details and reset the session
             await userRepo.resetSession(from);
-
             return sendReply(from, checkReportResponse.detailLaporan(sapaan, nama, nomorLaporan, report));
+
+        } catch (error) {
+            // Handle errors like database issues
+            console.error("Error fetching report:", error);
+            return sendReply(from, checkReportResponse.errorMencariLaporan(sapaan, nama));
         }
-
-        // Catch-all fallback
-        await userRepo.resetSession(from);
-        return sendReply(from, checkReportResponse.handlerDefault());
-    };
-
-    if (spamHandler.isSpam(from)) {
-        return spamHandler.handleSpam(from, messageHandler, sendReply);
-    } else {
-        return messageHandler();
     }
+
+    // Fallback if the step does not match the expected steps
+    await userRepo.resetSession(from);
+    return sendReply(from, checkReportResponse.handlerDefault());
 };

@@ -33,17 +33,25 @@ const ditolakMessage = (sapaan, nama, sessionId, keterangan) => {
   return randomResponse(responses);
 };
 
-const tindakLanjutLaporanMessage = (sapaan, nama, sessionId, kesimpulanList) => {
+const tindakLanjutLaporanMessage = (sapaan, nama, sessionId, keluhan, kesimpulanList) => {
   const kesimpulanText = kesimpulanList.length > 0
-    ? kesimpulanList.map((k, i) => `- ${k.text}`).join("\n")
+    ? kesimpulanList.map((k, i) => {
+      const date = new Date(k.timestamp);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
+      const year = date.getFullYear();
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      return `- [${day}/${month}/${year} ${hours}:${minutes}]\n${k.text}\n`;
+    }).join("\n")
     : "Belum ada tindak lanjut yang tercatat.";
 
   const responses = [
-    `Halo ${sapaan} ${nama}, Tindak Lanjut Laporan Anda (${sessionId}):\n${kesimpulanText}`,
-    `Berikut adalah Tindak Lanjut Laporan Anda (${sessionId}):\n${kesimpulanText}`,
-    `Informasi terbaru untuk Laporan Anda (${sessionId}):\n${kesimpulanText}`,
-    `Update Tindak Lanjut untuk Laporan Anda (${sessionId}):\n${kesimpulanText}`,
-    `Pemberitahuan Tindak Lanjut Laporan Anda (${sessionId}):\n${kesimpulanText}`
+    `Halo ${sapaan} ${nama}, Tindak Lanjut Laporan Anda (${sessionId})\nTentang: ${keluhan}\n\n${kesimpulanText}`,
+    `Berikut adalah Tindak Lanjut Laporan Anda (${sessionId})\nTentang: ${keluhan}\n\n${kesimpulanText}`,
+    `Informasi terbaru untuk Laporan Anda (${sessionId})\nTentang: ${keluhan}\n\n${kesimpulanText}`,
+    `Update Tindak Lanjut untuk Laporan Anda (${sessionId})\nTentang: ${keluhan}\n\n${kesimpulanText}`,
+    `Pemberitahuan Tindak Lanjut Laporan Anda (${sessionId})\nTentang: ${keluhan}\n\n${kesimpulanText}`
   ];
   return randomResponse(responses);
 };

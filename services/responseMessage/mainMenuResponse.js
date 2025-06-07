@@ -48,34 +48,51 @@ function mintaIdLaporan(sapaan, nama) {
 
 function mainMenuDefault() {
   const responses = [
-    `Mohon ikuti langkah pelaporan sesuai instruksi. Silahkan ketik "menu".`,
-    `Mohon ikuti arahan pelaporan. Agar sesuai dengan arahan, mohon ketik "menu".`,
-    `Silakan mengikuti tahapan pembuatan laporan. Untuk mengikuti tahapan tersebut, ketik "menu".`,
-    `Proses pembuatan laporan mesti sesuai dengan tahapan, ketik "menu" untuk menyesuaikan.`,
-    `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik "menu".`
-  ];
-  return randomResponse(responses);
-}
-
-function arahKeluhan() {
-  const responses = [
-    `Silahkan untuk membuat laporan baru, bisa di jelaskan kembali apa keluhan Anda?`,
+    `Mohon ikuti langkah pelaporan sesuai instruksi. Atau silahkan ketik "menu" untuk informasi lebih lengkap.`,
+    `Mohon ikuti arahan pelaporan. Agar sesuai dengan arahan, Atau silahkan ketik "menu" untuk informasi lebih lengkap.`,
+    `Silakan mengikuti tahapan pembuatan laporan. Untuk mengikuti tahapan tersebut, Atau silahkan ketik "menu" untuk informasi lebih lengkap.`,
+    `Proses pembuatan laporan mesti sesuai dengan tahapan, Atau silahkan ketik "menu" untuk informasi lebih lengkap.`,
+    `Pelaporan mesti sesuai dengan proses pelaporan, Atau silahkan ketik "menu" untuk informasi lebih lengkap.`
+    // `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik "menu". (Main Menu DEFAULT)`,
   ];
   return randomResponse(responses);
 }
 
 function angryComplaintResponse() {
   const responses = [
-    `Mohon maaf atas apa yang terjadi, kami siap menerima laporan anda, silahkan untuk menjelaskan dengan detail keluhannya.`,
+    `Mohon maaf atas apa yang terjadi, kami mengerti anda kesal, dan marah, kami siap menerima laporan anda, silahkan untuk menjelaskan dengan detail keluhannya.`,
+  ];
+  return randomResponse(responses);
+}
+
+function angryComplaintSignup() {
+  const responses = [
+    `Mohon maaf atas apa yang terjadi, kami mengerti anda kesal, dan marah, kami siap menerima laporan anda, akan tetapi data diri anda belum terdaftar di sistem kami, silahkan sebutkan nama lengkap anda sesuai KTP untuk melanjutkan proses pelaporan.`,
   ];
   return randomResponse(responses);
 }
 
 function complaintResponse() {
   const responses = [
-    `Silahkan ceritakan kembali dengan detail apa yang ingin anda laporkan.`,
+    `Mohon maaf atas apa yang terjadi, kami mengerti, dan kami siap menerima laporan anda, silahkan untuk menjelaskan dengan detail keluhannya.`,
   ];
   return randomResponse(responses);
+}
+
+function complaintSignup() {
+  const responses = [
+    `Mohon maaf atas apa yang terjadi, kami mengerti, dan kami siap menerima laporan anda, akan tetapi data diri anda belum terdaftar di sistem kami, silahkan sebutkan nama lengkap anda sesuai KTP untuk melanjutkan proses pelaporan.`,
+  ];
+  return randomResponse(responses);
+}
+
+function menuTakDikenal(sapaan, nama) {
+  const responses = [
+    `Mohon Maaf, ${sapaan} ${nama} `,
+  ];
+  return (
+    randomResponse(responses)
+  );
 }
 
 module.exports = {
@@ -84,7 +101,9 @@ module.exports = {
   cekBelumTerdaftar,
   mintaIdLaporan,
   mainMenuDefault,
-  arahKeluhan,
   angryComplaintResponse,
-  complaintResponse
+  complaintResponse,
+  angryComplaintSignup,
+  complaintSignup,
+  menuTakDikenal
 };

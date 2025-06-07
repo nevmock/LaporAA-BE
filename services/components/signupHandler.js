@@ -1,53 +1,62 @@
 const userRepo = require("../../repositories/userRepo");
 const userProfileRepo = require("../../repositories/userProfileRepo");
 const signupResponse = require("../responseMessage/signupResponse");
-const spamHandler = require("./spamHandler");
+const checkReportResponse = require("../responseMessage/checkReportResponse");
 
 module.exports = async (from, step, input, sendReply) => {
-    // Ambil atau buat session baru untuk pengguna
     const session = await userRepo.getOrCreateSession(from);
+    const currentAction = session.currentAction;
     const user = await userProfileRepo.findByFrom(from);
+
     const nama = user?.name || "Warga";
+    const jenisKelamin = user?.jenis_kelamin || "";
+    const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" :
+        jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
 
-    // Spam handling wrapper
-    const messageHandler = async () => {
-        // Langkah 1: Minta nama pengguna
-        if (step === "ASK_NAME") {
-            await userRepo.updateSession(from, {
-                step: "ASK_SEX",
-                data: { ...session.data, name: input }
-            });
-            return sendReply(from, signupResponse.terimaKasihNama(input));
+    const lowerInput = input?.toLowerCase?.() || "";
+
+    // Reset ke menu utama
+    if (lowerInput === "menu" || lowerInput === "kembali") {
+        await userRepo.resetSession(from);
+        return sendReply(from, checkReportResponse.kembaliKeMenu(sapaan, nama));
+    }
+
+    // STEP 1: Masukkan nama
+    if (step === "ASK_NAME" && currentAction === "signup") {
+        if (!input || input.trim() === "") {
+            return sendReply(from, signupResponse.namaTidakValid());
         }
 
-        // Langkah 2: Validasi dan minta jenis kelamin
-        if (step === "ASK_SEX") {
-            const gender = input.toLowerCase();
-            if (gender !== "pria" && gender !== "wanita") {
-                return sendReply(from, signupResponse.jenisKelaminTidakValid());
-            }
+        await userRepo.updateSession(from, {
+            step: "ASK_SEX",
+            data: { ...session.data, name: input }
+        });
 
-            await userRepo.updateSession(from, {
-                step: "CONFIRM_DATA",
-                data: { ...session.data, jenis_kelamin: gender }
-            });
+        return sendReply(from, signupResponse.terimaKasihNama(input));
+    }
 
-            return sendReply(from, signupResponse.konfirmasiData(session.data.name || nama, gender));
+    // STEP 2: Masukkan jenis kelamin
+    if (step === "ASK_SEX" && currentAction === "signup") {
+        if (lowerInput !== "pria" && lowerInput !== "wanita") {
+            return sendReply(from, signupResponse.jenisKelaminTidakValid());
         }
 
-        // Langkah 3: Konfirmasi dan simpan data ke database
-        if (step === "CONFIRM_DATA") {
-            if (input.toLowerCase() === "kirim") {
-                const { name, jenis_kelamin } = session.data;
+        await userRepo.updateSession(from, {
+            step: "CONFIRM_DATA",
+            data: { ...session.data, jenis_kelamin: lowerInput }
+        });
 
-                // Simpan ke koleksi user profile
-                await userProfileRepo.create({
-                    from,
-                    name,
-                    jenis_kelamin
-                });
+        return sendReply(from, signupResponse.konfirmasiData(session.data.name || nama, lowerInput));
+    }
 
-                // Update session untuk lanjut ke pembuatan laporan
+    // STEP 3: Konfirmasi dan simpan data
+    if (step === "CONFIRM_DATA" && currentAction === "signup") {
+        if (lowerInput === "kirim") {
+            const { name, jenis_kelamin } = session.data;
+
+            try {
+                await userProfileRepo.create({ from, name, jenis_kelamin });
+
                 await userRepo.updateSession(from, {
                     currentAction: "create_report",
                     step: "ASK_MESSAGE",
@@ -55,26 +64,20 @@ module.exports = async (from, step, input, sendReply) => {
                 });
 
                 return sendReply(from, signupResponse.dataTersimpan());
+            } catch (err) {
+                console.error("Error saving data:", err);
+                return sendReply(from, signupResponse.errorSimpanData());
             }
-
-            // Batalkan proses jika user mengetik "batal"
-            if (input.toLowerCase() === "batal") {
-                await userRepo.resetSession(from);
-                return sendReply(from, signupResponse.pendaftaranDibatalkan(nama));
-            }
-
-            // Penanganan input selain "kirim" atau "batal"
-            return sendReply(from, signupResponse.konfirmasiKirimAtauBatal());
         }
 
-        // Penanganan fallback jika step tidak dikenal
-        return sendReply(from, signupResponse.handlerDefault());
-    };
+        if (lowerInput === "batal") {
+            await userRepo.resetSession(from);
+            return sendReply(from, signupResponse.pendaftaranDibatalkan(nama));
+        }
 
-    // Check for spam and handle accordingly
-    if (spamHandler.isSpam(from)) {
-        return spamHandler.handleSpam(from, messageHandler, sendReply);
-    } else {
-        return messageHandler();
+        return sendReply(from, signupResponse.konfirmasiKirimAtauBatal());
     }
+
+    // Input tidak dikenal
+    return sendReply(from, signupResponse.handlerDefault());
 };

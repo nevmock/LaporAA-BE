@@ -2,11 +2,8 @@ const userRepo = require("../../repositories/userRepo");
 const userProfileRepo = require("../../repositories/userProfileRepo");
 const { combinedContext } = require("../../utils/openAiHelper");
 const mainMenuResponse = require("../responseMessage/mainMenuResponse");
+const checkReportResponse = require("../responseMessage/checkReportResponse");
 const botFlowResponse = require("../responseMessage/botFlowResponse");
-const spamHandler = require("./spamHandler");
-
-// Global: Simpan key balasan terakhir per user
-const lastResponseFunctionKey = new Map(); // Map<from, functionKey>
 
 module.exports = async (from, input, sendReply) => {
     const user = await userProfileRepo.findByFrom(from);
@@ -15,106 +12,103 @@ module.exports = async (from, input, sendReply) => {
     const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" :
         jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
 
+    const lowerInput = typeof input === "string" ? input.toLowerCase() : "";
     const context = await combinedContext(input);
     let session = await userRepo.getOrCreateSession(from);
 
-    // ✅ Helper di dalam fungsi utama agar bisa akses sendReply
-    const sendByFunctionKey = async (from, functionKey, responseFunc) => {
-        const lastKey = lastResponseFunctionKey.get(from);
-        if (lastKey === functionKey) return;
-
-        const message = await responseFunc();
-        lastResponseFunctionKey.set(from, functionKey);
-        return sendReply(from, message);
-    };
-
-    const messageHandler = async () => {
-        // 1. Menu utama jika user ketik 'menu' atau 'kembali'
-        if (input === "menu" || input === "kembali") {
-            await userRepo.resetSession(from);
-            return sendByFunctionKey(from, "mainSapaan+mainMenuDefault", async () => {
-                const res1 = await botFlowResponse.mainSapaan(sapaan, nama);
-                const res2 = await mainMenuResponse.mainMenuDefault();
-                return res1 + res2;
-            });
-        }
-
-        // 2. Buat laporan baru
-        if (input === "1" || context === "new_report") {
-            if (!user) {
-                await userRepo.updateSession(from, {
-                    currentAction: "signup",
-                    step: "ASK_NAME",
-                });
-                return sendByFunctionKey(from, "belumTerdaftar", () => mainMenuResponse.belumTerdaftar());
-            }
-
-            await userRepo.updateSession(from, {
-                currentAction: "create_report",
-                step: "ASK_MESSAGE",
-                data: {},
-            });
-
-            return sendByFunctionKey(from, "mulaiLaporan", () => mainMenuResponse.mulaiLaporan(sapaan, nama));
-        }
-
-        // 3. Cek status laporan
-        if (input === "2" || context === "check_report") {
-            await userRepo.updateSession(from, {
-                currentAction: "check_report",
-                step: "ASK_REPORT_ID",
-            });
-            return sendByFunctionKey(from, "mintaIdLaporan", () => mainMenuResponse.mintaIdLaporan(sapaan, nama));
-        }
-
-        // 4. Komplain/marah langsung diarahkan ke laporan
-        if (context === "angry_complaint") {
-            if (!user) {
-                await userRepo.updateSession(from, {
-                    currentAction: "signup",
-                    step: "ASK_NAME",
-                });
-                return sendByFunctionKey(from, "belumTerdaftar", () => mainMenuResponse.belumTerdaftar());
-            }
-
-            await userRepo.updateSession(from, {
-                currentAction: "create_report",
-                step: "ASK_MESSAGE",
-                data: {},
-            });
-
-            return sendByFunctionKey(from, "angryComplaintResponse", () => mainMenuResponse.angryComplaintResponse());
-        }
-
-        if (context === "complaint") {
-            if (!user) {
-                await userRepo.updateSession(from, {
-                    currentAction: "signup",
-                    step: "ASK_NAME",
-                });
-                return sendByFunctionKey(from, "belumTerdaftar", () => mainMenuResponse.belumTerdaftar());
-            }
-
-            await userRepo.updateSession(from, {
-                currentAction: "create_report",
-                step: "ASK_MESSAGE",
-                data: {},
-            });
-
-            return sendByFunctionKey(from, "complaintResponse", () => mainMenuResponse.complaintResponse());
-        }
-
-        // 5. Default response
-        return sendByFunctionKey(from, "mainSapaan+mainMenuDefault", async () => {
-            const res1 = await botFlowResponse.mainSapaan(sapaan, nama);
-            const res2 = await mainMenuResponse.mainMenuDefault();
-            return res1 + res2;
+    const promptSignup = async () => {
+        await userRepo.updateSession(from, {
+            currentAction: "signup",
+            step: "ASK_NAME",
         });
+        return sendReply(from, mainMenuResponse.belumTerdaftar());
     };
 
-    if (spamHandler.isSpam(from)) {
-        return spamHandler.handleSpam(from, messageHandler, sendReply);
-    } else {
-        return messageHandler();
+    const promptAngrySignup = async () => {
+        await userRepo.updateSession(from, {
+            currentAction: "signup",
+            step: "ASK_NAME",
+        });
+        return sendReply(from, mainMenuResponse.angryComplaintSignup());
+    };
+
+    const promptMengeluhSignup = async () => {
+        await userRepo.updateSession(from, {
+            currentAction: "signup",
+            step: "ASK_NAME",
+        });
+        return sendReply(from, mainMenuResponse.complaintSignup());
+    };
+
+    // ✅ Reset session dan kirim menu utama
+    if (lowerInput === "menu" || lowerInput === "kembali") {
+        await userRepo.resetSession(from);
+        const res1 = await checkReportResponse.kembaliKeMenu(sapaan, nama);
+        const res2 = await mainMenuResponse.mainMenuDefault();
+        return sendReply(from, res1 + res2);
     }
+
+    // ✅ Greetings
+    if (session.step === "MAIN_MENU" && !session.currentAction && context === "greeting") {
+        await userRepo.resetSession(from);
+        const res1 = await botFlowResponse.mainSapaan(sapaan, nama);
+        const res2 = await mainMenuResponse.mainMenuDefault();
+        return sendReply(from, res1 + res2);
+    }
+
+    // ✅ Buat laporan baru
+    if (session.step === "MAIN_MENU" && input === 1 || context === "new_report") {
+        if (!user) return promptSignup();
+
+        await userRepo.updateSession(from, {
+            currentAction: "create_report",
+            step: "ASK_MESSAGE",
+            data: {},
+        });
+
+        return sendReply(from, mainMenuResponse.mulaiLaporan(sapaan, nama));
+    }
+
+    // ✅ Cek status laporan
+    if (session.step === "MAIN_MENU" && input === 2 || context === "check_report") {
+        if (!user) return promptSignup();
+
+        await userRepo.updateSession(from, {
+            currentAction: "check_report",
+            step: "ASK_REPORT_ID",
+        });
+
+        return sendReply(from, mainMenuResponse.mintaIdLaporan(sapaan, nama));
+    }
+
+    // ✅ Keluhan marah
+    if (session.step === "MAIN_MENU" && input === 3 || context === "angry_complaint") {
+        if (!user) return promptAngrySignup();
+
+        await userRepo.updateSession(from, {
+            currentAction: "create_report",
+            step: "ASK_MESSAGE",
+            data: {},
+        });
+
+        return sendReply(from, mainMenuResponse.angryComplaintResponse());
+    }
+
+    // ✅ Keluhan umum
+    if (session.step === "MAIN_MENU" && input === 4 || context === "complaint") {
+        if (!user) return promptMengeluhSignup();
+
+        await userRepo.updateSession(from, {
+            currentAction: "create_report",
+            step: "ASK_MESSAGE",
+            data: {},
+        });
+
+        return sendReply(from, mainMenuResponse.complaintResponse());
+    }
+
+    // ✅ Respon default (tidak dikenali)
+    const res1 = await mainMenuResponse.menuTakDikenal(sapaan, nama);
+    const res2 = await mainMenuResponse.mainMenuDefault();
+    return sendReply(from, res1 + res2);
 };

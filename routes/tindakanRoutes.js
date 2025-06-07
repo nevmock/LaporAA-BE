@@ -130,7 +130,6 @@ router.put("/:reportId", async (req, res) => {
 
             await sendMessageToWhatsApp(from, message);
 
-            // Tidak perlu masukkan ke pendingFeedback karena sudah final
         }
 
         res.status(200).json(tindakan);
@@ -179,7 +178,7 @@ router.post("/:id/kesimpulan", async (req, res) => {
         const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
         const kesimpulanList = updated.kesimpulan || [];
 
-        const message = tindakanResponse.tindakLanjutLaporanMessage(sapaan, user.name, report.sessionId, kesimpulanList);
+        const message = tindakanResponse.tindakLanjutLaporanMessage(sapaan, user.name, report.sessionId, report.message, kesimpulanList);
         await sendMessageToWhatsApp(from, message);
 
         res.status(200).json(updated);
@@ -200,14 +199,6 @@ router.put("/:id/kesimpulan/:index", async (req, res) => {
     try {
         const updated = await tindakanRepo.updateKesimpulanByIndex(id, parseInt(index), text.trim());
 
-        // Send notification to user
-        const tindakan = await tindakanRepo.findById(id);
-        const report = await reportRepo.findById(tindakan.report);
-        const user = await UserProfile.findById(report.user);
-        const from = report.from;
-        const jenisKelamin = user?.jenis_kelamin || "";
-        await sendMessageToWhatsApp(from, message);
-
         res.status(200).json(updated);
     } catch (error) {
         console.error("Error update kesimpulan:", error);
@@ -220,18 +211,6 @@ router.delete("/:id/kesimpulan/:index", async (req, res) => {
 
     try {
         const updated = await tindakanRepo.deleteKesimpulanByIndex(id, parseInt(index));
-
-        // Send notification to user
-        const tindakan = await tindakanRepo.findById(id);
-        const report = await reportRepo.findById(tindakan.report);
-        const user = await UserProfile.findById(report.user);
-        const from = report.from;
-        const jenisKelamin = user?.jenis_kelamin || "";
-        const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
-        const kesimpulanList = updated.kesimpulan || [];
-
-        const message = tindakanResponse.tindakLanjutLaporanMessage(sapaan, user.name, report.sessionId, kesimpulanList);
-        await sendMessageToWhatsApp(from, message);
 
         res.status(200).json(updated);
     } catch (error) {

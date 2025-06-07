@@ -153,7 +153,7 @@ function ringkasanLaporan(session) {
     `Berikut ringkasan laporan Anda:\n📍 Lokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n📝 Keluhan:\n${session.message}\n📷 Jumlah Foto: ${session.photos.length}\nJika sudah benar, ketik "konfirmasi" untuk mengirim atau "batal" untuk mengulang.`,
     `Ringkasan laporan:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nJumlah Foto: ${session.photos.length}\nKetik "konfirmasi" jika sudah benar, atau "batal" untuk mengulang.`,
     `Cek kembali laporan Anda:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nFoto: ${session.photos.length}\nKetik "konfirmasi" untuk kirim, atau "batal" untuk ulang.`,
-    `Berikut detail laporan Anda:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nJumlah Foto: ${session.photos.length}\nKetik "konfirmasi" jika sudah benar.`,
+    `Berikut detail laporan Anda:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nJumlah Foto: ${session.photos.length}\nKetik "konfirmasi" jika sudah benar, atau "batal" untuk mengulang.`,
     `Laporan Anda:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nFoto: ${session.photos.length}\nKetik "konfirmasi" untuk kirim, atau "batal" untuk ulang.`
   ];
   return randomResponse(responses);
@@ -265,6 +265,7 @@ function handlerDefault() {
     `Silakan mengikuti tahapan pembuatan laporan. Untuk mengikuti tahapan tersebut, ketik "menu".`,
     `Proses pembuatan laporan mesti sesuai dengan tahapan, ketik "menu" untuk menyesuaikan.`,
     `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik "menu".`
+    // `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik "menu". (createReportResponse DEFAULT)`
   ];
   return randomResponse(responses);
 }
