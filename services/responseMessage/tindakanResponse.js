@@ -48,9 +48,33 @@ const tindakLanjutLaporanMessage = (sapaan, nama, sessionId, kesimpulanList) => 
   return randomResponse(responses);
 };
 
+const finalizeAndAskNewReport = (sapaan, nama) => {
+  const responses = [
+    `Terima kasih atas feedback Anda, ${sapaan} ${nama}. Laporan ini sudah kami anggap selesai. Jika Anda masih memiliki keluhan, silakan buat laporan baru. Terima kasih atas pengertiannya.`
+  ];
+  return randomResponse(responses);
+};
+
+const belumReply = (sapaan, nama, sessionId, remaining) => {
+  const responses = [
+    `Terima kasih atas feedback Anda, ${sapaan} ${nama}. Laporan dengan ID ${sessionId} akan kami proses ulang. Anda masih memiliki ${remaining} laporan yang menunggu konfirmasi.`
+  ];
+  return randomResponse(responses);
+};
+
+const puasReply = (sapaan, nama, sessionId) => {
+  const responses = [
+    `Terima kasih atas kepuasan Anda, ${sapaan} ${nama}. Laporan dengan ID ${sessionId} telah kami tandai selesai.`
+  ];
+  return randomResponse(responses);
+};
+
 module.exports = {
   daruratMessage,
   selesaiPenangananMessage,
   ditolakMessage,
-  tindakLanjutLaporanMessage
+  tindakLanjutLaporanMessage,
+  finalizeAndAskNewReport,
+  belumReply,
+  puasReply
 };

@@ -37,6 +37,7 @@ const actionSchema = new mongoose.Schema({
         type: String,
         enum: ["Perlu Verifikasi", "Verifikasi Situasi", "Verifikasi Kelengkapan Berkas", "Proses OPD Terkait", "Selesai Penanganan", "Selesai Pengaduan", "Ditolak"],
         default: "Perlu Verifikasi",
+        index: true
     },
     opd: {
         type: String,
@@ -58,12 +59,14 @@ const actionSchema = new mongoose.Schema({
         type: String,
         enum: ["Belum Ditanya", "Sudah Ditanya", "Sudah Jawab Beres", "Sudah Jawab Belum Beres", "Selesai Ditolak", "Auto Rated"],
         default: null,
+        index: true
     },
     rating: {
         type: Number,
         min: 1,
         max: 5,
-        default: null
+        default: null,
+        index: true
     },
     url: {
         type: String,
@@ -77,6 +80,10 @@ const actionSchema = new mongoose.Schema({
         type: String,
         enum: ["Menunggu Diproses OPD Terkait", "Sedang Diproses OPD Terkait", "Telah Diproses OPD Terkait"],
         default: "Menunggu Diproses OPD Terkait",
+    },
+    hasBeenReprocessed: {
+        type: Boolean,
+        default: false,
     },
 });
 

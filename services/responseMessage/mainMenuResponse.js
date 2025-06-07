@@ -39,8 +39,8 @@ function mintaIdLaporan(sapaan, nama) {
   const responses = [
     `Silakan ${sapaan} ${nama}, masukkan *ID laporan* Anda. Contoh: 12345678.`,
     `Masukkan ID laporan Anda, ${sapaan} ${nama}. Contoh: 12345678.`,
-    `Tolong ketikkan ID laporan Anda, ${sapaan} ${nama}.`,
-    `Mohon masukkan ID laporan Anda, ${sapaan} ${nama}.`,
+    `Tolong ketikkan ID laporan Anda, ${sapaan} ${nama}. Contoh: 12345678.`,
+    `Mohon masukkan ID laporan Anda, ${sapaan} ${nama}. Contoh: 12345678.`,
     `Silakan input ID laporan Anda, ${sapaan} ${nama}, misal: 12345678.`
   ];
   return randomResponse(responses);
@@ -57,10 +57,34 @@ function mainMenuDefault() {
   return randomResponse(responses);
 }
 
+function arahKeluhan() {
+  const responses = [
+    `Silahkan untuk membuat laporan baru, bisa di jelaskan kembali apa keluhan Anda?`,
+  ];
+  return randomResponse(responses);
+}
+
+function angryComplaintResponse() {
+  const responses = [
+    `Mohon maaf atas apa yang terjadi, kami siap menerima laporan anda, silahkan untuk menjelaskan dengan detail keluhannya.`,
+  ];
+  return randomResponse(responses);
+}
+
+function complaintResponse() {
+  const responses = [
+    `Silahkan ceritakan kembali dengan detail apa yang ingin anda laporkan.`,
+  ];
+  return randomResponse(responses);
+}
+
 module.exports = {
   belumTerdaftar,
   mulaiLaporan,
   cekBelumTerdaftar,
   mintaIdLaporan,
-  mainMenuDefault
+  mainMenuDefault,
+  arahKeluhan,
+  angryComplaintResponse,
+  complaintResponse
 };

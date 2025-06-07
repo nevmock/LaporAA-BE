@@ -29,5 +29,9 @@
     "sharp": "^0.34.1",
     "socket.io": "^4.8.1",
     "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.1.1"
   }
 }

@@ -92,6 +92,32 @@ router.put("/:reportId", async (req, res) => {
             await userRepo.appendPendingFeedback(from, tindakan._id);
         }
 
+        // Handle reprocess limit and auto finalize if needed
+        if (status === "Proses OPD Terkait" && tindakan.hasBeenReprocessed) {
+            try {
+                // If already reprocessed once, finalize and set rating to 5
+                tindakan.status = "Selesai Pengaduan";
+                tindakan.feedbackStatus = "Selesai Pengaduan";
+                tindakan.rating = 5;
+                await tindakan.save();
+
+                const report = await reportRepo.findById(reportId);
+                const user = await UserProfile.findById(report.user);
+                const from = report.from;
+                const jenisKelamin = user?.jenis_kelamin || "";
+                const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
+
+                const message = tindakanResponse.finalizeAndAskNewReport(sapaan, user.name);
+
+                await sendMessageToWhatsApp(from, message);
+
+                // Remove from pending feedback if any
+                await userRepo.removePendingFeedback(from, tindakan._id);
+            } catch (error) {
+                console.error("Error finalizing report after reprocess limit:", error);
+            }
+        }
+
         // Jika status diubah jadi "Ditolak", kirim notifikasi WA
         if (status === "Ditolak") {
             const report = await reportRepo.findById(reportId);
@@ -153,7 +179,7 @@ router.post("/:id/kesimpulan", async (req, res) => {
         const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
         const kesimpulanList = updated.kesimpulan || [];
 
-        const message = tindakanReponse.tindakLanjutLaporanMessage(sapaan, user.name, report.sessionId, kesimpulanList);
+        const message = tindakanResponse.tindakLanjutLaporanMessage(sapaan, user.name, report.sessionId, kesimpulanList);
         await sendMessageToWhatsApp(from, message);
 
         res.status(200).json(updated);
@@ -180,10 +206,6 @@ router.put("/:id/kesimpulan/:index", async (req, res) => {
         const user = await UserProfile.findById(report.user);
         const from = report.from;
         const jenisKelamin = user?.jenis_kelamin || "";
-        const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
-        const kesimpulanList = updated.kesimpulan || [];
-
-        const message = tindakanReponse.tindakLanjutLaporanMessage(sapaan, user.name, report.sessionId, kesimpulanList);
         await sendMessageToWhatsApp(from, message);
 
         res.status(200).json(updated);
@@ -208,7 +230,7 @@ router.delete("/:id/kesimpulan/:index", async (req, res) => {
         const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
         const kesimpulanList = updated.kesimpulan || [];
 
-        const message = tindakanReponse.tindakLanjutLaporanMessage(sapaan, user.name, report.sessionId, kesimpulanList);
+        const message = tindakanResponse.tindakLanjutLaporanMessage(sapaan, user.name, report.sessionId, kesimpulanList);
         await sendMessageToWhatsApp(from, message);
 
         res.status(200).json(updated);

@@ -12,7 +12,7 @@ class EnvironmentConfig {
         environment: process.env.NODE_ENV || 'development'
       },
       database: {
-        uri: process.env.MONGO_URI || 'mongodb://localhost:27017/lapor-aa',
+        uri: process.env.MONGO_URI,
         options: {}
       },
       cron: {

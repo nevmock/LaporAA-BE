@@ -80,18 +80,21 @@ exports.handleIncomingMessages = async (req, res) => {
                             }
 
                             // Jalankan bot
-                            const botReply = await botFlowService.handleUserMessage({ from, message: parsedMessage });
-
-                            if (botReply) {
+                            const sendReply = (to, message) => {
                                 if (io) {
                                     io.emit("newMessage", {
-                                        from,
+                                        from: to,
                                         senderName: "Bot",
-                                        message: botReply,
+                                        message,
                                         timestamp: new Date()
                                     });
                                 }
+                                return message;
+                            };
 
+                            const botReply = await botFlowService.handleUserMessage({ from, message: parsedMessage, sendReply });
+
+                            if (botReply) {
                                 const session = await UserSession.findOne({ from, status: "in_progress" });
                                 if (!session || session.mode === "bot") {
                                     await sendMessageToWhatsApp(from, botReply);

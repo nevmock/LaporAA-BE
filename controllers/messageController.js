@@ -100,23 +100,40 @@ exports.sendMessageHandler = async (req, res) => {
 exports.sendEvidencePhotosToUser = async (photos = [], to) => {
     if (!photos || photos.length === 0) return;
 
-    for (let photoPath of photos) {
-        photoPath = await convertWebpToJpegIfNeeded(photoPath);
+    for (let filePath of photos) {
+        const ext = path.extname(filePath).toLowerCase();
 
-        const fileName = path.basename(photoPath);
+        if (ext === ".webp" || ext === ".jpg" || ext === ".jpeg" || ext === ".png") {
+            filePath = await convertWebpToJpegIfNeeded(filePath);
+        }
+
+        const fileName = path.basename(filePath);
         const encodedFileName = encodeURIComponent(fileName);
         const fullUrl = `${process.env.BASE_URL}/uploadsTindakan/${encodedFileName}`;
 
-        console.log("📸 Mengirim foto ke user:", fullUrl);
+        console.log("📸 Mengirim file ke user:", fullUrl);
 
         try {
-            await exports.sendMessageToWhatsApp(to, {
-                type: "image",
-                link: fullUrl,
-                caption: "Berikut dokumentasi hasil tindak lanjut laporan Anda.",
-            });
+            if (ext === ".pdf") {
+                // Send as document
+                await exports.sendMessageToWhatsApp(to, {
+                    type: "document",
+                    document: {
+                        link: fullUrl,
+                        caption: "Berikut dokumentasi hasil tindak lanjut laporan Anda.",
+                        filename: fileName,
+                    },
+                });
+            } else {
+                // Send as image
+                await exports.sendMessageToWhatsApp(to, {
+                    type: "image",
+                    link: fullUrl,
+                    caption: "Berikut dokumentasi hasil tindak lanjut laporan Anda.",
+                });
+            }
         } catch (err) {
-            console.error("❌ Gagal kirim foto:", err.response?.data || err.message);
+            console.error("❌ Gagal kirim file:", err.response?.data || err.message);
         }
     }
 };

@@ -1,7 +1,7 @@
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
-const { v4: uuidv4 } = require("uuid");
+const { generateUniqueFilename } = require("./fileRenameHelper");
 
 const PAGE_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN; // simpan token di .env
 
@@ -20,7 +20,7 @@ async function downloadMediaFromMeta(mediaId) {
     });
 
     const ext = metaInfo.mime_type === "image/png" ? "png" : "jpg";
-    const fileName = `${uuidv4()}.${ext}`;
+    const fileName = generateUniqueFilename(`file.${ext}`);
     const filePath = path.join(__dirname, "..", "public", "uploads", fileName);
 
     fs.writeFileSync(filePath, response.data);

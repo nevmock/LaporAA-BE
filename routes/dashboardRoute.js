@@ -7,5 +7,7 @@ router.get("/effectiveness", dashboardController.getEffectiveness);
 router.get("/distribusi", dashboardController.getDistribusi);
 router.get("/kepuasan", dashboardController.getKepuasan);
 router.get('/harian', dashboardController.getDailyReportCount);
+router.get('/wilayah-summary', dashboardController.getWilayahSummary);
+router.get('/status-summary', dashboardController.getStatusSummary);
 
 module.exports = router;
