@@ -164,4 +164,36 @@ router.get("/:sessionId", async (req, res) => {
     }
 });
 
+// PUT update report by sessionId
+router.put("/:sessionId", async (req, res) => {
+    const { sessionId } = req.params;
+    const { message, location } = req.body;
+
+    try {
+        const report = await Report.findOne({ sessionId });
+
+        if (!report) {
+            return res.status(404).json({ message: "Laporan tidak ditemukan" });
+        }
+
+        if (message !== undefined) {
+            report.message = message;
+        }
+
+        if (location && typeof location.description === "string") {
+            if (!report.location) {
+                report.location = {};
+            }
+            report.location.description = location.description;
+        }
+
+        await report.save();
+
+        res.status(200).json({ message: "Laporan berhasil diperbarui", report });
+    } catch (error) {
+        console.error("Error updating report by sessionId:", error);
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
 module.exports = router;

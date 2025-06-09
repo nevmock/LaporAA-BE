@@ -41,9 +41,9 @@ module.exports = async (from, input, sendReply) => {
     };
 
     // ✅ Reset session dan kirim menu utama
-    if (lowerInput === "menu" || lowerInput === "kembali") {
+    if (lowerInput === "menu" || lowerInput === "kembali" || lowerInput === "reset" || context === "greeting") {
         await userRepo.resetSession(from);
-        const res1 = await checkReportResponse.kembaliKeMenu(sapaan, nama);
+        const res1 = await botFlowResponse.mainSapaan(sapaan, nama);
         const res2 = await mainMenuResponse.mainMenuDefault();
         return sendReply(from, res1 + res2);
     }

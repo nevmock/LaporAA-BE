@@ -59,9 +59,9 @@ POST http://localhost:3001/userLogin
 Content-Type: application/json
 
 {
-  "username": "admin",
-  "password": "admin123",
-  "role": "Admin"
+  "username": "bupati",
+  "password": "bupati123",
+  "role": "Bupati"
 }
 
 ###
@@ -72,11 +72,9 @@ Content-Type: application/json
 
 {
   "username": "admin",
-  "password": "newpassword123",  // kosongkan atau hapus jika tidak ingin ubah password
-  "role": "Bupati"
+  "password": "admin123",
+  "role": "Admin"
 }
-
-###
 
 ### ❌ Delete user login
 DELETE http://localhost:3001/userLogin/:userId

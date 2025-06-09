@@ -27,12 +27,36 @@ module.exports = async (from, step, input, sendReply) => {
             return sendReply(from, signupResponse.namaTidakValid());
         }
 
+        // Format input name: first letter uppercase, rest lowercase
+        const formattedName = input.charAt(0).toUpperCase() + input.slice(1).toLowerCase();
+
         await userRepo.updateSession(from, {
-            step: "ASK_SEX",
-            data: { ...session.data, name: input }
+            step: "CONFIRM_NAME",
+            data: { ...session.data, name: formattedName }
         });
 
-        return sendReply(from, signupResponse.terimaKasihNama(input));
+        return sendReply(from, signupResponse.konfirmasiNama(formattedName));
+    }
+
+    // STEP 1.5: Konfirmasi nama
+    if (step === "CONFIRM_NAME" && currentAction === "signup") {
+        const lowerInput = input?.toLowerCase?.() || "";
+
+        if (lowerInput === "kirim") {
+            await userRepo.updateSession(from, {
+                step: "ASK_SEX",
+                data: session.data
+            });
+
+            return sendReply(from, signupResponse.terimaKasihNama(session.data.name));
+        }
+
+        if (lowerInput === "batal") {
+            await userRepo.resetSession(from);
+            return sendReply(from, signupResponse.pendaftaranDibatalkan(session.data.name || nama));
+        }
+
+        return sendReply(from, signupResponse.konfirmasiNama(session.data.name));
     }
 
     // STEP 2: Masukkan jenis kelamin
@@ -41,6 +65,7 @@ module.exports = async (from, step, input, sendReply) => {
             return sendReply(from, signupResponse.jenisKelaminTidakValid());
         }
 
+        // Save jenis_kelamin as lowercase
         await userRepo.updateSession(from, {
             step: "CONFIRM_DATA",
             data: { ...session.data, jenis_kelamin: lowerInput }

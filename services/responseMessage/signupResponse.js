@@ -79,6 +79,17 @@ function konfirmasiKirimAtauBatal() {
   return randomResponse(responses);
 }
 
+function konfirmasiNama(nama) {
+  const responses = [
+    `Apakah nama Anda sudah benar: ${nama}?\nKetik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`,
+    `Nama yang Anda masukkan adalah: ${nama}.\nJika sudah benar, ketik *kirim*, jika ingin mengubah, ketik *batal*.`,
+    `Tolong konfirmasi nama Anda: ${nama}.\nKetik "kirim" untuk lanjut, atau "batal" untuk membatalkan.`,
+    `Nama: ${nama}. Apakah sudah benar?\nKetik *kirim* untuk melanjutkan, atau *batal* untuk membatalkan.`,
+    `Konfirmasi nama: ${nama}.\nKetik "kirim" jika sudah benar, atau "batal" jika ingin membatalkan.`
+  ];
+  return randomResponse(responses);
+}
+
 function handlerDefault() {
   const responses = [
     `Mohon ikuti langkah pelaporan sesuai instruksi. Silahkan ketik "menu".`,
