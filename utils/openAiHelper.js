@@ -4,7 +4,10 @@ const openai = new OpenAI({
 });
 
 const buildMenuContextPrompt = (rawMessage) => `
-Kenali konteks kalimatnya. Jawabanmu hanya boleh salah satu dari berikut:
+Kenali konteks kalimatnya.
+Jawabanmu hanya boleh salah satu dari berikut: greeting, new_report, check_report, angry_complaint, complaint, atau menu.
+Tanpa penjelasan, tanpa tambahan kata lain, tanpa tanda petik, hanya keyword sesuai konteks yang disebutkan diatas.
+Aturannya konteksnya adalah sebagai berikut:
 "greeting" - jika kalimat adalah sapaan umum dalam bahasa indonesia seperti "halo", "hai", "hi", "assalamualaikum", dll.
 "new_report" - jika ingin membuat laporan baru.
 "check_report" - jika ingin melihat status laporan.
