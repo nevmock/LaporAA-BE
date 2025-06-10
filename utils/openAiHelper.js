@@ -5,7 +5,7 @@ const openai = new OpenAI({
 
 const buildMenuContextPrompt = (rawMessage) => `
 Kenali konteks kalimatnya. Jawabanmu hanya boleh salah satu dari berikut:
-"greeting" - jika kalimat adalah sapaan seperti "halo", "hai", "assalamualaikum", dll.
+"greeting" - jika kalimat adalah sapaan umum dalam bahasa indonesia seperti "halo", "hai", "hi", "assalamualaikum", dll.
 "new_report" - jika ingin membuat laporan baru.
 "check_report" - jika ingin melihat status laporan.
 "angry_complaint" - jika kalimat menunjukkan kemarahan atau marah-marah.
