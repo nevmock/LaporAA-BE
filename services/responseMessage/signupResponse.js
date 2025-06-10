@@ -110,5 +110,6 @@ module.exports = {
   dataTersimpan,
   pendaftaranDibatalkan,
   konfirmasiKirimAtauBatal,
-  handlerDefault
+  handlerDefault,
+  konfirmasiNama
 };
