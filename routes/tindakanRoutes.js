@@ -62,7 +62,7 @@ router.put("/:reportId", async (req, res) => {
             const tindakanDarurat = await tindakanRepo.findById(tindakan._id);
             tindakanDarurat.status = "Selesai Pengaduan";
             tindakanDarurat.status_laporan = "Telah Diproses OPD Terkait";
-            tindakanDarurat.kesimpulan = ["Status Darurat"];
+            tindakanDarurat.kesimpulan = [{text: "Status Darurat"}];
             tindakanDarurat.keterangan = "Status Darurat";
             tindakanDarurat.rating = "5"
             await tindakanDarurat.save();
