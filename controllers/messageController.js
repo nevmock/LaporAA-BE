@@ -153,7 +153,7 @@ exports.sendTutorialImagesToUser = async (to) => {
             await exports.sendMessageToWhatsApp(to, {
                 type: "image",
                 link: fullUrl,
-                caption: "Contoh kirim lokasi",
+                caption: "Tata Cara Kirim Lokasi",
             });
         } catch (err) {
             console.error("❌ Gagal kirim gambar tutorial:", err.response?.data || err.message);

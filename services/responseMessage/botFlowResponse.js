@@ -20,7 +20,7 @@ Apabila situasi anda darurat, bisa menghubungi nomer berikut :
 - 110 : Kepolisian (Kriminal dll)
 - 081219071900 : BPBD (Untuk Bantuan Penanggulangan Bencana)
 
-Jika tidak, silahkan buat laporan atau cek status laporan Anda.`
+Jika tidak, silahkan *buat laporan* atau *cek status laporan* Anda.\n\n`
   );
 }
 

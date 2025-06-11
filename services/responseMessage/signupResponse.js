@@ -92,12 +92,12 @@ function konfirmasiNama(nama) {
 
 function handlerDefault() {
   const responses = [
-    `Mohon ikuti langkah pelaporan sesuai instruksi. Silahkan ketik "menu".`,
-    `Mohon ikuti arahan pelaporan. Agar sesuai dengan arahan, mohon ketik "menu".`,
-    `Silakan mengikuti tahapan pembuatan laporan. Untuk mengikuti tahapan tersebut, ketik "menu".`,
-    `Proses pembuatan laporan mesti sesuai dengan tahapan, ketik "menu" untuk menyesuaikan.`,
-    `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik "menu".`
-    // `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik "menu". (signupResponse DEFAULT)`
+    `Mohon ikuti langkah pelaporan sesuai instruksi. Silahkan ketik *menu*.`,
+    `Mohon ikuti arahan pelaporan. Agar sesuai dengan arahan, mohon ketik *menu*.`,
+    `Silakan mengikuti tahapan pembuatan laporan. Untuk mengikuti tahapan tersebut, ketik *menu*.`,
+    `Proses pembuatan laporan mesti sesuai dengan tahapan, ketik *menu* untuk menyesuaikan.`,
+    `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik *menu*.`
+    // `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik *menu*. (signupResponse DEFAULT)`
   ];
   return randomResponse(responses);
 }

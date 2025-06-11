@@ -37,11 +37,11 @@ function konfirmasiKeluhan(message) {
 
 function laporanDibatalkan(sapaan, nama) {
   const responses = [
-    `Baik ${sapaan} ${nama}, laporan dibatalkan. Ketik "menu" untuk memulai kembali.`,
-    `Laporan Anda dibatalkan, ${sapaan} ${nama}. Silakan ketik "menu" untuk mulai ulang.`,
+    `Baik ${sapaan} ${nama}, laporan dibatalkan. Ketik *menu* untuk memulai kembali.`,
+    `Laporan Anda dibatalkan, ${sapaan} ${nama}. Silakan ketik *menu* untuk mulai ulang.`,
     `Laporan telah dibatalkan, ${sapaan} ${nama}.`,
-    `Proses laporan dibatalkan. Ketik "menu" untuk memulai lagi.`,
-    `Laporan dibatalkan. Silakan mulai ulang dengan ketik "menu", ${sapaan} ${nama}.`
+    `Proses laporan dibatalkan. Ketik *menu* untuk memulai lagi.`,
+    `Laporan dibatalkan. Silakan mulai ulang dengan ketik *menu*, ${sapaan} ${nama}.`
   ];
   return randomResponse(responses);
 }
@@ -81,15 +81,15 @@ function mintaLokasi(sapaan, nama) {
 
 function lokasiBukanBekasi(sapaan, nama, kabupaten) {
   const responses = [
-    `Terima kasih ${sapaan} ${nama}, namun laporan Anda berada di luar wilayah *Kabupaten Bekasi* (${kabupaten || 'wilayah tidak dikenal'}).`,
-    `Mohon maaf, lokasi laporan Anda bukan di area Kabupaten Bekasi (${kabupaten || 'wilayah tidak dikenal'}).`,
-    `Laporan Anda tidak berada di Kabupaten Bekasi (${kabupaten || 'wilayah tidak dikenal'}).`,
-    `Lokasi laporan di luar Kabupaten Bekasi (${kabupaten || 'wilayah tidak dikenal'}).`,
-    `Laporan Anda bukan di wilayah Kabupaten Bekasi (${kabupaten || 'wilayah tidak dikenal'}).`
+    `Terima kasih ${sapaan} ${nama}, namun laporan Anda *berada di luar wilayah Kabupaten Bekasi* (${kabupaten || 'wilayah tidak dikenal'}).`,
+    `Mohon maaf, lokasi laporan Anda *bukan di area Kabupaten Bekasi* (${kabupaten || 'wilayah tidak dikenal'}).`,
+    `Laporan Anda *tidak berada di Kabupaten Bekasi* (${kabupaten || 'wilayah tidak dikenal'}).`,
+    `Lokasi laporan *di luar Kabupaten Bekasi* (${kabupaten || 'wilayah tidak dikenal'}).`,
+    `Laporan Anda *bukan di wilayah Kabupaten Bekasi* (${kabupaten || 'wilayah tidak dikenal'}).`
   ];
   return (
     randomResponse(responses) +
-    `\n\nSilakan hubungi layanan pengaduan masyarakat di pemerintahan daerah setempat sesuai lokasi kejadian.`
+    `\n\nSilakan hubungi layanan pengaduan masyarakat di pemerintahan daerah setempat sesuai lokasi kejadian 🙏🏼`
   );
 }
 
@@ -161,11 +161,11 @@ function ringkasanLaporan(session) {
 
 function laporanDibatalkanMenu() {
   const responses = [
-    `Laporan dibatalkan. Ketik "menu" untuk memulai kembali.`,
-    `Proses laporan dibatalkan. Silakan ketik "menu" untuk mulai ulang.`,
-    `Laporan telah dibatalkan. Ketik "menu" untuk memulai lagi.`,
-    `Laporan dibatalkan. Silakan mulai ulang dengan ketik "menu".`,
-    `Laporan Anda dibatalkan. Ketik "menu" untuk mulai dari awal.`
+    `Laporan dibatalkan. Ketik *menu* untuk memulai kembali.`,
+    `Proses laporan dibatalkan. Silakan ketik *menu* untuk mulai ulang.`,
+    `Laporan telah dibatalkan. Ketik *menu* untuk memulai lagi.`,
+    `Laporan dibatalkan. Silakan mulai ulang dengan ketik *menu*.`,
+    `Laporan Anda dibatalkan. Ketik *menu* untuk mulai dari awal.`
   ];
   return randomResponse(responses);
 }
@@ -249,23 +249,23 @@ function gagalSimpanLaporan() {
 
 function ulangLaporan() {
   const responses = [
-    `Laporan dibatalkan. Ketik "menu" untuk memulai dari awal.`,
-    `Proses laporan dibatalkan. Silakan mulai ulang dengan ketik "menu".`,
-    `Laporan telah dibatalkan. Ketik "menu" untuk mulai dari awal.`,
-    `Laporan Anda dibatalkan. Silakan mulai ulang dengan "menu".`,
-    `Laporan dibatalkan. Ketik "menu" untuk mulai ulang.`
+    `Laporan dibatalkan. Ketik *menu* untuk memulai dari awal.`,
+    `Proses laporan dibatalkan. Silakan mulai ulang dengan ketik *menu*.`,
+    `Laporan telah dibatalkan. Ketik *menu* untuk mulai dari awal.`,
+    `Laporan Anda dibatalkan. Silakan mulai ulang dengan *menu*.`,
+    `Laporan dibatalkan. Ketik *menu* untuk mulai ulang.`
   ];
   return randomResponse(responses);
 }
 
 function handlerDefault() {
   const responses = [
-    `Mohon ikuti langkah pelaporan sesuai instruksi. Silahkan ketik "menu".`,
-    `Mohon ikuti arahan pelaporan. Agar sesuai dengan arahan, mohon ketik "menu".`,
-    `Silakan mengikuti tahapan pembuatan laporan. Untuk mengikuti tahapan tersebut, ketik "menu".`,
-    `Proses pembuatan laporan mesti sesuai dengan tahapan, ketik "menu" untuk menyesuaikan.`,
-    `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik "menu".`
-    // `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik "menu". (createReportResponse DEFAULT)`
+    `Mohon ikuti langkah pelaporan sesuai instruksi. Silahkan ketik *menu*.`,
+    `Mohon ikuti arahan pelaporan. Agar sesuai dengan arahan, mohon ketik *menu*.`,
+    `Silakan mengikuti tahapan pembuatan laporan. Untuk mengikuti tahapan tersebut, ketik *menu*.`,
+    `Proses pembuatan laporan mesti sesuai dengan tahapan, ketik *menu* untuk menyesuaikan.`,
+    `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik *menu*.`
+    // `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik *menu*. (createReportResponse DEFAULT)`
   ];
   return randomResponse(responses);
 }

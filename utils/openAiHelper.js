@@ -13,14 +13,14 @@ Aturannya konteksnya adalah sebagai berikut:
 "check_report" - jika ingin melihat status laporan.
 "angry_complaint" - jika kalimat menunjukkan kemarahan atau marah-marah.
 "complaint" - jika kalimat menunjukkan keluhan biasa atau mengeluh.
-"menu" - untuk konteks lain atau tidak dikenali.
+*menu* - untuk konteks lain atau tidak dikenali.
 
 Kalimat atau kata nya:
 ${rawMessage}
 `;
 
 exports.combinedContext = async (rawMessage) => {
-    if (!rawMessage || typeof rawMessage !== "string") return "menu";
+    if (!rawMessage || typeof rawMessage !== "string") return *menu*;
 
     try {
         const chat = await openai.chat.completions.create({
@@ -41,14 +41,14 @@ exports.combinedContext = async (rawMessage) => {
         if (result === "check_report") return "check_report";
         if (result === "angry_complaint") return "angry_complaint";
         if (result === "complaint") return "complaint";
-        return "menu";
+        return *menu*;
     } catch (error) {
         if (error.status === 429) {
             console.warn("Rate limit OpenAI (429) - combinedContext");
-            return "menu";
+            return *menu*;
         }
 
         console.error("❌ OpenAI error (combinedContext):", error.message);
-        return "menu";
+        return *menu*;
     }
 };

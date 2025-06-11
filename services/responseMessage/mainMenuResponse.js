@@ -48,12 +48,12 @@ function mintaIdLaporan(sapaan, nama) {
 
 function mainMenuDefault() {
   const responses = [
-    `Mohon ikuti langkah pelaporan sesuai instruksi. Atau silahkan ketik "menu" untuk informasi lebih lengkap.`,
-    `Mohon ikuti arahan pelaporan. Agar sesuai dengan arahan, Atau silahkan ketik "menu" untuk informasi lebih lengkap.`,
-    `Silakan mengikuti tahapan pembuatan laporan. Untuk mengikuti tahapan tersebut, Atau silahkan ketik "menu" untuk informasi lebih lengkap.`,
-    `Proses pembuatan laporan mesti sesuai dengan tahapan, Atau silahkan ketik "menu" untuk informasi lebih lengkap.`,
-    `Pelaporan mesti sesuai dengan proses pelaporan, Atau silahkan ketik "menu" untuk informasi lebih lengkap.`
-    // `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik "menu". (Main Menu DEFAULT)`,
+    `Mohon ikuti langkah pelaporan sesuai instruksi. Atau silahkan ketik *menu* untuk informasi lebih lengkap.`,
+    `Mohon ikuti arahan pelaporan. Agar sesuai dengan arahan, Atau silahkan ketik *menu* untuk informasi lebih lengkap.`,
+    `Silakan mengikuti tahapan pembuatan laporan. Untuk mengikuti tahapan tersebut, Atau silahkan ketik *menu* untuk informasi lebih lengkap.`,
+    `Proses pembuatan laporan mesti sesuai dengan tahapan, Atau silahkan ketik *menu* untuk informasi lebih lengkap.`,
+    `Pelaporan mesti sesuai dengan proses pelaporan, Atau silahkan ketik *menu* untuk informasi lebih lengkap.`
+    // `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik *menu*. (Main Menu DEFAULT)`,
   ];
   return randomResponse(responses);
 }
@@ -88,7 +88,7 @@ function complaintSignup() {
 
 function menuTakDikenal(sapaan, nama) {
   const responses = [
-    `Mohon Maaf, ${sapaan} ${nama} `,
+    `Mohon Maaf ${sapaan} ${nama}, `,
   ];
   return (
     randomResponse(responses)
