@@ -58,7 +58,7 @@ const limiter = rateLimit({
 // Middleware
 app.use(cors());
 app.use(express.json());
-// app.use(limiter);
+app.use(limiter);
 
 mongoose.connection.on('connected', () => {
   console.log('Mongoose connected to DB');
