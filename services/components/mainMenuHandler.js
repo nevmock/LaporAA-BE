@@ -15,11 +15,11 @@ module.exports = async (from, input, sendReply) => {
     let session = await userRepo.getOrCreateSession(from);
 
     const context = await combinedContext(input);
-    const greetingContext = context === "greeting" || "menu";
-    const newReportContext = context === "new_report" || "1";
-    const checkReportContext = context === "check_report" || "2";
-    const angryComplaintContext = context === "angry_complaint" || "3";
-    const complaintContext = context === "complaint" || "4";
+    // const greetingContext = context === "greeting" || "menu";
+    // const newReportContext = context === "new_report" || "1";
+    // const checkReportContext = context === "check_report" || "2";
+    // const angryComplaintContext = context === "angry_complaint" || "3";
+    // const complaintContext = context === "complaint" || "4";
 
     const promptSignup = async () => {
         await userRepo.updateSession(from, {
@@ -46,7 +46,7 @@ module.exports = async (from, input, sendReply) => {
     };
 
     // ✅ Reset session dan kirim menu utama
-    if (lowerInput === "menu" || lowerInput === "kembali" || lowerInput === "reset" || context === greetingContext) {
+    if (lowerInput === "menu" || lowerInput === "kembali" || lowerInput === "reset" || (context === "greeting" && process.env.AI_CONTEXT_READER)) {
         await userRepo.resetSession(from);
         const res1 = await botFlowResponse.mainSapaan(sapaan, nama);
         const res2 = await mainMenuResponse.mainMenuDefault();
@@ -54,7 +54,7 @@ module.exports = async (from, input, sendReply) => {
     }
 
     // ✅ Greetings
-    if (session.step === "MAIN_MENU" && !session.currentAction && context === greetingContext) {
+    if (session.step === "MAIN_MENU" && !session.currentAction && (context === "greeting" && process.env.AI_CONTEXT_READER)) {
         await userRepo.resetSession(from);
         const res1 = await botFlowResponse.mainSapaan(sapaan, nama);
         const res2 = await mainMenuResponse.mainMenuDefault();
@@ -62,7 +62,7 @@ module.exports = async (from, input, sendReply) => {
     }
 
     // ✅ Buat laporan baru
-    if (session.step === "MAIN_MENU" && input === 1 || context === newReportContext) {
+    if (session.step === "MAIN_MENU" && input === 1 || (context === "new_report" && process.env.AI_CONTEXT_READER)) {
         if (!user) return promptSignup();
 
         await userRepo.updateSession(from, {
@@ -75,7 +75,7 @@ module.exports = async (from, input, sendReply) => {
     }
 
     // ✅ Cek status laporan
-    if (session.step === "MAIN_MENU" && input === 2 || context === checkReportContext) {
+    if (session.step === "MAIN_MENU" && input === 2 || (context === "check_report" && process.env.AI_CONTEXT_READER)) {
         if (!user) return promptSignup();
 
         await userRepo.updateSession(from, {
@@ -87,7 +87,7 @@ module.exports = async (from, input, sendReply) => {
     }
 
     // ✅ Keluhan marah
-    if (session.step === "MAIN_MENU" && input === 3 || context === angryComplaintContext) {
+    if (session.step === "MAIN_MENU" && input === 3 || (context === "angry_complaint" && process.env.AI_CONTEXT_READER)) {
         if (!user) return promptAngrySignup();
 
         await userRepo.updateSession(from, {
@@ -100,7 +100,7 @@ module.exports = async (from, input, sendReply) => {
     }
 
     // ✅ Keluhan umum
-    if (session.step === "MAIN_MENU" && input === 4 || context === complaintContext) {
+    if (session.step === "MAIN_MENU" && input === 4 || (context === "complaint" && process.env.AI_CONTEXT_READER)) {
         if (!user) return promptMengeluhSignup();
 
         await userRepo.updateSession(from, {
