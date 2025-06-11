@@ -59,9 +59,9 @@ POST http://localhost:3001/userLogin
 Content-Type: application/json
 
 {
-  "username": "admin",
-  "password": "admin123",
-  "role": "Admin"
+  "username": "bupati",
+  "password": "bupati123",
+  "role": "Bupati"
 }
 
 ###

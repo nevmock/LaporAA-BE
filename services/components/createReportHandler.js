@@ -44,6 +44,11 @@ module.exports = async (from, step, input, sendReply) => {
             return sendReply(from, createReportResponse.konfirmasiKeluhan(session.data.message));
         }
 
+        if (step = "APPEND_MESSAGE" && msg === "menu") {
+            await userRepo.resetSession(from);
+            return sendReply(from, createReportResponse.laporanDibatalkan(sapaan, nama));
+        }
+
         if (msg === "batal") {
             await userRepo.resetSession(from);
             return sendReply(from, createReportResponse.laporanDibatalkan(sapaan, nama));

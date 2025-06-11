@@ -4,22 +4,22 @@ function randomResponse(arr) {
 
 function mintaKeluhan() {
   const responses = [
-    `Terima kasih atas keluhannya, Apakah ada keluhan tambahan? Jika sudah cukup, ketik *kirim*.`,
-    `Terima kasih atas keluhannya, Silakan tambahkan keluhan lain, atau ketik *kirim* jika sudah selesai.`,
-    `Terima kasih atas keluhannya, Tulis lagi keluhan tambahan Anda jika ada, atau ketik *kirim* untuk lanjut.`,
-    `Terima kasih atas keluhannya, Jika masih ada keluhan, silakan tulis keluhan tambahan Anda. Atau ketik *kirim* untuk melanjutkan.`,
-    `Terima kasih atas keluhannya, Ketik *kirim* jika keluhan sudah lengkap, atau tulis lagi untuk menambah keluhan Anda.`
+    `Terima kasih atas keluhannya, Apakah ada keluhan tambahan? Jika sudah cukup, ketik *kirim*. Atau *menu* untuk kembali ke menu utama.`,
+    `Terima kasih atas keluhannya, Silakan tambahkan keluhan lain, atau ketik *kirim* jika sudah selesai. Atau *menu* untuk kembali ke menu utama.`,
+    `Terima kasih atas keluhannya, Tulis lagi keluhan tambahan Anda jika ada, atau ketik *kirim* untuk lanjut. Atau *menu* untuk kembali ke menu utama.`,
+    `Terima kasih atas keluhannya, Jika masih ada keluhan, silakan tulis keluhan tambahan Anda. Atau ketik *kirim* untuk melanjutkan. Atau *menu* untuk kembali ke menu utama.`,
+    `Terima kasih atas keluhannya, Ketik *kirim* jika keluhan sudah lengkap, atau tulis lagi untuk menambah keluhan Anda. Atau *menu* untuk kembali ke menu utama.`
   ];
   return randomResponse(responses);
 }
 
 function keluhanDitambahkan() {
   const responses = [
-    `Keluhan ditambahkan. Jika ada lagi, silakan tulis. Jika sudah cukup, ketik *kirim*.`,
-    `Keluhan berhasil ditambahkan. Tulis lagi jika masih ada, atau ketik *kirim*.`,
-    `Keluhan Anda sudah dicatat. Tambahkan lagi atau ketik *kirim* jika selesai.`,
-    `Kami sudah menambahkan keluhan Anda. Tambahkan lagi atau ketik *kirim* jika sudah cukup.`,
-    `Keluhan sudah masuk. Tulis lagi untuk menambah, atau *kirim* untuk lanjut.`
+    `Keluhan ditambahkan. Jika ada lagi, silakan tulis. Jika sudah cukup, ketik *kirim*. Atau *menu* untuk kembali ke menu utama.`,
+    `Keluhan berhasil ditambahkan. Tulis lagi jika masih ada, atau ketik *kirim*. Atau *menu* untuk kembali ke menu utama.`,
+    `Keluhan Anda sudah dicatat. Tambahkan lagi atau ketik *kirim* jika selesai. Atau *menu* untuk kembali ke menu utama.`,
+    `Kami sudah menambahkan keluhan Anda. Tambahkan lagi atau ketik *kirim* jika sudah cukup. Atau *menu* untuk kembali ke menu utama.`,
+    `Keluhan sudah masuk. Tulis lagi untuk menambah, atau *kirim* untuk lanjut. Atau *menu* untuk kembali ke menu utama.`
   ];
   return randomResponse(responses);
 }

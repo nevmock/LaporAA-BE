@@ -30,12 +30,22 @@ jika sudah puas, cukup balas dengan "puas"`
   return randomResponse(responses);
 };
 
-const ditolakMessage = (sapaan, nama, sessionId, keterangan) => {
-  const responses = [
-    `Mohon maaf ${sapaan} ${nama}, Laporan ${sessionId} ditolak dan tidak dapat ditindak lanjuti. Karena ${keterangan || 'Tidak ada alasan jelas'}, silahkan untuk membuat laporan baru dengan memperbaiki kesalahan ${keterangan || 'Tidak ada alasan jelas, silakan untuk langsung membuat laporan baru'}`
+const ditolakMessage = (sapaan, nama, sessionId, kesimpulan) => {
+    const responses = [
+    `Mohon maaf ${sapaan} ${nama}, laporan Anda dengan ID *${sessionId}* *tidak dapat ditindaklanjuti*.`,
+    `Laporan Anda dengan ID *${sessionId}* atas nama ${sapaan} ${nama} telah *ditolak* oleh petugas.`,
+    `Laporan Anda dengan ID (*${sessionId}*) *tidak dapat diproses* lebih lanjut, ${sapaan} ${nama}.`,
+    `Maaf ${sapaan} ${nama}, laporan Anda dengan ID *${sessionId}* *tidak bisa kami tindaklanjuti*.`,
+    `Laporan dengan ID *${sessionId}* telah *ditolak*.`
   ];
-  return randomResponse(responses);
-};
+  return (
+    randomResponse(responses) +
+    `
+Alasan penolakan: ${kesimpulan || 'Tidak tersedia'}
+Silahkan untuk membuat laporan ulang dengan memperbaiki kesalahannya.
+Terima kasih ${sapaan} ${nama}, laporan akan kami tutup..`
+  );
+}
 
 const tindakLanjutLaporanMessage = (sapaan, nama, sessionId, keluhan, kesimpulanList) => {
   const kesimpulanText = kesimpulanList.length > 0

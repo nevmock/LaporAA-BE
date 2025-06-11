@@ -20,7 +20,9 @@ Apabila situasi anda darurat, bisa menghubungi nomer berikut :
 - 110 : Kepolisian (Kriminal dll)
 - 081219071900 : BPBD (Untuk Bantuan Penanggulangan Bencana)
 
-Jika tidak, silahkan *buat laporan* atau *cek status laporan* Anda.\n\n`
+Jika tidak, silahkan *buat laporan* atau *cek status laporan* Anda.
+
+Setiap chat yang anda kirim, mohon selalu menunggu respon dari kami terlebih dahulu. Terima Kasih`
   );
 }
 
@@ -37,28 +39,27 @@ function ratingSuccess(sapaan, nama, rating) {
 
 function laporanDitolak(sapaan, nama, sessionId, kesimpulan) {
   const responses = [
-    `Mohon maaf ${sapaan} ${nama}, laporan dengan ID *${sessionId}* tidak dapat ditindaklanjuti.`,
-    `Laporan *${sessionId}* atas nama ${sapaan} ${nama} telah ditolak oleh petugas.`,
-    `Laporan Anda (*${sessionId}*) tidak dapat diproses lebih lanjut, ${sapaan} ${nama}.`,
-    `Maaf ${sapaan} ${nama}, laporan *${sessionId}* tidak bisa kami tindaklanjuti.`,
-    `Laporan dengan ID *${sessionId}* telah ditolak.`
+    `Mohon maaf ${sapaan} ${nama}, laporan Anda dengan ID *${sessionId}* *tidak dapat ditindaklanjuti*.`,
+    `Laporan Anda dengan ID *${sessionId}* atas nama ${sapaan} ${nama} telah *ditolak* oleh petugas.`,
+    `Laporan Anda dengan ID (*${sessionId}*) *tidak dapat diproses* lebih lanjut, ${sapaan} ${nama}.`,
+    `Maaf ${sapaan} ${nama}, laporan Anda dengan ID *${sessionId}* *tidak bisa kami tindaklanjuti*.`,
+    `Laporan dengan ID *${sessionId}* telah *ditolak*.`
   ];
   return (
     randomResponse(responses) +
     `
 Alasan penolakan: ${kesimpulan || 'Tidak tersedia'}
 Silahkan untuk membuat laporan ulang dengan memperbaiki kesalahannya.
-Terimakasih.`
+Terima kasih ${sapaan} ${nama}, laporan akan kami tutup..`
   );
 }
 
 function puasReply(sapaan, nama, sessionId) {
   const responses = [
-    `Terima kasih ${sapaan} ${nama}, laporan *${sessionId}* akan kami tutup.`,
-    `Tanggapan Anda sangat berarti, ${sapaan} ${nama}. Laporan *${sessionId}* akan ditutup.`,
-    `Laporan *${sessionId}* telah selesai.`,
-    `Terima kasih atas konfirmasi Anda, ${sapaan} ${nama}.`,
-    `Laporan *${sessionId}* akan segera kami tutup.`
+    `Terima kasih ${sapaan} ${nama}, laporan Anda dengan ID *${sessionId}* akan kami tutup.`,
+    `Tanggapan Anda sangat berarti, ${sapaan} ${nama}. Laporan Anda dengan ID *${sessionId}* akan ditutup.`,
+    `Laporan Anda dengan ID *${sessionId}* telah selesai.`,
+    `Terima kasih atas konfirmasi Anda, ${sapaan} ${nama}. Laporan Anda dengan ID *${sessionId}* akan segera kami tutup.`,
   ];
   return (
     randomResponse(responses) +
