@@ -1,5 +1,6 @@
 const express = require("express");
 const ServerConfig = require("./config/server");
+const rateLimit = require("express-rate-limit");
 
 const serverConfig = new ServerConfig();
 const app = serverConfig.getApp();
@@ -46,10 +47,18 @@ const corsOptions = {
   origin: '*',
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
 };
+const limiter = rateLimit({
+  windowMs: process.env.PERIOD_LIMITER,
+  max: process.env.MAX_LIMITER_REQUEST,
+  message: "Terlalu banyak request, coba lagi setelah 24 jam.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(limiter);
 
 mongoose.connection.on('connected', () => {
   console.log('Mongoose connected to DB');
