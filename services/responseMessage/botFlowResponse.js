@@ -138,6 +138,13 @@ function gagalSimpanRating() {
   );
 }
 
+function limitResponse() {
+  const responses = [
+    `Mohon Maaf, dikarenakan banyaknya laporan yang masuk, kami tidak dapat memproses laporan Anda saat ini. Mohon untuk mencoba lagi esok hari 🙏🏼.`,
+  ];
+  return randomResponse(responses);
+}
+
 module.exports = {
   mainSapaan,
   ratingSuccess,
@@ -148,5 +155,6 @@ module.exports = {
   pendingKonfirmasi,
   ratingInvalid,
   laporanTidakDitemukan,
-  gagalSimpanRating
+  gagalSimpanRating,
+  limitResponse
 };
