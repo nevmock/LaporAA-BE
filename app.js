@@ -1,6 +1,7 @@
 const express = require("express");
 const ServerConfig = require("./config/server");
 const rateLimit = require("express-rate-limit");
+// const limitMiddleware = require("./middleware/limitMiddleware");
 
 const serverConfig = new ServerConfig();
 const app = serverConfig.getApp();
@@ -42,6 +43,7 @@ const login = require("./routes/auth");
 const authMiddleware = require("./middlewares/authMiddleware");
 
 const autoCloseFeedback = require("./utils/autoCloseFeedback");
+const limitMiddleware = require("./middlewares/limitMiddleware");
 
 const corsOptions = {
   origin: '*',
@@ -65,7 +67,8 @@ app.set('trust proxy', 1);
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(limiter);
+// app.use(limiter); DONT USE IT
+// app.use(limitMiddleware);
 
 mongoose.connection.on('connected', () => {
   console.log('Mongoose connected to DB');
