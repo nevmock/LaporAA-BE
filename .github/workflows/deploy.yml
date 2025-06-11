@@ -36,16 +36,13 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
-          export NVM_DIR="/home/kanzen/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          nvm use 20
-
-          cd /home/kanzen/LaporAA/BE
+          cd ${{ secrets.PATH }}
           git reset --hard HEAD
           git pull origin DEV_Ismail --rebase
-          npm install
-          pm2 restart laporaa-api:service
+          docker compose down
+          docker compose up -d --build
+          docker system prune -f
+          
 
           
