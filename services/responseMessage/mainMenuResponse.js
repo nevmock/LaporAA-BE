@@ -38,10 +38,10 @@ function cekBelumTerdaftar() {
 function mintaIdLaporan(sapaan, nama) {
   const responses = [
     `Silakan ${sapaan} ${nama}, masukkan *ID laporan* Anda. Contoh: 12345678.`,
-    `Masukkan ID laporan Anda, ${sapaan} ${nama}. Contoh: 12345678.`,
-    `Tolong ketikkan ID laporan Anda, ${sapaan} ${nama}. Contoh: 12345678.`,
-    `Mohon masukkan ID laporan Anda, ${sapaan} ${nama}. Contoh: 12345678.`,
-    `Silakan input ID laporan Anda, ${sapaan} ${nama}, misal: 12345678.`
+    `Masukkan *ID laporan* Anda, ${sapaan} ${nama}. Contoh: 12345678.`,
+    `Tolong ketikkan *ID laporan* Anda, ${sapaan} ${nama}. Contoh: 12345678.`,
+    `Mohon masukkan *ID laporan* Anda, ${sapaan} ${nama}. Contoh: 12345678.`,
+    `Silakan input *ID laporan* Anda, ${sapaan} ${nama}, misal: 12345678.`
   ];
   return randomResponse(responses);
 }
@@ -53,7 +53,6 @@ function mainMenuDefault() {
     `Silakan mengikuti tahapan pembuatan laporan. Untuk mengikuti tahapan tersebut, Atau silahkan ketik *menu* untuk informasi lebih lengkap.`,
     `Proses pembuatan laporan mesti sesuai dengan tahapan, Atau silahkan ketik *menu* untuk informasi lebih lengkap.`,
     `Pelaporan mesti sesuai dengan proses pelaporan, Atau silahkan ketik *menu* untuk informasi lebih lengkap.`
-    // `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik *menu*. (Main Menu DEFAULT)`,
   ];
   return randomResponse(responses);
 }

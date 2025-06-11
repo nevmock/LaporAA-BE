@@ -19,9 +19,9 @@ module.exports = async (from, step, input, sendReply) => {
             return sendReply(from, checkReportResponse.kembaliKeMenu(sapaan, nama));
         }
 
-        // Validate if the input matches the expected session ID format: LPRAA-{code}
-        const sessionId = `LPRAA-${input.trim()}`;
-        const nomorLaporan = sessionId.split("-")[1];
+        // Validate if the input matches the expected session ID format:
+        const sessionId = input;
+        const nomorLaporan = sessionId;
 
         if (!nomorLaporan || isNaN(nomorLaporan)) {
             // If session ID is invalid, prompt the user to enter a valid report ID

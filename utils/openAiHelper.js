@@ -13,7 +13,7 @@ Aturannya konteksnya adalah sebagai berikut:
 "check_report" - jika ingin melihat status laporan.
 "angry_complaint" - jika kalimat menunjukkan kemarahan atau marah-marah.
 "complaint" - jika kalimat menunjukkan keluhan biasa atau mengeluh.
-*menu* - untuk konteks lain atau tidak dikenali.
+"menu" - untuk konteks lain atau tidak dikenali.
 
 Kalimat atau kata nya:
 ${rawMessage}
@@ -35,7 +35,7 @@ exports.combinedContext = async (rawMessage) => {
         });
 
         const result = chat.choices[0].message.content.trim().toLowerCase();
-
+        
         if (result === "greeting") return "greeting";
         if (result === "new_report") return "new_report";
         if (result === "check_report") return "check_report";

@@ -68,10 +68,13 @@ module.exports = async (from, step, input, sendReply) => {
                 data: session.data
             });
 
-            // Setelah teks terkirim, baru kirim gambar
-            await messageController.sendTutorialImagesToUser(from);
+            const success = await messageController.sendTutorialImagesToUser(from);
 
-            return sendReply(from, createReportResponse.mintaLokasi(sapaan, nama));;
+            if (success) {
+                return sendReply(from, createReportResponse.mintaLokasi(sapaan, nama));
+            } else {
+                return sendReply(from, "❌ Maaf, gagal mengirim gambar tutorial lokasi Silahkan untukk share lokasi kejadian secara manual dengan mengirimkan lokasi melalui fitur kirim lokasi pada WhatsApp.");
+            }
         }
 
         if (lowerInput === "batal") {
@@ -204,7 +207,7 @@ module.exports = async (from, step, input, sendReply) => {
                 });
 
                 await userRepo.resetSession(from);
-                const nomorLaporan = sessionId.split("-")[1];
+                const nomorLaporan = sessionId;
                 return sendReply(from, createReportResponse.laporanBerhasil(sapaan, nama, nomorLaporan));
             } catch (err) {
                 console.error("Gagal simpan laporan:", err);
@@ -217,7 +220,7 @@ module.exports = async (from, step, input, sendReply) => {
             return sendReply(from, createReportResponse.ulangLaporan());
         }
 
-        return sendReply(from, createReportResponse.konfirmasiReview());
+        return sendReply(from, createReportResponse.ringkasanLaporan(session.data));
     }
 
     return sendReply(from, createReportResponse.handlerDefault());

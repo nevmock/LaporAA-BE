@@ -2,26 +2,28 @@ const randomResponse = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 const daruratMessage = (sapaan, nama) => {
   const responses = [
-    `Terimakasih ${sapaan} ${nama} telah menghubungi kami.
-            Karena situasinya darurat, silahkan langsung hubungi:
+`Terimakasih ${sapaan} ${nama} telah menghubungi kami.
 
-            - 119 : PSC  (Untuk Kegawat Daruratan Medis)
-            - 113 : Pemadam Kebakaran
-            - 110 : Kepolisian (Kriminal dll)
-            - 081219071900 : BPBD (Untuk Bantuan Penanggulangan Bencana)`
+Karena situasinya darurat, silahkan langsung hubungi:
+
+- 119 : PSC  (Untuk Kegawat Daruratan Medis)
+- 113 : Pemadam Kebakaran
+- 110 : Kepolisian (Kriminal dll)
+- 081219071900 : BPBD (Untuk Bantuan Penanggulangan Bencana)`
   ];
   return randomResponse(responses);
 };
 
 const selesaiPenangananMessage = (sapaan, nama, sessionId, formattedKesimpulan) => {
   const responses = [
-    `Terimakasih ${sapaan} ${nama}, Laporan ${sessionId} telah selesai ditangani.
-            berikut ini adalah hasil penanganan laporannya:
-            ${formattedKesimpulan}
+`Terimakasih ${sapaan} ${nama}, Laporan ${sessionId} telah selesai ditangani.
+Berikut ini adalah hasil penanganan laporannya:
 
-            Apakah sudah puas dengan hasil penanganan laporan ini?
-            jika belum puas, cukup balas dengan "belum"
-            jika sudah puas, cukup balas dengan "puas"`
+${formattedKesimpulan}
+
+Apakah sudah puas dengan hasil penanganan laporan ini?
+jika belum puas, cukup balas dengan "belum"
+jika sudah puas, cukup balas dengan "puas"`
   ];
   return randomResponse(responses);
 };
@@ -77,6 +79,41 @@ const puasReply = (sapaan, nama, sessionId) => {
   return randomResponse(responses);
 };
 
+const puasReply1 = (sapaan, nama, sessionId) => {
+  const responses = [
+    `⭐️\n\nMohon maaf atas ketidakpuasan Anda, ${sapaan} ${nama}. Kami sangat menghargai masukan Anda dan akan menjadikan hal ini sebagai bahan evaluasi. Laporan dengan ID ${sessionId} telah kami tandai selesai.`
+  ];
+  return randomResponse(responses);
+};
+
+const puasReply2 = (sapaan, nama, sessionId) => {
+  const responses = [
+    `⭐️⭐️\n\nTerima kasih atas tanggapan Anda, ${sapaan} ${nama}. Kami mohon maaf jika pelayanan kami belum memenuhi harapan Anda. Masukan Anda sangat berarti untuk perbaikan ke depannya. Laporan dengan ID ${sessionId} telah kami tandai selesai.`
+  ];
+  return randomResponse(responses);
+};
+
+const puasReply3 = (sapaan, nama, sessionId) => {
+  const responses = [
+    `⭐️⭐️⭐️\n\nTerima kasih atas penilaian Anda, ${sapaan} ${nama}. Kami akan terus berusaha meningkatkan kualitas layanan kami. Laporan dengan ID ${sessionId} telah kami tandai selesai.`
+  ];
+  return randomResponse(responses);
+};
+
+const puasReply4 = (sapaan, nama, sessionId) => {
+  const responses = [
+    `⭐️⭐️⭐️⭐️\n\nTerima kasih atas apresiasi Anda, ${sapaan} ${nama}. Kami senang bisa membantu Anda dengan baik. Laporan dengan ID ${sessionId} telah kami tandai selesai.`
+  ];
+  return randomResponse(responses);
+};
+
+const puasReply5 = (sapaan, nama, sessionId) => {
+  const responses = [
+    `⭐️⭐️⭐️⭐️⭐️\n\nTerima kasih banyak atas rating sempurna Anda, ${sapaan} ${nama}! Kami sangat senang bisa memberikan pelayanan terbaik. Laporan dengan ID ${sessionId} telah kami tandai selesai.`
+  ];
+  return randomResponse(responses);
+};
+
 module.exports = {
   daruratMessage,
   selesaiPenangananMessage,
@@ -84,5 +121,10 @@ module.exports = {
   tindakLanjutLaporanMessage,
   finalizeAndAskNewReport,
   belumReply,
-  puasReply
+  puasReply,
+  puasReply1,
+  puasReply2,
+  puasReply3,
+  puasReply4,
+  puasReply5
 };

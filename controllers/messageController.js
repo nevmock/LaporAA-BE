@@ -138,25 +138,31 @@ exports.sendEvidencePhotosToUser = async (photos = [], to) => {
     }
 };
 
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 exports.sendTutorialImagesToUser = async (to) => {
     const tutorialImages = [
-        "tutorial-lokasi-1.jpeg",
-        "tutorial-lokasi-2.jpeg",
-        "tutorial-lokasi-3.jpeg"
+        { filename: "tutorial-lokasi-1.jpeg", caption: "(1) Tata cara kirim lokasi kejadian" },
+        { filename: "tutorial-lokasi-2.jpeg", caption: "(2) Tata cara kirim lokasi kejadian" },
+        { filename: "tutorial-lokasi-3.jpeg", caption: "(3) Tata cara kirim lokasi kejadian" },
     ];
 
-    for (const filename of tutorialImages) {
-        const fullUrl = `${process.env.BASE_URL}/assets/${filename}`;
-        console.log(`📍 Kirim tutorial lokasi ke ${to}: ${fullUrl}`);
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+    for (const { filename, caption } of tutorialImages) {
+        const fullUrl = `${process.env.BASE_URL}/assets/${filename}`;
         try {
             await exports.sendMessageToWhatsApp(to, {
                 type: "image",
                 link: fullUrl,
-                caption: "Tata Cara Kirim Lokasi",
+                caption,
             });
+            await delay(500); // delay antar gambar
         } catch (err) {
             console.error("❌ Gagal kirim gambar tutorial:", err.response?.data || err.message);
+            return false; // gagal kirim salah satu gambar
         }
     }
+
+    return true; // semua gambar berhasil
 };

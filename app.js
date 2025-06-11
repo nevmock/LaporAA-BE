@@ -58,7 +58,7 @@ const limiter = rateLimit({
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use(limiter);
+// app.use(limiter);
 
 mongoose.connection.on('connected', () => {
   console.log('Mongoose connected to DB');
@@ -105,11 +105,11 @@ app.use("/chat", messageRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 app.use("/uploadsTindakan", express.static(path.join(__dirname, "public/uploadsTindakan")));
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
+app.use("/user", userRoutes);
 
 // Apply authMiddleware to all routes except /webhook
 app.use(authMiddleware);
 
-app.use("/user", userRoutes);
 app.use("/reports", reportRoutes);
 app.use("/reportCount", reportCountRoutes);
 app.use("/tindakan", tindakanRoutes);

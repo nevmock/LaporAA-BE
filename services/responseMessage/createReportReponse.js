@@ -18,7 +18,7 @@ function keluhanDitambahkan() {
     `Keluhan ditambahkan. Jika ada lagi, silakan tulis. Jika sudah cukup, ketik *kirim*.`,
     `Keluhan berhasil ditambahkan. Tulis lagi jika masih ada, atau ketik *kirim*.`,
     `Keluhan Anda sudah dicatat. Tambahkan lagi atau ketik *kirim* jika selesai.`,
-    `Kami sudah menambahkan keluhan Anda. Ketik *kirim* jika sudah cukup.`,
+    `Kami sudah menambahkan keluhan Anda. Tambahkan lagi atau ketik *kirim* jika sudah cukup.`,
     `Keluhan sudah masuk. Tulis lagi untuk menambah, atau *kirim* untuk lanjut.`
   ];
   return randomResponse(responses);
@@ -95,11 +95,11 @@ function lokasiBukanBekasi(sapaan, nama, kabupaten) {
 
 function lokasiDiterima(wilayah) {
   const responses = [
-    `Berikut lokasi yang Anda kirim: ${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten} Ketik *kirim* jika sudah sesuai, atau *batal* untuk kirim ulang.`,
-    `Lokasi diterima: ${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten}. Ketik *kirim* jika benar, atau *batal* untuk ulang.`,
-    `Lokasi Anda: ${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten}. Ketik *kirim* jika sudah sesuai, ketik *batal* untuk mengirim ulang.`,
-    `Lokasi sudah kami terima: ${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten}. Jika sudah benar ketik *kirim*, jika belum ketik *batal*`,
-    `Lokasi: ${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten}. Ketik *kirim* jika benar, atau *batal* untuk ulang.`
+    `Berikut lokasi yang Anda kirim:\n\n${wilayah.desa}, ${wilayah.kecamatan}, KABUPATEN ${wilayah.kabupaten}.\n\nKetik *kirim* jika sudah sesuai, atau *batal* untuk kirim ulang.`,
+    `Lokasi diterima:\n\n${wilayah.desa}, ${wilayah.kecamatan}, KABUPATEN ${wilayah.kabupaten}.\n\nKetik *kirim* jika benar, atau *batal* untuk ulang.`,
+    `Lokasi Anda:\n\n${wilayah.desa}, ${wilayah.kecamatan}, KABUPATEN ${wilayah.kabupaten}.\n\nKetik *kirim* jika sudah sesuai, ketik *batal* untuk mengirim ulang.`,
+    `Lokasi sudah kami terima:\n\n${wilayah.desa}, ${wilayah.kecamatan}, KABUPATEN ${wilayah.kabupaten}.\n\nJika sudah benar ketik *kirim*, jika belum ketik *batal*`,
+    `Lokasi:\n\n${wilayah.desa}, ${wilayah.kecamatan}, KABUPATEN ${wilayah.kabupaten}.\n\nKetik *kirim* jika benar, atau *batal* untuk ulang.`
   ];
   return randomResponse(responses);
 }
@@ -150,11 +150,11 @@ function minimalFoto(sapaan, nama) {
 
 function ringkasanLaporan(session) {
   const responses = [
-    `Berikut ringkasan laporan Anda:\n📍 Lokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n📝 Keluhan:\n${session.message}\n📷 Jumlah Foto: ${session.photos.length}\nJika sudah benar, ketik "konfirmasi" untuk mengirim atau *batal* untuk mengulang.`,
-    `Ringkasan laporan:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nJumlah Foto: ${session.photos.length}\nKetik "konfirmasi" jika sudah benar, atau *batal* untuk mengulang.`,
-    `Cek kembali laporan Anda:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nFoto: ${session.photos.length}\nKetik "konfirmasi" untuk kirim, atau *batal* untuk ulang.`,
-    `Berikut detail laporan Anda:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nJumlah Foto: ${session.photos.length}\nKetik "konfirmasi" jika sudah benar, atau *batal* untuk mengulang.`,
-    `Laporan Anda:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nFoto: ${session.photos.length}\nKetik "konfirmasi" untuk kirim, atau *batal* untuk ulang.`
+    `Berikut ringkasan laporan Anda:\n\n📍 Lokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n📝 Keluhan:\n${session.message}\n📷 Jumlah Foto: ${session.photos.length}\n\nJika sudah benar, ketik *konfirmasi* untuk mengirim atau *batal* untuk mengulang.`,
+    `Ringkasan laporan:\n\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nJumlah Foto: ${session.photos.length}\n\nKetik *konfirmasi* jika sudah benar, atau *batal* untuk mengulang.`,
+    `Cek kembali laporan Anda:\n\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nFoto: ${session.photos.length}\n\nKetik *konfirmasi* untuk kirim, atau *batal* untuk ulang.`,
+    `Berikut detail laporan Anda:\n\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nJumlah Foto: ${session.photos.length}\n\nKetik *konfirmasi* jika sudah benar, atau *batal* untuk mengulang.`,
+    `Laporan Anda:\n\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nFoto: ${session.photos.length}\n\nKetik *konfirmasi* untuk kirim, atau *batal* untuk ulang.`
   ];
   return randomResponse(responses);
 }
@@ -216,22 +216,22 @@ function fotoBerhasilDiterima(sisa) {
 
 function konfirmasiReview() {
   const responses = [
-    `Ketik "konfirmasi" jika laporan sudah benar, atau *batal* untuk membatalkan.`,
-    `Konfirmasi laporan dengan ketik "konfirmasi", atau *batal* untuk membatalkan.`,
-    `Jika laporan sudah benar, ketik "konfirmasi". Jika ingin membatalkan, ketik *batal*.`,
-    `Ketik "konfirmasi" untuk kirim laporan, atau *batal* untuk membatalkan.`,
-    `Silakan ketik "konfirmasi" jika sudah benar, atau *batal* untuk membatalkan.`
+    `Ketik *konfirmasi* jika laporan sudah benar, atau *batal* untuk membatalkan.`,
+    `Konfirmasi laporan dengan ketik *konfirmasi*, atau *batal* untuk membatalkan.`,
+    `Jika laporan sudah benar, ketik *konfirmasi*. Jika ingin membatalkan, ketik *batal*.`,
+    `Ketik *konfirmasi* untuk kirim laporan, atau *batal* untuk membatalkan.`,
+    `Silakan ketik *konfirmasi* jika sudah benar, atau *batal* untuk membatalkan.`
   ];
   return randomResponse(responses);
 }
 
 function laporanBerhasil(sapaan, nama, nomorLaporan) {
   const responses = [
-    `Terima kasih ${sapaan} ${nama}, laporan berhasil dikirim dengan ID ${nomorLaporan}. Simpan ID ini untuk cek status laporan.`,
-    `Laporan Anda sudah berhasil dikirim, ${sapaan} ${nama}. Berikut ID laporannya: ${nomorLaporan}.`,
-    `Laporan berhasil dikirim dengan ID ${nomorLaporan}, ${sapaan} ${nama}. Mohon simpan ID tersebut`,
-    `Terima kasih, laporan Anda sudah kami terima. Simpan ID berikut: ${nomorLaporan}.`,
-    `Laporan berhasil dikirim. Simpan ID ${nomorLaporan} untuk cek status, ${sapaan} ${nama}.`
+    `Terima kasih ${sapaan} ${nama}, laporan berhasil dikirim dengan ID *${nomorLaporan}* . Simpan ID ini untuk cek status laporan.`,
+    `Laporan Anda sudah berhasil dikirim, ${sapaan} ${nama}. Berikut ID laporannya: *${nomorLaporan}* .`,
+    `Laporan berhasil dikirim dengan ID *${nomorLaporan}* , ${sapaan} ${nama}. Mohon simpan ID tersebut.`,
+    `Terima kasih, laporan Anda sudah kami terima. Simpan ID berikut: *${nomorLaporan}* .`,
+    `Laporan berhasil dikirim. Simpan ID *${nomorLaporan}* untuk cek status, ${sapaan} ${nama}.`
   ];
   return randomResponse(responses);
 }
