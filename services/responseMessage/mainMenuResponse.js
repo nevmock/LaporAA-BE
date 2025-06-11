@@ -4,11 +4,11 @@ function randomResponse(arr) {
 
 function belumTerdaftar() {
   const responses = [
-    `Data diri Anda belum terdaftar di sistem kami. Silakan masukkan nama lengkap sesuai KTP sebelum membuat laporan.`,
-    `Anda belum terdaftar. Mohon isi nama lengkap sesuai KTP untuk melanjutkan.`,
-    `Nama Anda belum ada di sistem kami. Masukkan nama lengkap sesuai KTP agar bisa membuat laporan.`,
-    `Sebelum membuat laporan, silakan daftarkan nama lengkap Anda sesuai KTP.`,
-    `Data belum ditemukan. Masukkan nama lengkap sesuai KTP untuk proses selanjutnya.`
+    `Data diri Anda *belum terdaftar* di sistem kami. Silakan masukkan *nama lengkap* sesuai KTP sebelum membuat laporan.`,
+    `Anda *belum terdaftar*. Mohon isi *nama lengkap* sesuai KTP untuk melanjutkan.`,
+    `Nama Anda belum ada di sistem kami. Masukkan *nama lengkap* sesuai KTP agar bisa membuat laporan.`,
+    `Sebelum membuat laporan, silakan daftarkan *nama lengkap* Anda sesuai KTP.`,
+    `Data belum ditemukan. Masukkan *nama lengkap* sesuai KTP untuk proses selanjutnya.`
   ];
   return randomResponse(responses);
 }
@@ -67,7 +67,7 @@ function angryComplaintResponse() {
 
 function angryComplaintSignup() {
   const responses = [
-    `Mohon maaf atas apa yang terjadi, kami mengerti anda kesal, dan marah, kami siap menerima laporan anda, akan tetapi data diri anda belum terdaftar di sistem kami, silahkan sebutkan nama lengkap anda sesuai KTP untuk melanjutkan proses pelaporan.`,
+    `Mohon maaf atas apa yang terjadi, kami mengerti anda kesal, dan marah, kami siap menerima laporan anda, akan tetapi data diri anda *belum terdaftar* di sistem kami, silahkan sebutkan *nama lengkap* anda sesuai KTP untuk melanjutkan proses pelaporan.`,
   ];
   return randomResponse(responses);
 }
@@ -81,7 +81,7 @@ function complaintResponse() {
 
 function complaintSignup() {
   const responses = [
-    `Mohon maaf atas apa yang terjadi, kami mengerti, dan kami siap menerima laporan anda, akan tetapi data diri anda belum terdaftar di sistem kami, silahkan sebutkan nama lengkap anda sesuai KTP untuk melanjutkan proses pelaporan.`,
+    `Mohon maaf atas apa yang terjadi, kami mengerti, dan kami siap menerima laporan anda, akan tetapi data diri anda *belum terdaftar* di sistem kami, silahkan sebutkan *nama lengkap* anda sesuai KTP untuk melanjutkan proses pelaporan.`,
   ];
   return randomResponse(responses);
 }

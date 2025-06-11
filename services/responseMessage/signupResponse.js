@@ -4,44 +4,44 @@ function randomResponse(arr) {
 
 function mintaNama() {
   const responses = [
-    `Silakan masukkan nama lengkap Anda sesuai KTP.`,
-    `Mohon isi nama lengkap Anda sesuai KTP.`,
-    `Tolong masukkan nama lengkap sesuai KTP Anda.`,
-    `Masukkan nama lengkap Anda (sesuai KTP) untuk melanjutkan.`,
-    `Nama lengkap sesuai KTP diperlukan, silakan isi di bawah ini.`
+    `Silakan masukkan *nama lengkap* Anda sesuai KTP.`,
+    `Mohon isi *nama lengkap* Anda sesuai KTP.`,
+    `Tolong masukkan *nama lengkap* sesuai KTP Anda.`,
+    `Masukkan *nama lengkap* Anda (sesuai KTP) untuk melanjutkan.`,
+    `*Nama lengkap* sesuai KTP diperlukan, silakan isi di bawah ini.`
   ];
   return randomResponse(responses);
 }
 
 function terimaKasihNama(nama) {
   const responses = [
-    `Terima kasih ${nama}, silakan masukkan jenis kelamin anda (pria/wanita).`,
-    `Nama ${nama} sudah tercatat. Sekarang, masukkan jenis kelamin Anda (pria/wanita).`,
-    `Baik ${nama}, selanjutnya silakan isi jenis kelamin (pria atau wanita).`,
-    `Terima kasih, ${nama}. Silakan pilih jenis kelamin Anda (pria/wanita)?`,
-    `Nama sudah diterima, ${nama}. Mohon masukkan jenis kelamin Anda (pria/wanita).`
+    `Terima kasih ${nama}, silakan masukkan *jenis kelamin* anda (pria/wanita).`,
+    `Nama ${nama} sudah tercatat. Sekarang, masukkan *jenis kelamin* Anda (pria/wanita).`,
+    `Baik ${nama}, selanjutnya silakan isi *jenis kelamin* (pria atau wanita).`,
+    `Terima kasih, ${nama}. Silakan pilih *jenis kelamin* Anda (pria/wanita)?`,
+    `Nama sudah diterima, ${nama}. Mohon masukkan *jenis kelamin* Anda (pria/wanita).`
   ];
   return randomResponse(responses);
 }
 
 function jenisKelaminTidakValid() {
   const responses = [
-    `Jenis kelamin tidak valid. Silakan masukkan ketik *pria* atau *wanita*.`,
-    `Input jenis kelamin salah. Mohon ketik "pria" atau "wanita".`,
-    `Jenis kelamin harus diketik "pria" atau "wanita". Silakan coba lagi.`,
-    `Mohon masukkan jenis kelamin yang benar, ketik pria/wanita.`,
-    `Jenis kelamin tidak dikenali. Mohon hanya ketik "pria" atau "wanita".`
+    `Jenis kelamin tidak valid. Silakan masukkan *pria* atau *wanita*.`,
+    `Input jenis kelamin salah. Mohon ketik *pria* atau *wanita*.`,
+    `Jenis kelamin harus diketik *pria* atau *wanita*. Silakan coba lagi.`,
+    `Mohon masukkan jenis kelamin yang benar, ketik *pria* atau *wanita*.`,
+    `Jenis kelamin tidak dikenali. Mohon hanya ketik *pria* atau *wanita*.`
   ];
   return randomResponse(responses);
 }
 
 function konfirmasiData(name, jenis_kelamin) {
   const responses = [
-    `Berikut adalah data anda:\nNama: ${name}\nJenis Kelamin: ${jenis_kelamin}\n\nJika sudah benar, silakan ketik *kirim* untuk menyimpan data anda, atau *batal* untuk membatalkan.`,
-    `Cek kembali data berikut:\nNama: ${name}\nJenis Kelamin: ${jenis_kelamin}\nKetik *kirim* jika sudah benar, atau *batal* untuk membatalkan.`,
-    `Data Anda:\nNama: ${name}\nJenis Kelamin: ${jenis_kelamin}\n\nKetik "kirim" untuk simpan, atau "batal" untuk membatalkan.`,
-    `Nama: ${name}\nJenis Kelamin: ${jenis_kelamin}\n\nKetik *kirim* untuk menyimpan, atau *batal* untuk membatalkan.`,
-    `Konfirmasi data:\nNama: ${name}\nJenis Kelamin: ${jenis_kelamin}\n\nKetik "kirim" jika benar, atau "batal" jika ingin membatalkan.`
+    `Berikut adalah data Anda:\nNama: *${name}*\nJenis Kelamin: *${jenis_kelamin}*\n\nJika sudah benar, silakan ketik *kirim* untuk menyimpan data anda, atau *batal* untuk membatalkan.`,
+    `Cek kembali data berikut:\nNama: *${name}*\nJenis Kelamin: *${jenis_kelamin}*\nKetik *kirim* jika sudah benar, atau *batal* untuk membatalkan.`,
+    `Data Anda:\nNama: *${name}*\nJenis Kelamin: *${jenis_kelamin}*\n\nKetik *kirim* untuk simpan, atau *batal* untuk membatalkan.`,
+    `Nama: *${name}*\nJenis Kelamin: *${jenis_kelamin}*\n\nKetik *kirim* untuk menyimpan, atau *batal* untuk membatalkan.`,
+    `Konfirmasi data:\nNama: *${name}*\nJenis Kelamin: *${jenis_kelamin}*\n\nKetik *kirim* jika benar, atau *batal* jika ingin membatalkan.`
   ];
   return randomResponse(responses);
 }
@@ -81,11 +81,11 @@ function konfirmasiKirimAtauBatal() {
 
 function konfirmasiNama(nama) {
   const responses = [
-    `Apakah nama Anda sudah benar: ${nama}?\nKetik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`,
-    `Nama yang Anda masukkan adalah: ${nama}.\nJika sudah benar, ketik *kirim*, jika ingin mengubah, ketik *batal*.`,
-    `Tolong konfirmasi nama Anda: ${nama}.\nKetik "kirim" untuk lanjut, atau "batal" untuk membatalkan.`,
-    `Nama: ${nama}. Apakah sudah benar?\nKetik *kirim* untuk melanjutkan, atau *batal* untuk membatalkan.`,
-    `Konfirmasi nama: ${nama}.\nKetik "kirim" jika sudah benar, atau "batal" jika ingin membatalkan.`
+    `Apakah nama Anda sudah benar: *${nama}*?\n\nKetik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`,
+    `Nama yang Anda masukkan adalah: *${nama}*.\n\nJika sudah benar, ketik *kirim*, jika ingin mengubah, ketik *batal*.`,
+    `Tolong konfirmasi nama Anda: *${nama}*.\n\nKetik *kirim* untuk lanjut, atau *batal* untuk membatalkan.`,
+    `Nama: *${nama}*. Apakah sudah benar?\n\nKetik *kirim* untuk melanjutkan, atau *batal* untuk membatalkan.`,
+    `Konfirmasi nama: *${nama}*.\n\nKetik *kirim* jika sudah benar, atau *batal* jika ingin membatalkan.`
   ];
   return randomResponse(responses);
 }

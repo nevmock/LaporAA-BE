@@ -4,11 +4,11 @@ function randomResponse(arr) {
 
 function mainSapaan(sapaan, nama) {
   const responses = [
-    `Halo ${sapaan} ${nama}, selamat datang di Lapor AA Pemerintahan Kabupaten Bekasi!`,
-    `Hai ${sapaan} ${nama}, terima kasih sudah menghubungi Lapor AA Kabupaten Bekasi.`,
-    `Selamat datang ${sapaan} ${nama} di layanan Lapor AA Pemerintahan Kabupaten Bekasi.`,
-    `Halo ${sapaan} ${nama}, ada yang bisa kami bantu di Lapor AA Kabupaten Bekasi?`,
-    `Salam hormat ${sapaan} ${nama}, silakan gunakan layanan Lapor AA Kabupaten Bekasi.`
+    `Halo ${sapaan} ${nama}, selamat datang di *Lapor AA Bupati Kabupaten Bekasi!*`,
+    `Hai ${sapaan} ${nama}, terima kasih sudah menghubungi *Lapor AA Bupati Kabupaten Bekasi*.`,
+    `Selamat datang ${sapaan} ${nama} di layanan *Lapor AA Bupati Kabupaten Bekasi*.`,
+    `Halo ${sapaan} ${nama}, ada yang bisa kami bantu di layanan *Lapor AA Bupati Kabupaten Bekasi?*`,
+    `Salam hormat ${sapaan} ${nama}, selamat datang di layanan *Lapor AA Bupati Kabupaten Bekasi*.`
   ];
   return (
     randomResponse(responses) +
@@ -20,7 +20,7 @@ Apabila situasi anda darurat, bisa menghubungi nomer berikut :
 - 110 : Kepolisian (Kriminal dll)
 - 081219071900 : BPBD (Untuk Bantuan Penanggulangan Bencana)
 
-Jika tidak dalam keadaan darurat, ketik "buat laporan" jika ingin membuat laporan, atau ketik "cek status" jika ingin mengecek status laporan.`
+Jika tidak, silahkan buat laporan atau cek status laporan Anda.`
   );
 }
 
@@ -37,11 +37,11 @@ function ratingSuccess(sapaan, nama, rating) {
 
 function laporanDitolak(sapaan, nama, sessionId, kesimpulan) {
   const responses = [
-    `Mohon maaf ${sapaan} ${nama}, laporan dengan ID ${sessionId} tidak dapat ditindaklanjuti.`,
-    `Laporan ${sessionId} atas nama ${sapaan} ${nama} telah ditolak oleh petugas.`,
-    `Laporan Anda (${sessionId}) tidak dapat diproses lebih lanjut, ${sapaan} ${nama}.`,
-    `Maaf ${sapaan} ${nama}, laporan ${sessionId} tidak bisa kami tindaklanjuti.`,
-    `Laporan dengan ID ${sessionId} telah ditolak.`
+    `Mohon maaf ${sapaan} ${nama}, laporan dengan ID *${sessionId}* tidak dapat ditindaklanjuti.`,
+    `Laporan *${sessionId}* atas nama ${sapaan} ${nama} telah ditolak oleh petugas.`,
+    `Laporan Anda (*${sessionId}*) tidak dapat diproses lebih lanjut, ${sapaan} ${nama}.`,
+    `Maaf ${sapaan} ${nama}, laporan *${sessionId}* tidak bisa kami tindaklanjuti.`,
+    `Laporan dengan ID *${sessionId}* telah ditolak.`
   ];
   return (
     randomResponse(responses) +
@@ -54,11 +54,11 @@ Terimakasih.`
 
 function puasReply(sapaan, nama, sessionId) {
   const responses = [
-    `Terima kasih ${sapaan} ${nama}, laporan ${sessionId} akan kami tutup.`,
-    `Tanggapan Anda sangat berarti, ${sapaan} ${nama}. Laporan ${sessionId} akan ditutup.`,
-    `Laporan ${sessionId} telah selesai.`,
+    `Terima kasih ${sapaan} ${nama}, laporan *${sessionId}* akan kami tutup.`,
+    `Tanggapan Anda sangat berarti, ${sapaan} ${nama}. Laporan *${sessionId}* akan ditutup.`,
+    `Laporan *${sessionId}* telah selesai.`,
     `Terima kasih atas konfirmasi Anda, ${sapaan} ${nama}.`,
-    `Laporan ${sessionId} akan segera kami tutup.`
+    `Laporan *${sessionId}* akan segera kami tutup.`
   ];
   return (
     randomResponse(responses) +
@@ -68,16 +68,16 @@ function puasReply(sapaan, nama, sessionId) {
 
 function belumReply(sapaan, nama, sessionId, pendingCount) {
   const responses = [
-    `Terima kasih ${sapaan} ${nama}, laporan ${sessionId} akan kami tindak lanjuti ulang.`,
-    `Kami akan segera menindaklanjuti laporan ${sessionId}, ${sapaan} ${nama}.`,
-    `Laporan ${sessionId} akan kami proses kembali. Mohon maaf atas ketidakpuasan Anda.`,
-    `Laporan ${sessionId} akan kami tinjau ulang, ${sapaan} ${nama}.`,
-    `Terima kasih atas feedback Anda, laporan ${sessionId} akan kami tindak lanjuti.`
+    `Terima kasih ${sapaan} ${nama}, laporan *${sessionId}* akan kami tindak lanjuti ulang.`,
+    `Kami akan segera menindaklanjuti laporan *${sessionId}*, ${sapaan} ${nama}.`,
+    `Laporan *${sessionId}* akan kami proses kembali. Mohon maaf atas ketidakpuasan Anda.`,
+    `Laporan *${sessionId}* akan kami tinjau ulang, ${sapaan} ${nama}.`,
+    `Terima kasih atas feedback Anda, laporan *${sessionId}* akan kami tindak lanjuti.`
   ];
   let reply =
     randomResponse(responses) + ' Terimakasih sudah menanggapi laporannya.';
   if (pendingCount > 0) {
-    reply += ` Masih ada ${pendingCount} laporan lain yang menunggu respon. Balas "puas" atau "belum" untuk melakukan penyelesaian laporan ${sessionId}.`;
+    reply += ` Masih ada ${pendingCount} laporan lain yang menunggu respon. Balas "puas" atau "belum" untuk melakukan penyelesaian laporan *${sessionId}*.`;
   }
   return reply;
 }

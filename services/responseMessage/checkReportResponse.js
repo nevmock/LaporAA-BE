@@ -7,11 +7,10 @@ function kembaliKeMenu(sapaan, nama) {
     `Halo ${sapaan} ${nama}, selamat datang kembali di Lapor AA Kabupaten Bekasi. Ingin membuat laporan baru atau cek status laporan?`,
     `Hai ${sapaan} ${nama}, Anda kembali ke menu utama. Silakan pilih apakah Anda ingin membuat laporan atau cek status laporan.`,
     `Selamat datang di menu utama, ${sapaan} ${nama}. Mau buat laporan atau cek status laporan?`,
-    // `Menu utama aktif, ${sapaan} ${nama}. Silakan pilih aksi selanjutnya, buat laporan atau cek status laporan?.`,
     `Anda sedang berada di menu utama, ${sapaan} ${nama}. Mau buat laporan baru atau cek status laporan?`
   ];
   return (
-    randomResponse(responses) + `ketik "buat laporan" atau "cek status laporan"`
+    randomResponse(responses)
   );
 }
 

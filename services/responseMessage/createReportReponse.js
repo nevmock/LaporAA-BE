@@ -4,33 +4,33 @@ function randomResponse(arr) {
 
 function mintaKeluhan() {
   const responses = [
-    `Apakah ada keluhan tambahan? Jika sudah cukup, ketik "kirim".`,
-    `Silakan tambahkan keluhan lain, atau ketik "kirim" jika sudah selesai.`,
-    `Tulis keluhan tambahan jika ada, atau ketik "kirim" untuk lanjut.`,
-    `Jika masih ada keluhan, silakan tulis. Jika sudah, ketik "kirim".`,
-    `Ketik "kirim" jika keluhan sudah lengkap, atau tulis lagi untuk menambah.`
+    `Terima kasih atas keluhannya, Apakah ada keluhan tambahan? Jika sudah cukup, ketik *kirim*.`,
+    `Terima kasih atas keluhannya, Silakan tambahkan keluhan lain, atau ketik *kirim* jika sudah selesai.`,
+    `Terima kasih atas keluhannya, Tulis lagi keluhan tambahan Anda jika ada, atau ketik *kirim* untuk lanjut.`,
+    `Terima kasih atas keluhannya, Jika masih ada keluhan, silakan tulis keluhan tambahan Anda. Atau ketik *kirim* untuk melanjutkan.`,
+    `Terima kasih atas keluhannya, Ketik *kirim* jika keluhan sudah lengkap, atau tulis lagi untuk menambah keluhan Anda.`
   ];
   return randomResponse(responses);
 }
 
 function keluhanDitambahkan() {
   const responses = [
-    `Keluhan ditambahkan. Jika ada lagi, silakan tulis. Jika sudah cukup, ketik "kirim".`,
-    `Keluhan berhasil ditambahkan. Tulis lagi jika masih ada, atau ketik "kirim".`,
-    `Keluhan Anda sudah dicatat. Tambahkan lagi atau ketik "kirim" jika selesai.`,
-    `Kami sudah menambahkan keluhan Anda. Ketik "kirim" jika sudah cukup.`,
-    `Keluhan sudah masuk. Tulis lagi untuk menambah, atau "kirim" untuk lanjut.`
+    `Keluhan ditambahkan. Jika ada lagi, silakan tulis. Jika sudah cukup, ketik *kirim*.`,
+    `Keluhan berhasil ditambahkan. Tulis lagi jika masih ada, atau ketik *kirim*.`,
+    `Keluhan Anda sudah dicatat. Tambahkan lagi atau ketik *kirim* jika selesai.`,
+    `Kami sudah menambahkan keluhan Anda. Ketik *kirim* jika sudah cukup.`,
+    `Keluhan sudah masuk. Tulis lagi untuk menambah, atau *kirim* untuk lanjut.`
   ];
   return randomResponse(responses);
 }
 
 function konfirmasiKeluhan(message) {
   const responses = [
-    `Saya simpulkan keluhan anda sebagai berikut: ${message}\nJika sudah sesuai, ketik "kirim" untuk lanjut ke lokasi kejadian, atau "batal" untuk mengulang.`,
-    `Berikut ringkasan keluhan Anda: ${message}\nKetik "kirim" jika sudah benar, atau "batal" untuk mengulang.`,
-    `Keluhan Anda: ${message}\nKetik "kirim" untuk lanjut, atau "batal" untuk mengulang.`,
-    `Ringkasan keluhan: ${message}\nKetik "kirim" jika sudah sesuai, atau "batal" untuk mengulang.`,
-    `Keluhan yang tercatat: ${message}\nKetik "kirim" untuk lanjut ke lokasi, atau "batal" untuk mengulang.`
+    `Saya simpulkan keluhan anda sebagai berikut:\n\n*${message}*\n\nJika sudah sesuai, ketik *kirim* untuk lanjut ke lokasi kejadian, atau *batal* untuk mengulang.`,
+    `Berikut ringkasan keluhan Anda:\n\n*${message}*\n\nKetik *kirim* jika sudah benar, atau *batal* untuk mengulang.`,
+    `Keluhan Anda:\n\n*${message}*\n\nKetik *kirim* untuk lanjut ke lokasi, atau *batal* untuk mengulang.`,
+    `Ringkasan keluhan:\n\n*${message}*\n\nKetik *kirim* jika sudah sesuai, atau *batal* untuk mengulang.`,
+    `Keluhan yang tercatat:\n\n*${message}*\n\nKetik *kirim* untuk lanjut ke lokasi, atau *batal* untuk mengulang.`
   ];
   return randomResponse(responses);
 }
@@ -59,11 +59,11 @@ function ulangKeluhan(sapaan, nama) {
 
 function konfirmasiAtauBatal() {
   const responses = [
-    `Silakan ketik "kirim" jika sudah sesuai, atau "batal" untuk mengulang.`,
-    `Ketik "kirim" jika sudah benar, atau "batal" untuk mengulang.`,
-    `Jika sudah sesuai, ketik "kirim". Jika ingin mengulang, ketik "batal".`,
-    `Ketik "kirim" untuk lanjut, atau "batal" untuk mengulang.`,
-    `Silakan konfirmasi dengan "kirim", atau ulangi dengan "batal".`
+    `Silakan ketik *kirim* jika sudah sesuai, atau *batal* untuk mengulang.`,
+    `Ketik *kirim* jika sudah benar, atau *batal* untuk mengulang.`,
+    `Jika sudah sesuai, ketik *kirim*. Jika ingin mengulang, ketik *batal*.`,
+    `Ketik *kirim* untuk lanjut, atau *batal* untuk mengulang.`,
+    `Silakan konfirmasi dengan *kirim*, atau ulangi dengan *batal*.`
   ];
   return randomResponse(responses);
 }
@@ -95,11 +95,11 @@ function lokasiBukanBekasi(sapaan, nama, kabupaten) {
 
 function lokasiDiterima(wilayah) {
   const responses = [
-    `Berikut lokasi yang Anda kirim: ${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten} Ketik "kirim" jika sudah sesuai, atau "batal" untuk kirim ulang.`,
-    `Lokasi diterima: ${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten}. Ketik "kirim" jika benar, atau "batal" untuk ulang.`,
-    `Lokasi Anda: ${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten}. Ketik "kirim" jika sudah sesuai, ketik "batal" untuk mengirim ulang.`,
-    `Lokasi sudah kami terima: ${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten}. Jika sudah benar ketik "kirim", jika belum ketik "batal"`,
-    `Lokasi: ${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten}. Ketik "kirim" jika benar, atau "batal" untuk ulang.`
+    `Berikut lokasi yang Anda kirim: ${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten} Ketik *kirim* jika sudah sesuai, atau *batal* untuk kirim ulang.`,
+    `Lokasi diterima: ${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten}. Ketik *kirim* jika benar, atau *batal* untuk ulang.`,
+    `Lokasi Anda: ${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten}. Ketik *kirim* jika sudah sesuai, ketik *batal* untuk mengirim ulang.`,
+    `Lokasi sudah kami terima: ${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten}. Jika sudah benar ketik *kirim*, jika belum ketik *batal*`,
+    `Lokasi: ${wilayah.desa}, ${wilayah.kecamatan}, ${wilayah.kabupaten}. Ketik *kirim* jika benar, atau *batal* untuk ulang.`
   ];
   return randomResponse(responses);
 }
@@ -128,11 +128,11 @@ function ulangLokasi() {
 
 function konfirmasiLokasi() {
   const responses = [
-    `Ketik "kirim" jika lokasi sudah benar, atau ketik "batal" untuk kirim ulang.`,
-    `Jika lokasi sudah sesuai, ketik "kirim". Jika ingin mengulang, ketik "batal".`,
-    `Konfirmasi lokasi dengan ketik "kirim", atau ulangi dengan ketik "batal".`,
-    `Ketik "kirim" untuk lanjut, atau ketik "batal" untuk ulang lokasi.`,
-    `Silakan ketik "kirim" jika lokasi sudah benar, atau ketik "batal" untuk ulang.`
+    `Ketik *kirim* jika lokasi sudah benar, atau ketik *batal* untuk kirim ulang.`,
+    `Jika lokasi sudah sesuai, ketik *kirim*. Jika ingin mengulang, ketik *batal*.`,
+    `Konfirmasi lokasi dengan ketik *kirim*, atau ulangi dengan ketik *batal*.`,
+    `Ketik *kirim* untuk lanjut, atau ketik *batal* untuk ulang lokasi.`,
+    `Silakan ketik *kirim* jika lokasi sudah benar, atau ketik *batal* untuk ulang.`
   ];
   return randomResponse(responses);
 }
@@ -150,11 +150,11 @@ function minimalFoto(sapaan, nama) {
 
 function ringkasanLaporan(session) {
   const responses = [
-    `Berikut ringkasan laporan Anda:\n📍 Lokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n📝 Keluhan:\n${session.message}\n📷 Jumlah Foto: ${session.photos.length}\nJika sudah benar, ketik "konfirmasi" untuk mengirim atau "batal" untuk mengulang.`,
-    `Ringkasan laporan:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nJumlah Foto: ${session.photos.length}\nKetik "konfirmasi" jika sudah benar, atau "batal" untuk mengulang.`,
-    `Cek kembali laporan Anda:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nFoto: ${session.photos.length}\nKetik "konfirmasi" untuk kirim, atau "batal" untuk ulang.`,
-    `Berikut detail laporan Anda:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nJumlah Foto: ${session.photos.length}\nKetik "konfirmasi" jika sudah benar, atau "batal" untuk mengulang.`,
-    `Laporan Anda:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nFoto: ${session.photos.length}\nKetik "konfirmasi" untuk kirim, atau "batal" untuk ulang.`
+    `Berikut ringkasan laporan Anda:\n📍 Lokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n📝 Keluhan:\n${session.message}\n📷 Jumlah Foto: ${session.photos.length}\nJika sudah benar, ketik "konfirmasi" untuk mengirim atau *batal* untuk mengulang.`,
+    `Ringkasan laporan:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nJumlah Foto: ${session.photos.length}\nKetik "konfirmasi" jika sudah benar, atau *batal* untuk mengulang.`,
+    `Cek kembali laporan Anda:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nFoto: ${session.photos.length}\nKetik "konfirmasi" untuk kirim, atau *batal* untuk ulang.`,
+    `Berikut detail laporan Anda:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nJumlah Foto: ${session.photos.length}\nKetik "konfirmasi" jika sudah benar, atau *batal* untuk mengulang.`,
+    `Laporan Anda:\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nFoto: ${session.photos.length}\nKetik "konfirmasi" untuk kirim, atau *batal* untuk ulang.`
   ];
   return randomResponse(responses);
 }
@@ -172,11 +172,11 @@ function laporanDibatalkanMenu() {
 
 function hanyaFoto() {
   const responses = [
-    `Mohon hanya kirim foto, atau "batal" untuk mengulang.`,
-    `Silakan kirim foto saja, atau ketik "batal" untuk mengulang.`,
-    `Kirim hanya foto saja, atau ketik "batal" untuk ulang.`,
-    `Mohon kirimkan foto saja, atau ketik "batal".`,
-    `Hanya foto yang bisa diproses, atau ketik "batal" jika sudah cukup.`
+    `Mohon hanya kirim foto, atau *batal* untuk mengulang.`,
+    `Silakan kirim foto saja, atau ketik *batal* untuk mengulang.`,
+    `Kirim hanya foto saja, atau ketik *batal* untuk ulang.`,
+    `Mohon kirimkan foto saja, atau ketik *batal*.`,
+    `Hanya foto yang bisa diproses, atau ketik *batal* jika sudah cukup.`
   ];
   return randomResponse(responses);
 }
@@ -194,33 +194,33 @@ function gagalProsesFoto() {
 
 function sudah3Foto() {
   const responses = [
-    `Kami telah menerima 3 foto. Coba periksa kembali, apakah foto yang Anda kirim sudah sesuai? Jika sudah, ketik "kirim", atau ketik "batal" untuk mengulang.`,
-    `Sudah ada 3 foto yang diterima. Ketik "kirim" jika sudah cukup, atau "batal" untuk ulang.`,
-    `3 foto dari Anda sudah diterima. Ketik "kirim" jika sudah benar, atau "batal" untuk ulang.`,
-    `Kami sudah menerima 3 foto. Silakan cek kembali, lalu ketik "kirim" jika sudah sesuai, atau "batal" jika ingin mengulang.`,
-    `3 foto berhasil diterima. Ketik "kirim" jika sudah cukup, atau "batal" untuk ulang.`
+    `Kami telah menerima 3 foto. Coba periksa kembali, apakah foto yang Anda kirim sudah sesuai? Jika sudah, ketik *kirim*, atau ketik *batal* untuk mengulang.`,
+    `Sudah ada 3 foto yang diterima. Ketik *kirim* jika sudah cukup, atau *batal* untuk ulang.`,
+    `3 foto dari Anda sudah diterima. Ketik *kirim* jika sudah benar, atau *batal* untuk ulang.`,
+    `Kami sudah menerima 3 foto. Silakan cek kembali, lalu ketik *kirim* jika sudah sesuai, atau *batal* jika ingin mengulang.`,
+    `3 foto berhasil diterima. Ketik *kirim* jika sudah cukup, atau *batal* untuk ulang.`
   ];
   return randomResponse(responses);
 }
 
 function fotoBerhasilDiterima(sisa) {
   const responses = [
-    `Foto berhasil diterima. Anda masih bisa mengirim ${sisa} foto lagi. Ketik "kirim" jika sudah cukup, atau "batal" untuk mengulang.`,
-    `Foto sudah masuk. Anda masih bisa mengirim ${sisa} foto lagi. Jika sudah cukup ketik "kirim", jika ingin mengulang ketik "batal"`,
-    `Foto diterima. Sisa foto yang bisa dikirim: ${sisa}. Ketik "kirim" jika sudah cukup, ketik "batal" jika ingin mengulang`,
-    `Foto sudah diterima. Anda masih bisa tambah ${sisa} foto lagi. Jika cukup ketik "kirim", jika ingin mengulang ketik "batal"`,
-    `Foto berhasil diupload. Anda masih bisa upload ${sisa} foto lagi. Jika sudah ketik "kirim", jika ingin diulang ketik "batal"`
+    `Foto berhasil diterima. Anda masih bisa mengirim ${sisa} foto lagi. Ketik *kirim* jika sudah cukup, atau *batal* untuk mengulang.`,
+    `Foto sudah masuk. Anda masih bisa mengirim ${sisa} foto lagi. Jika sudah cukup ketik *kirim*, jika ingin mengulang ketik *batal*`,
+    `Foto diterima. Sisa foto yang bisa dikirim: ${sisa}. Ketik *kirim* jika sudah cukup, ketik *batal* jika ingin mengulang`,
+    `Foto sudah diterima. Anda masih bisa tambah ${sisa} foto lagi. Jika cukup ketik *kirim*, jika ingin mengulang ketik *batal*`,
+    `Foto berhasil diupload. Anda masih bisa upload ${sisa} foto lagi. Jika sudah ketik *kirim*, jika ingin diulang ketik *batal*`
   ];
   return randomResponse(responses);
 }
 
 function konfirmasiReview() {
   const responses = [
-    `Ketik "konfirmasi" jika laporan sudah benar, atau "batal" untuk membatalkan.`,
-    `Konfirmasi laporan dengan ketik "konfirmasi", atau "batal" untuk membatalkan.`,
-    `Jika laporan sudah benar, ketik "konfirmasi". Jika ingin membatalkan, ketik "batal".`,
-    `Ketik "konfirmasi" untuk kirim laporan, atau "batal" untuk membatalkan.`,
-    `Silakan ketik "konfirmasi" jika sudah benar, atau "batal" untuk membatalkan.`
+    `Ketik "konfirmasi" jika laporan sudah benar, atau *batal* untuk membatalkan.`,
+    `Konfirmasi laporan dengan ketik "konfirmasi", atau *batal* untuk membatalkan.`,
+    `Jika laporan sudah benar, ketik "konfirmasi". Jika ingin membatalkan, ketik *batal*.`,
+    `Ketik "konfirmasi" untuk kirim laporan, atau *batal* untuk membatalkan.`,
+    `Silakan ketik "konfirmasi" jika sudah benar, atau *batal* untuk membatalkan.`
   ];
   return randomResponse(responses);
 }
