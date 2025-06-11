@@ -22,7 +22,7 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
     const context = await combinedContext(input);
 
     // === Greeting check untuk reset session dan tampilkan menu utama ===
-    if (step === "MAIN_MENU" && !session.currentAction && (input === "menu" || context === "greeting")) {
+    if (step === "MAIN_MENU" && !session.currentAction && input === "menu" || context === "greeting") {
         await userRepo.resetSession(from);
         return mainMenuHandler(from, input, sendReply);
     }
