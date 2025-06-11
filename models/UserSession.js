@@ -31,7 +31,7 @@ const userSessionSchema = new mongoose.Schema({
     type: [mongoose.Schema.Types.ObjectId],
     ref: "Tindakan",
     default: [],
-  }    
+  }
 }, {
   timestamps: true,
 });
