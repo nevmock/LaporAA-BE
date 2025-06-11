@@ -108,7 +108,7 @@ app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 app.use("/user", userRoutes);
 
 // Apply authMiddleware to all routes except /webhook
-app.use(authMiddleware);
+// app.use(authMiddleware);
 
 app.use("/reports", reportRoutes);
 app.use("/reportCount", reportCountRoutes);
