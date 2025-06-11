@@ -109,7 +109,6 @@ app.use("/user", userRoutes);
 
 // Apply authMiddleware to all routes except /webhook
 // app.use(authMiddleware);
-
 app.use("/reports", reportRoutes);
 app.use("/reportCount", reportCountRoutes);
 app.use("/tindakan", tindakanRoutes);
