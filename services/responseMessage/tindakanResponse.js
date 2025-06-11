@@ -1,10 +1,12 @@
 const randomResponse = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-const daruratMessage = (sapaan, nama) => {
+const daruratMessage = (sapaan, nama, sessionId) => {
   const responses = [
 `Terimakasih ${sapaan} ${nama} telah menghubungi kami.
 
-Karena situasinya darurat, silahkan langsung hubungi:
+Laporan Anda dengan ID: *${sessionId}*
+
+Dari hasil verifikasi Tim Admin, laporan Anda termasuk dalam situasi darurat, silahkan langsung hubungi:
 
 - 119 : PSC  (Untuk Kegawat Daruratan Medis)
 - 113 : Pemadam Kebakaran

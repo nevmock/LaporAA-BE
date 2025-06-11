@@ -55,7 +55,7 @@ router.put("/:reportId", async (req, res) => {
             const jenisKelamin = user?.jenis_kelamin || "";
             const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
 
-            const message = tindakanResponse.daruratMessage(sapaan, user.name);
+            const message = tindakanResponse.daruratMessage(sapaan, user.name, report.sessionId);
 
             await sendMessageToWhatsApp(from, message);
 

@@ -70,11 +70,11 @@ function konfirmasiAtauBatal() {
 
 function mintaLokasi(sapaan, nama) {
   const responses = [
-    `Baik ${sapaan} ${nama}, silakan kirimkan *pin point lokasi kejadian* menggunakan fitur *Kirim Lokasi* di WhatsApp.`,
-    `Silakan kirim lokasi kejadian dengan fitur *Kirim Lokasi*, ${sapaan} ${nama}.`,
-    `Mohon kirimkan lokasi kejadian melalui fitur *Kirim Lokasi*, ${sapaan} ${nama}.`,
-    `Kirimkan lokasi kejadian dengan fitur *Kirim Lokasi* di WhatsApp, ${sapaan} ${nama}.`,
-    `Silakan gunakan fitur *Kirim Lokasi* untuk mengirim lokasi kejadian, ${sapaan} ${nama}.`
+    `Baik ${sapaan} ${nama}, silakan kirimkan *pin point lokasi kejadian* menggunakan fitur *Kirim Lokasi / Share Loc WA* di WhatsApp.`,
+    `Silakan kirim lokasi kejadian dengan fitur *Kirim Lokasi / Share Loc WA*, ${sapaan} ${nama}.`,
+    `Mohon kirimkan lokasi kejadian melalui fitur *Kirim Lokasi / Share Loc WA*, ${sapaan} ${nama}.`,
+    `Kirimkan lokasi kejadian dengan fitur *Kirim Lokasi / Share Loc WA* di WhatsApp, ${sapaan} ${nama}.`,
+    `Silakan gunakan fitur *Kirim Lokasi / Share Loc WA* untuk mengirim lokasi kejadian, ${sapaan} ${nama}.`
   ];
   return randomResponse(responses);
 }
@@ -227,11 +227,11 @@ function konfirmasiReview() {
 
 function laporanBerhasil(sapaan, nama, nomorLaporan) {
   const responses = [
-    `Terima kasih ${sapaan} ${nama}, laporan berhasil dikirim dengan ID *${nomorLaporan}* . Simpan ID ini untuk cek status laporan.`,
-    `Laporan Anda sudah berhasil dikirim, ${sapaan} ${nama}. Berikut ID laporannya: *${nomorLaporan}* .`,
-    `Laporan berhasil dikirim dengan ID *${nomorLaporan}* , ${sapaan} ${nama}. Mohon simpan ID tersebut.`,
-    `Terima kasih, laporan Anda sudah kami terima. Simpan ID berikut: *${nomorLaporan}* .`,
-    `Laporan berhasil dikirim. Simpan ID *${nomorLaporan}* untuk cek status, ${sapaan} ${nama}.`
+    `Terima kasih ${sapaan} ${nama}, laporan berhasil dikirim dengan ID\n\n${nomorLaporan}\n\nSimpan ID ini untuk cek status laporan.`,
+    `Laporan Anda sudah berhasil dikirim, ${sapaan} ${nama}. Berikut ID laporannya:\n\n${nomorLaporan}`,
+    `Laporan berhasil dikirim. ID tiket Anda:\n\n${nomorLaporan}\n\nMohon simpan ID tersebut ${sapaan} ${nama}.`,
+    `Terima kasih, laporan Anda sudah kami terima. Simpan ID berikut:\n\n${nomorLaporan}`,
+    `Laporan berhasil dikirim. Simpan ID:\n\n${nomorLaporan}\n\nMohon disimpan ID tersebut ya ${sapaan} ${nama}.`
   ];
   return randomResponse(responses);
 }

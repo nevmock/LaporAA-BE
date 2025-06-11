@@ -25,7 +25,7 @@ module.exports = async (from, step, input, sendReply) => {
 
         if (!nomorLaporan || isNaN(nomorLaporan)) {
             // If session ID is invalid, prompt the user to enter a valid report ID
-            return sendReply(from, checkReportResponse.laporanTidakValid(sapaan, nama));
+            return sendReply(from, checkReportResponse.laporanTidakDitemukan(sapaan, nama));
         }
 
         try {

@@ -99,6 +99,7 @@ module.exports = async (from, step, input, sendReply) => {
 
         // Check if location is within the required region
         if (!wilayah || wilayah.kabupaten.toUpperCase() !== "BEKASI") {
+            await userRepo.resetSession(from);
             return sendReply(from, createReportResponse.lokasiBukanBekasi(sapaan, nama, wilayah?.kabupaten || "wilayah lain"));
         }
 

@@ -157,7 +157,7 @@ exports.sendTutorialImagesToUser = async (to) => {
                 link: fullUrl,
                 caption,
             });
-            await delay(500); // delay antar gambar
+            await delay(1000); // delay antar gambar
         } catch (err) {
             console.error("❌ Gagal kirim gambar tutorial:", err.response?.data || err.message);
             return false; // gagal kirim salah satu gambar
