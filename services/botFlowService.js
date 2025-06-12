@@ -45,6 +45,7 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
     if (step === "WAITING_FOR_RATING") {
         const rating = parseInt(ratingInput || 5);
         const tindakanId = session.pendingFeedbackFor?.[0];
+        const sessionId = tindakan.report?.sessionId || "Tidak diketahui";
 
         if (isNaN(rating) || rating < 1 || rating > 5) {
             return sendReply(from, botFlowResponse.ratingInvalid(sapaan, nama));
@@ -70,7 +71,7 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
             session.currentAction = null;
             await session.save();
 
-            const replyMessage = replyFunc(sapaan, nama, tindakanId);
+            const replyMessage = replyFunc(sapaan, nama, sessionId);
             return sendReply(from, replyMessage);
         } catch (err) {
             console.error("Gagal menyimpan rating:", err);
