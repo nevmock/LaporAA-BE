@@ -20,6 +20,9 @@ jobs:
     - name: Load variables
       run: |
         touch .env
+    - name: Set npm registry to npmmirror
+      run: |
+        npm config set registry https://registry.npmmirror.com
     - name: Install dependencies
       run: npm install
         
