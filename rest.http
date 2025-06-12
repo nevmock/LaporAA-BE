@@ -8,6 +8,9 @@ GET http://localhost:3001/tindakan
 GET http://localhost:3001/reportCount
 
 ###
+GET http://localhost:3001/reports/summary
+
+###
 GET http://localhost:3001/reports/680b798d2914fdacfe27faa7
 
 ###

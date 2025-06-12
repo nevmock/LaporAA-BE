@@ -16,6 +16,7 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
     const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
 
     let session = await userRepo.getOrCreateSession(from);
+    const ratingInput = message;
     const input = typeof message === "string" ? message.trim().toLowerCase() : message;
     const step = session.step;
 
@@ -40,8 +41,45 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
     //     }
     // }
 
+    // === Rating flow ===
+    if (step === "WAITING_FOR_RATING") {
+        const rating = parseInt(ratingInput || 5);
+        const tindakanId = session.pendingFeedbackFor?.[0];
+
+        if (isNaN(rating) || rating < 1 || rating > 5) {
+            return sendReply(from, botFlowResponse.ratingInvalid(sapaan, nama));
+        }
+
+        const replyFunc = tindakanResponse[`puasReply${rating}`];
+        if (typeof replyFunc !== "function") {
+            console.warn(`Function puasReply${rating} tidak ditemukan di botFlowResponse`);
+            return sendReply(from, botFlowResponse.ratingInvalid(sapaan, nama));
+        }
+
+        try {
+            const tindakan = await tindakanRepo.findById(tindakanId);
+            if (!tindakan) {
+                return sendReply(from, botFlowResponse.laporanTidakDitemukan(sapaan, nama));
+            }
+
+            tindakan.rating = rating;
+            await tindakan.save();
+
+            session.pendingFeedbackFor = session.pendingFeedbackFor.filter(id => id.toString() !== tindakanId.toString());
+            session.step = "MAIN_MENU";
+            session.currentAction = null;
+            await session.save();
+
+            const replyMessage = replyFunc(sapaan, nama, tindakanId);
+            return sendReply(from, replyMessage);
+        } catch (err) {
+            console.error("Gagal menyimpan rating:", err);
+            return sendReply(from, botFlowResponse.gagalSimpanRating());
+        }
+    }
+
     // === Feedback flow ===
-    if (session.pendingFeedbackFor?.length > 0) {
+    if (session.pendingFeedbackFor && session.pendingFeedbackFor?.length > 0) {
         const tindakanId = session.pendingFeedbackFor[0];
         const tindakan = await tindakanRepo.findById(tindakanId);
 
@@ -103,43 +141,6 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
         }
 
         return sendReply(from, botFlowResponse.pendingKonfirmasi(sapaan, nama));
-    }
-
-    // === Rating flow ===
-    if (step === "WAITING_FOR_RATING") {
-        const rating = parseInt(input);
-        const tindakanId = session.pendingFeedbackFor?.[0];
-
-        if (isNaN(rating) || rating < 1 || rating > 5) {
-            return sendReply(from, botFlowResponse.ratingInvalid(sapaan, nama));
-        }
-
-        const replyFunc = tindakanResponse[`puasReply${rating}`];
-        if (typeof replyFunc !== "function") {
-            console.warn(`Function puasReply${rating} tidak ditemukan di botFlowResponse`);
-            return sendReply(from, botFlowResponse.ratingInvalid(sapaan, nama));
-        }
-
-        try {
-            const tindakan = await tindakanRepo.findById(tindakanId);
-            if (!tindakan) {
-                return sendReply(from, botFlowResponse.laporanTidakDitemukan(sapaan, nama));
-            }
-
-            tindakan.rating = rating;
-            await tindakan.save();
-
-            session.pendingFeedbackFor = session.pendingFeedbackFor.filter(id => id.toString() !== tindakanId.toString());
-            session.step = "MAIN_MENU";
-            session.currentAction = null;
-            await session.save();
-
-            const replyMessage = replyFunc(sapaan, nama, tindakanId);
-            return sendReply(from, replyMessage);
-        } catch (err) {
-            console.error("Gagal menyimpan rating:", err);
-            return sendReply(from, botFlowResponse.gagalSimpanRating());
-        }
     }
 
     // === Routing berdasarkan currentAction ===
