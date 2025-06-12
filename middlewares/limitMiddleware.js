@@ -18,10 +18,10 @@ const limitMiddleware = async (req, res, next) => {
         const message = messages[0];
 
         // Filter hanya pesan teks
-        if (message.type !== 'text') {
-            console.info('Non-text message received, skipping...');
-            return res.sendStatus(200);
-        }
+        // if (message.type !== 'text') {
+        //     console.info('Non-text message received, skipping...');
+        //     return res.sendStatus(200);
+        // }
 
         const from = message.from;
         const todayStart = moment().startOf('day').toDate();
