@@ -23,10 +23,15 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
     const context = await combinedContext(input);
 
     // === Greeting check untuk reset session dan tampilkan menu utama ===
-    if (step === "MAIN_MENU" && !session.currentAction && input === "menu" || step === "MAIN_MENU" && !session.currentAction && context === "greeting") {
+    if ((step === "MAIN_MENU" && !session.currentAction && input === "menu") || (step === "MAIN_MENU" && !session.currentAction && context === "greeting")) {
         await userRepo.resetSession(from);
         return mainMenuHandler(from, input, sendReply);
     }
+
+    // if ((context === "terimakasih")) {
+    //     const res1 = botFlowResponse.terimakasihResponse(sapaan, nama);
+    //     return sendReply(from, res1);
+    // }
 
     // === Handle manual mode ===
     if (session.mode === "manual") {
@@ -46,6 +51,7 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
     if (step === "WAITING_FOR_RATING") {
         const rating = parseInt(ratingInput || 5);
         const tindakanId = session.pendingFeedbackFor?.[0];
+        const tindakan = await tindakanRepo.findById(tindakanId);
         const sessionId = tindakan.report?.sessionId || "Tidak diketahui";
 
         if (isNaN(rating) || rating < 1 || rating > 5) {

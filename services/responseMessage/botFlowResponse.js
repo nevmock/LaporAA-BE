@@ -147,6 +147,17 @@ function limitResponse() {
   return randomResponse(responses);
 }
 
+function terimakasihResponse(sapaan, nama){
+  const responses = [
+    `Siap ${sapaan} ${nama}, terima kasih telah menggunakan layanan kami. Jika ada yang ingin Anda tanyakan, silakan hubungi kami kembali.`,
+    `Terima kasih ${sapaan} ${nama}, kami senang bisa membantu Anda. Jika ada pertanyaan lain, jangan ragu untuk menghubungi kami.`,
+    `Sama-sama ${sapaan} ${nama}, kami siap membantu kapan saja. Jika ada yang ingin Anda tanyakan, silakan hubungi kami.`,
+    `Sama-sama ${sapaan} ${nama}, kami menghargai kepercayaan Anda. Jika ada pertanyaan atau laporan lain, silakan hubungi kami.`,
+    `Terima kasih ${sapaan} ${nama}, kami senang bisa membantu Anda. Jika ada yang ingin Anda tanyakan, silakan hubungi kami kembali.`
+  ]
+  return randomResponse(responses);  
+}
+
 module.exports = {
   mainSapaan,
   ratingSuccess,
@@ -158,5 +169,6 @@ module.exports = {
   ratingInvalid,
   laporanTidakDitemukan,
   gagalSimpanRating,
-  limitResponse
+  limitResponse,
+  terimakasihResponse
 };

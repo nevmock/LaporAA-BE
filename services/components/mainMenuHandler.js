@@ -47,6 +47,11 @@ module.exports = async (from, input, sendReply) => {
         return sendReply(from, res1);
     }
 
+    if ((session.step === "MAIN_MENU" && context === "terimakasih")) {
+        const res1 = botFlowResponse.terimakasihResponse(sapaan, nama);
+        return sendReply(from, res1);
+    }
+
     // ✅ Greetings
     if (session.step === "MAIN_MENU" && session.currentAction === null && (context === "greeting" && process.env.AI_CONTEXT_READER)) {
         await userRepo.resetSession(from);
