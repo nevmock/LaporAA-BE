@@ -22,29 +22,26 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
 
     const context = await combinedContext(input);
 
+    if (session.mode === "manual") return null;
+
+    // === Handle manual mode ===
+    // if (session.mode === "manual") {
+    //     const now = new Date();
+
+    //     if (session.manualModeUntil && now > session.manualModeUntil) {
+    //         session.mode = "bot";
+    //         session.manualModeUntil = null;
+    //         await session.save();
+    //     } else {
+    //         const waitSeconds = Math.ceil((session.manualModeUntil.getTime() - now.getTime()) / 1000);
+    //         return sendReply(from, `Anda sedang dalam mode manual. Mohon tunggu selama ${waitSeconds} detik lagi sebelum bot kembali aktif.`);
+    //     }
+    // }
+
     // === Greeting check untuk reset session dan tampilkan menu utama ===
     if ((step === "MAIN_MENU" && !session.currentAction && input === "menu") || (step === "MAIN_MENU" && !session.currentAction && context === "greeting")) {
         await userRepo.resetSession(from);
         return mainMenuHandler(from, input, sendReply);
-    }
-
-    // if ((context === "terimakasih")) {
-    //     const res1 = botFlowResponse.terimakasihResponse(sapaan, nama);
-    //     return sendReply(from, res1);
-    // }
-
-    // === Handle manual mode ===
-    if (session.mode === "manual") {
-        const now = new Date();
-
-        if (session.manualModeUntil && now > session.manualModeUntil) {
-            session.mode = "bot";
-            session.manualModeUntil = null;
-            await session.save();
-        } else {
-            const waitSeconds = Math.ceil((session.manualModeUntil.getTime() - now.getTime()) / 1000);
-            return sendReply(from, `Anda sedang dalam mode manual. Mohon tunggu selama ${waitSeconds} detik lagi sebelum bot kembali aktif.`);
-        }
     }
 
     // === Rating flow ===
