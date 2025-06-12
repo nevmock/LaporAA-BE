@@ -50,25 +50,12 @@ const corsOptions = {
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
 };
 
-// const limiter = rateLimit({
-//   // windowMs: process.env.PERIOD_LIMITER,
-//   // max: process.env.MAX_LIMITER_REQUEST,
-//   windowMs: 86400000,
-//   max: 10,
-//   message: "Terlalu banyak request, coba lagi setelah 24 jam.",
-//   standardHeaders: true,
-//   legacyHeaders: false,
-//   onLimitReached: (req, res, options) => {
-//     console.log(`Limit reached for IP: ${req.ip}`);
-//   }
-// });
-
 // app.set('trust proxy', 1);
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-// app.use(limiter); DONT USE IT
+
 // app.use(limitMiddleware);
 
 mongoose.connection.on('connected', () => {
