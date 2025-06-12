@@ -30,7 +30,7 @@ const limitMiddleware = async (req, res, next) => {
         console.info('Total Report Today:', reportCount);
         console.info('Phone Number:', from);
 
-        if (reportCount >= process.env.MAX_REPORT_PER_DAY || 500) {
+        if (reportCount >= (process.env.MAX_REPORT_PER_DAY || 500)) {
             // Cek apakah user ini sudah dikirimi balasan limit hari ini
             const alreadyWarned = await LimitLog.findOne({ phoneNumber: from, date: todayStart });
             if (alreadyWarned) {
