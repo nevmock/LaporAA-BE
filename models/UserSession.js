@@ -27,6 +27,10 @@ const userSessionSchema = new mongoose.Schema({
     enum: ["bot", "manual"],
     default: "bot",
   },
+  manualModeUntil: {
+    type: Date,
+    default: null, // ⬅️ ini opsional tapi disarankan
+  },
   pendingFeedbackFor: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "Tindakan",
@@ -35,5 +39,14 @@ const userSessionSchema = new mongoose.Schema({
 }, {
   timestamps: true,
 });
+
+userSessionSchema.methods.activateManualMode = function (minutes = 1) {
+  this.mode = "manual";
+  this.manualModeUntil = new Date(Date.now() + minutes * 60 * 1000);
+  return this.save();
+};
+
+// import ini untuk mengaktifkan mode manual
+// await session.activateManualMode(); // Default: 1 menit
 
 module.exports = mongoose.model("UserSession", userSessionSchema);

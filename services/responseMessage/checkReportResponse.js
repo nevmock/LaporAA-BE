@@ -4,7 +4,7 @@ function randomResponse(arr) {
 
 function kembaliKeMenu(sapaan, nama) {
   const responses = [
-    `Halo ${sapaan} ${nama}, selamat datang kembali di Lapor AA Kabupaten Bekasi. Ingin membuat laporan baru atau cek status laporan?`,
+    `Halo ${sapaan} ${nama}, selamat datang kembali di Lapor AA Bupati Bekasi. Ingin membuat laporan baru atau cek status laporan?`,
     `Hai ${sapaan} ${nama}, Anda kembali ke menu utama. Silakan pilih apakah Anda ingin membuat laporan atau cek status laporan.`,
     `Selamat datang di menu utama, ${sapaan} ${nama}. Mau buat laporan atau cek status laporan?`,
     `Anda sedang berada di menu utama, ${sapaan} ${nama}. Mau buat laporan baru atau cek status laporan?`
@@ -35,7 +35,7 @@ function detailLaporan(sapaan, nama, nomorLaporan, report) {
     `Berikut info laporan Anda, ${sapaan} ${nama}:\n\n🆔 ID: ${nomorLaporan}\n📍 Lokasi: ${report.location.desa}, ${report.location.kecamatan}, ${report.location.kabupaten}\n📅 Tanggal: ${report.createdAt.toLocaleDateString('id-ID')}\n⏰ Waktu: ${new Date(report.createdAt).toTimeString().slice(0, 5)} WIB\n📝 Isi: ${report.message}\n\nTindakan:\n• OPD: ${tindakan?.opd || '-'}\n• Tingkat Kedaruratan: ${tindakan?.situasi || '-'}\n• Status: ${tindakan?.status || '-'}`,
     `Laporan ${nomorLaporan} atas nama ${sapaan} ${nama}:\n\n📍 Lokasi: ${report.location.desa}, ${report.location.kecamatan}, ${report.location.kabupaten}\n📅 Tanggal: ${report.createdAt.toLocaleDateString('id-ID')}\n⏰ Waktu: ${new Date(report.createdAt).toTimeString().slice(0, 5)} WIB\n📝 Isi: ${report.message}\n\nTindakan terakhir:\n• OPD: ${tindakan?.opd || '-'}\n• Tingkat Kedaruratan: ${tindakan?.situasi || '-'}\n• Status: ${tindakan?.status || '-'}`,
     `Detail laporan ${sapaan} ${nama} (🆔 : ${nomorLaporan}):\n\n📍 Lokasi: ${report.location.desa}, ${report.location.kecamatan}, ${report.location.kabupaten}\n📅 Tanggal: ${report.createdAt.toLocaleDateString('id-ID')}\n⏰ Waktu: ${new Date(report.createdAt).toTimeString().slice(0, 5)} WIB\n📝 Isi: ${report.message}\n\nTindakan:\n• OPD: ${tindakan?.opd || '-'}\n• Tingkat Kedaruratan: ${tindakan?.situasi || '-'}\n• Status: ${tindakan?.status || '-'}`,
-    `Info laporan:\n\n🆔 ID: ${nomorLaporan}\n📍 Lokasi: ${report.location.desa}, ${report.location.kecamatan}, ${report.location.kabupaten}\n📅 Tanggal: ${report.createdAt.toLocaleDateString('id-ID')}\n⏰ Waktu: ${new Date(report.createdAt).toTimeString().slice(0, 5)} WIB\n📝 Isi: ${report.message}\n\n*Tindakan terbaru:*\n• OPD: ${tindakan?.opd || '-'}\n• Tingkat edaruratan: ${tindakan?.situasi || '-'}\n• Status: ${tindakan?.status || '-'}`
+    `Info laporan:\n\n🆔 ID: ${nomorLaporan}\n📍 Lokasi: ${report.location.desa}, ${report.location.kecamatan}, ${report.location.kabupaten}\n📅 Tanggal: ${report.createdAt.toLocaleDateString('id-ID')}\n⏰ Waktu: ${new Date(report.createdAt).toTimeString().slice(0, 5)} WIB\n📝 Isi: ${report.message}\n\n*Tindakan terbaru:*\n• OPD: ${tindakan?.opd || '-'}\n• Tingkat Kedaruratan: ${tindakan?.situasi || '-'}\n• Status: ${tindakan?.status || '-'}`
   ];
   return randomResponse(responses);
 }

@@ -29,17 +29,18 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
     }
 
     // === Handle manual mode ===
-    // if (session.mode === "manual") {
-    //     const now = Date.now();
-    //     if (session.manualModeUntil && now > session.manualModeUntil) {
-    //         session.mode = "bot";
-    //         session.manualModeUntil = null;
-    //         await session.save();
-    //     } else {
-    //         const waitSeconds = Math.ceil((session.manualModeUntil - now) / 1000);
-    //         return sendReply(from, `Anda sedang dalam mode manual. Mohon tunggu selama ${waitSeconds} detik lagi sebelum bot kembali aktif.`);
-    //     }
-    // }
+    if (session.mode === "manual") {
+        const now = new Date();
+
+        if (session.manualModeUntil && now > session.manualModeUntil) {
+            session.mode = "bot";
+            session.manualModeUntil = null;
+            await session.save();
+        } else {
+            const waitSeconds = Math.ceil((session.manualModeUntil.getTime() - now.getTime()) / 1000);
+            return sendReply(from, `Anda sedang dalam mode manual. Mohon tunggu selama ${waitSeconds} detik lagi sebelum bot kembali aktif.`);
+        }
+    }
 
     // === Rating flow ===
     if (step === "WAITING_FOR_RATING") {

@@ -4,21 +4,23 @@ function randomResponse(arr) {
 
 function mainSapaan(sapaan, nama) {
   const responses = [
-    `Halo ${sapaan} ${nama}, selamat datang di *Lapor AA Bupati Kabupaten Bekasi!*`,
-    `Hai ${sapaan} ${nama}, terima kasih sudah menghubungi *Lapor AA Bupati Kabupaten Bekasi*.`,
-    `Selamat datang ${sapaan} ${nama} di layanan *Lapor AA Bupati Kabupaten Bekasi*.`,
-    `Halo ${sapaan} ${nama}, ada yang bisa kami bantu di layanan *Lapor AA Bupati Kabupaten Bekasi?*`,
-    `Salam hormat ${sapaan} ${nama}, selamat datang di layanan *Lapor AA Bupati Kabupaten Bekasi*.`
+    `Halo ${sapaan} ${nama}, selamat datang di *Lapor AA Bupati Bekasi!*`,
+    `Hai ${sapaan} ${nama}, terima kasih sudah menghubungi *Lapor AA Bupati Bekasi*.`,
+    `Selamat datang ${sapaan} ${nama} di layanan *Lapor AA Bupati Bekasi*.`,
+    `Halo ${sapaan} ${nama}, ada yang bisa kami bantu di layanan *Lapor AA Bupati Bekasi?*`,
+    `Salam hormat ${sapaan} ${nama}, selamat datang di layanan *Lapor AA Bupati Bekasi*.`
   ];
   return (
     randomResponse(responses) +
     `
 
 Apabila situasi anda darurat, bisa menghubungi nomer berikut :
-- 119 : PSC  (Untuk Kegawat Daruratan Medis)
-- 113 : Pemadam Kebakaran
+
+- 119 : PSC  (Untuk Kegawatdaruratan Medis)
+- 123 : PLN (Untuk Layanan Pengaduan Listrik)
 - 110 : Kepolisian (Kriminal dll)
-- 081219071900 : BPBD (Untuk Bantuan Penanggulangan Bencana)
+- 02122137870 : MarKo (Markas Komando Pemadam Kebakaran)
+- 081219071900 : BPBD (Badan Penanggulangan Bencana Daerah)
 
 Jika tidak, silahkan *buat laporan* atau *cek status laporan* Anda.
 

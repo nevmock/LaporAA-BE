@@ -45,9 +45,6 @@ GET http://localhost:3001/dashboard/distribusi
 ###
 GET http://localhost:3001/dashboard/kepuasan
 
-### 📄 Get all user logins
-GET http://localhost:3001/userLogin
-Content-Type: application/json
 
 ###
 
@@ -62,21 +59,25 @@ POST http://localhost:3001/userLogin
 Content-Type: application/json
 
 {
-  "username": "bupati",
-  "password": "bupati123",
+  "username": "sekda",
+  "password": "sekda123",
   "role": "Bupati"
 }
 
 ###
 
+### 📄 Get all user logins
+GET http://localhost:3001/userLogin
+Content-Type: application/json
+
 ### 📝 Update user login (change password or role)
-PUT http://localhost:3001/userLogin/:userId
+PUT http://localhost:3001/userLogin/684aafa603d31ff6ce63caf5
 Content-Type: application/json
 
 {
-  "username": "admin",
-  "password": "admin123",
-  "role": "Admin"
+  "username": "sekda",
+  "password": "sekda777",
+  "role": "Bupati"
 }
 
 ### ❌ Delete user login

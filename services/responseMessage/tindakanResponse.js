@@ -8,10 +8,12 @@ Laporan Anda dengan ID: *${sessionId}*
 
 Dari hasil verifikasi Tim Admin, laporan Anda termasuk dalam situasi darurat, silahkan langsung hubungi:
 
-- 119 : PSC  (Untuk Kegawat Daruratan Medis)
-- 113 : Pemadam Kebakaran
+- 119 : PSC  (Untuk Kegawatdaruratan Medis)
+- 123 : PLN (Untuk Layanan Pengaduan Listrik)
 - 110 : Kepolisian (Kriminal dll)
-- 081219071900 : BPBD (Untuk Bantuan Penanggulangan Bencana)`
+- 02122137870 : MarKo (Markas Komando Pemadam Kebakaran)
+- 081219071900 : BPBD (Badan Penanggulangan Bencana Daerah)
+`
   ];
   return randomResponse(responses);
 };

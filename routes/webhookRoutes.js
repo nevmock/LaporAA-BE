@@ -12,6 +12,6 @@ router.get("/", webhookVerification.verifyWebhook);
 router.post("/", [limitMiddleware, webhookController.handleIncomingMessages]);
 
 // 🔵 Route POST untuk menangani pesan dari bot
-router.post("/send", botController.handleIncomingMessage);
+router.post("/send", botController.handleOutcomingMessage);
 
 module.exports = router;

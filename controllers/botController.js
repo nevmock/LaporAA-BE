@@ -2,7 +2,7 @@ const botFlowService = require('../services/botFlowService');
 const { sendMessageToWhatsApp } = require('./messageController');
 
 // eslint-disable-next-line node/exports-style
-exports.handleIncomingMessage = async (req, res) => {
+exports.handleOutcomingMessage = async (req, res) => {
   try {
     const { entry } = req.body;
     const changes = entry?.[0]?.changes?.[0];
@@ -15,7 +15,7 @@ exports.handleIncomingMessage = async (req, res) => {
 
     if (!from || !msgText) return res.sendStatus(400);
 
-    const reply = await botFlowService.handleMessageFlow(from, msgText);
+    const reply = await botFlowService.handleUserMessage(from, msgText);
 
     await sendMessageToWhatsApp(from, reply);
     res.sendStatus(200);
