@@ -128,47 +128,18 @@ router.get("/summary", async (req, res) => {
             {
                 $group: {
                     _id: "$tindakan.status",
-                    count: { $sum: 1 },
-                    totalRating: {
-                        $sum: {
-                            $cond: [
-                                { $ifNull: ["$tindakan.rating", false] },
-                                "$tindakan.rating",
-                                0
-                            ]
-                        }
-                    },
-                    ratingCount: {
-                        $sum: {
-                            $cond: [
-                                { $ifNull: ["$tindakan.rating", false] },
-                                1,
-                                0
-                            ]
-                        }
-                    }
+                    count: { $sum: 1 }
                 }
             }
         ]);
 
-        // Struktur format yang kamu minta
-        const statusCounts = {};
-        let totalRating = 0;
-        let ratingCount = 0;
-
+        // Ubah ke format { status: jumlah }
+        const result = {};
         summary.forEach(item => {
-            const label = item._id || "Tanpa Status";
-            statusCounts[label] = item.count;
-            totalRating += item.totalRating || 0;
-            ratingCount += item.ratingCount || 0;
+            result[item._id || "Tanpa Status"] = item.count;
         });
 
-        const ratingSummary = {
-            "Rating": totalRating,
-            "Rating Rata Rata": ratingCount > 0 ? parseFloat((totalRating / ratingCount).toFixed(2)) : 0
-        };
-
-        res.status(200).json([statusCounts, ratingSummary]);
+        res.status(200).json(result);
     } catch (error) {
         console.error("❌ Error summary:", error);
         res.status(500).json({ message: "Terjadi kesalahan pada server" });
