@@ -97,7 +97,7 @@ router.put("/:reportId", async (req, res) => {
             try {
                 // If already reprocessed once, finalize and set rating to 5
                 tindakan.status = "Selesai Pengaduan";
-                tindakan.feedbackStatus = "Selesai Pengaduan";
+                tindakan.feedbackStatus = "Auto Rated";
                 tindakan.rating = 5;
                 await tindakan.save();
 
