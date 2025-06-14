@@ -202,7 +202,7 @@ module.exports = async (from, step, input, sendReply) => {
     if (step === "REVIEW") {
         if (lowerInput === "konfirmasi") {
             try {
-                const sessionId = generateSessionId(from);
+                const sessionId = await generateSessionId(from);
                 await reportRepo.create({
                     sessionId,
                     from,
