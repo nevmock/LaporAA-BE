@@ -3,6 +3,30 @@ const router = express.Router();
 const userProfileRepo = require("../repositories/userProfileRepo");
 const UserSession = require("../models/UserSession");
 
+// Update forceModeManual
+router.patch('/session/force-mode/:from', async (req, res) => {
+    try {
+        const { force } = req.body; // boolean
+        const { from } = req.params;
+
+        const session = await UserSession.findOneAndUpdate(
+            { from },
+            {
+                forceModeManual: force,
+                mode: force ? 'manual' : 'bot', // optional: langsung set mode
+                manualModeUntil: force ? null : new Date(), // clear timer
+            },
+            { new: true }
+        );
+
+        if (!session) return res.status(404).json({ message: "Session not found" });
+
+        res.json({ message: "Mode updated", session });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to update mode", error: err.message });
+    }
+});
+
 // PATCH /user-mode/:from
 router.patch("/user-mode/:from", async (req, res) => {
     const { from } = req.params;

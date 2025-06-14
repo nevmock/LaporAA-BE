@@ -51,3 +51,19 @@ exports.findByTindakanId = async (tindakanId) => {
         .populate("user")
         .populate("tindakan");
 };
+
+exports.deleteById = async (id) => {
+    const report = await Report.findById(id);
+    if (!report) {
+        throw new Error("Report not found");
+    }
+
+    // Hapus tindakan terkait jika ada
+    if (report.tindakan) {
+        await Tindakan.findByIdAndDelete(report.tindakan);
+    }
+
+    // Hapus laporan
+    await Report.findByIdAndDelete(id);
+    return { message: "Report dan tindakan berhasil dihapus" };
+};

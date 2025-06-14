@@ -25,19 +25,124 @@ router.get("/", async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
         const statusFilter = req.query.status;
+        const searchQuery = req.query.search?.trim();
 
-        const matchStage = [];
+        const statusOrder = [
+            "Perlu Verifikasi",
+            "Verifikasi Situasi",
+            "Verifikasi Kelengkapan Berkas",
+            "Proses OPD Terkait",
+            "Selesai Penanganan",
+            "Selesai Pengaduan",
+            "Ditolak"
+        ];
 
-        // Filter hanya jika status dikirim dan bukan 'Semua'
-        if (statusFilter && statusFilter !== "Semua") {
-            matchStage.push({
-                $match: {
-                    "tindakan.status": statusFilter
+        const pipeline = [
+            // JOIN ke UserProfile
+            {
+                $lookup: {
+                    from: "userprofiles",
+                    localField: "user",
+                    foreignField: "_id",
+                    as: "user"
                 }
-            });
-        }
+            },
+            {
+                $unwind: {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
 
-        // Pipeline dasar
+            // JOIN ke Tindakan
+            {
+                $lookup: {
+                    from: "tindakans",
+                    localField: "tindakan",
+                    foreignField: "_id",
+                    as: "tindakan"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$tindakan",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+
+            // Filter pencarian (jika ada)
+            ...(searchQuery
+                ? [{
+                    $match: {
+                        $or: [
+                            { sessionId: { $regex: searchQuery, $options: "i" } },
+                            { from: { $regex: searchQuery, $options: "i" } },
+                            { "location.desa": { $regex: searchQuery, $options: "i" } },
+                            { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
+                            { "tindakan.opd": { $regex: searchQuery, $options: "i" } },
+                            { "user.name": { $regex: searchQuery, $options: "i" } },
+                        ]
+                    }
+                }]
+                : []),
+
+            // Filter status (jika bukan "Semua")
+            ...(statusFilter && statusFilter !== "Semua"
+                ? [{
+                    $match: {
+                        "tindakan.status": statusFilter
+                    }
+                }]
+                : []),
+
+            // Tambahkan skor prioritas dan urutan status
+            {
+                $addFields: {
+                    prioritasScore: {
+                        $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
+                    },
+                    statusScore: {
+                        $indexOfArray: [statusOrder, "$tindakan.status"]
+                    }
+                }
+            },
+
+            // Urutkan
+            { $sort: { prioritasScore: -1, statusScore: 1, createdAt: -1 } },
+
+            // Paginate
+            { $skip: skip },
+            { $limit: limit }
+        ];
+
+        // Pipeline untuk total count (tanpa skip & limit)
+        const countPipeline = pipeline.filter(stage =>
+            !("$skip" in stage) && !("$limit" in stage)
+        ).concat({ $count: "total" });
+
+        // Eksekusi query
+        const [reports, countResult] = await Promise.all([
+            Report.aggregate(pipeline),
+            Report.aggregate(countPipeline)
+        ]);
+
+        const totalReports = countResult[0]?.total || 0;
+
+        res.status(200).json({
+            page,
+            limit,
+            totalPages: Math.ceil(totalReports / limit),
+            totalReports,
+            data: reports
+        });
+    } catch (error) {
+        console.error("❌ Error fetching reports:", error);
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+router.get("/map", async (req, res) => {
+    try {
         const basePipeline = [
             {
                 $lookup: {
@@ -53,7 +158,6 @@ router.get("/", async (req, res) => {
                     preserveNullAndEmptyArrays: true
                 }
             },
-            ...matchStage,
             {
                 $addFields: {
                     prioritasScore: {
@@ -74,41 +178,27 @@ router.get("/", async (req, res) => {
                         ]
                     }
                 }
-            }
-        ];
-
-        // Hitung total sesuai filter
-        const countResult = await Report.aggregate([...basePipeline, { $count: "total" }]);
-        const totalReports = countResult[0]?.total || 0;
-
-        // Tambahkan pagination dan sorting ke pipeline utama
-        const paginatedPipeline = [
-            ...basePipeline,
+            },
             {
                 $sort: {
                     prioritasScore: -1,
                     statusScore: 1,
                     createdAt: -1
                 }
-            },
-            { $skip: skip },
-            { $limit: limit }
+            }
         ];
 
-        const reports = await Report.aggregate(paginatedPipeline);
+        const reports = await Report.aggregate(basePipeline);
 
-        // Populate user (manual karena aggregate tidak support populate langsung)
+        // Populate user
         const populatedReports = await Report.populate(reports, { path: "user" });
 
         res.status(200).json({
-            page,
-            limit,
-            totalPages: Math.ceil(totalReports / limit),
-            totalReports,
+            totalReports: populatedReports.length,
             data: populatedReports
         });
     } catch (error) {
-        console.error("❌ Error fetching reports:", error);
+        console.error("❌ Error fetching all reports:", error);
         res.status(500).json({ message: "Terjadi kesalahan pada server" });
     }
 });
@@ -167,10 +257,10 @@ router.get("/:sessionId", async (req, res) => {
 // PUT update report by sessionId
 router.put("/:sessionId", async (req, res) => {
     const { sessionId } = req.params;
-    const { message, location } = req.body;
+    const { name, jenis_kelamin, message, location } = req.body;
 
     try {
-        const report = await Report.findOne({ sessionId });
+        const report = await reportRepo.findBySessionId(sessionId);
 
         if (!report) {
             return res.status(404).json({ message: "Laporan tidak ditemukan" });
@@ -178,6 +268,14 @@ router.put("/:sessionId", async (req, res) => {
 
         if (message !== undefined) {
             report.message = message;
+        }
+
+        if (name !== undefined) {
+            report.user.name = name;
+        }
+
+        if (jenis_kelamin !== undefined) {
+            report.user.jenis_kelamin = jenis_kelamin;
         }
 
         if (location && typeof location.description === "string") {
@@ -193,6 +291,15 @@ router.put("/:sessionId", async (req, res) => {
     } catch (error) {
         console.error("Error updating report by sessionId:", error);
         res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+router.delete("/:id", async (req, res) => {
+    try {
+        const result = await reportController.deleteById(req.params.id);
+        res.status(200).json(result);
+    } catch (err) {
+        res.status(404).json({ error: err.message });
     }
 });
 

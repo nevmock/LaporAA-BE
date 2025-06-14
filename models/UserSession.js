@@ -29,7 +29,11 @@ const userSessionSchema = new mongoose.Schema({
   },
   manualModeUntil: {
     type: Date,
-    default: null, // ⬅️ ini opsional tapi disarankan
+    default: null,
+  },
+  forceModeManual:{
+    type: Boolean,
+    default: false,
   },
   pendingFeedbackFor: {
     type: [mongoose.Schema.Types.ObjectId],

@@ -45,6 +45,11 @@ GET http://localhost:3001/dashboard/distribusi
 ###
 GET http://localhost:3001/dashboard/kepuasan
 
+###
+GET http://localhost:3001/reports/
+
+###
+GET http://localhost:3001/dashboard/opd-summary
 
 ###
 
