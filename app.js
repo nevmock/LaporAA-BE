@@ -53,7 +53,7 @@ const corsOptions = {
 // app.set('trust proxy', 1);
 
 // Middleware
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 
 // app.use(limitMiddleware);
