@@ -104,15 +104,15 @@ app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 app.use("/uploadsTindakan", express.static(path.join(__dirname, "public/uploadsTindakan")));
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 app.use("/user", userRoutes);
+app.use("/reports", reportRoutes);
 
 // Apply authMiddleware to all routes except /webhook
 app.use(authMiddleware);
 
-app.use("/reports", reportRoutes);
+app.use("/dashboard", dashboardRoute); 
 app.use("/reportCount", reportCountRoutes);
 app.use("/tindakan", tindakanRoutes);
 app.use("/api", tindakanUploadRoute);
-app.use("/dashboard", dashboardRoute);
 
 // Route default untuk cek server berjalan
 app.get("/", (req, res) => {

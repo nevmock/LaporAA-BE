@@ -27,8 +27,23 @@ module.exports = async (from, step, input, sendReply) => {
             return sendReply(from, signupResponse.namaTidakValid());
         }
 
-        // Format input name: first letter uppercase, rest lowercase
-        const formattedName = input.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+        const trimmedInput = input.trim();
+
+        // Validasi panjang nama
+        if (trimmedInput.length > 30) {
+            return sendReply(from, signupResponse.namaTerlaluPanjang());
+        }
+
+        // Validasi hanya huruf dan spasi
+        if (!/^[a-zA-Z\s]+$/.test(trimmedInput)) {
+            return sendReply(from, signupResponse.namaTidakValid());
+        }
+
+        // Format input name: Kapitalisasi kata
+        const formattedName = trimmedInput
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
 
         await userRepo.updateSession(from, {
             step: "CONFIRM_NAME",

@@ -81,11 +81,22 @@ function konfirmasiKirimAtauBatal() {
 
 function konfirmasiNama(nama) {
   const responses = [
-    `Apakah nama Anda sudah benar: *${nama}*?\n\nKetik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`,
-    `Nama yang Anda masukkan adalah: *${nama}*.\n\nJika sudah benar, ketik *kirim*, jika ingin mengubah, ketik *batal*.`,
-    `Tolong konfirmasi nama Anda: *${nama}*.\n\nKetik *kirim* untuk lanjut, atau *batal* untuk membatalkan.`,
-    `Nama: *${nama}*. Apakah sudah benar?\n\nKetik *kirim* untuk melanjutkan, atau *batal* untuk membatalkan.`,
-    `Konfirmasi nama: *${nama}*.\n\nKetik *kirim* jika sudah benar, atau *batal* jika ingin membatalkan.`
+    `Apakah nama Anda sudah benar:\n\n*${nama}*?\n\nKetik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`,
+    `Nama yang Anda masukkan adalah:\n\n*${nama}*.\n\nJika sudah benar, ketik *kirim*, jika ingin mengubah, ketik *batal*.`,
+    `Tolong konfirmasi nama Anda:\n\n*${nama}*.\n\nKetik *kirim* untuk lanjut, atau *batal* untuk membatalkan.`,
+    `Nama:\n\n*${nama}*\n\nApakah sudah benar? Ketik *kirim* untuk melanjutkan, atau *batal* untuk membatalkan.`,
+    `Konfirmasi nama:\n\n*${nama}*\n\nKetik *kirim* jika sudah benar, atau *batal* jika ingin membatalkan.`
+  ];
+  return randomResponse(responses);
+}
+
+function namaTerlaluPanjang() {
+  const responses = [
+    `Nama terlalu panjang. Silakan masukkan nama yang lebih singkat.`,
+    `Nama Anda terlalu panjang. Mohon gunakan nama yang lebih pendek.`,
+    `Nama yang Anda masukkan terlalu panjang. Silakan coba lagi dengan nama yang lebih singkat.`,
+    `Maaf, nama Anda terlalu panjang. Silakan masukkan nama yang lebih singkat.`,
+    `Nama tidak boleh lebih dari 30 karakter. Silakan coba lagi dengan nama yang lebih pendek.`
   ];
   return randomResponse(responses);
 }
@@ -110,5 +121,6 @@ module.exports = {
   pendaftaranDibatalkan,
   konfirmasiKirimAtauBatal,
   handlerDefault,
-  konfirmasiNama
+  konfirmasiNama,
+  namaTerlaluPanjang
 };
