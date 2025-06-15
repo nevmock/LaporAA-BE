@@ -52,7 +52,7 @@ router.get("/perangkat-daerah-summary", async (req, res) => {
         const data = await Tindakan.aggregate([
             {
                 $match: {
-                    status: { $in: ["Selesai Penanganan", "Selesai Pengaduan"] },
+                    status: { $in: ["Proses OPD Terkait", "Selesai Penanganan", "Selesai Pengaduan"] },
                     opd: { $ne: "" },
                     createdAt: { $gte: startDate, $lte: endDate }
                 }

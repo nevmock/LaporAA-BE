@@ -1,17 +1,16 @@
-const Report = require("../models/Report"); // ganti sesuai path kamu
+const Report = require("../models/Report");
 
 async function generateSessionId(from) {
-    const phoneSuffix = from?.slice(-4) || "0000"; // 4 digit terakhir
-    const random = Math.floor(1000 + Math.random() * 9000); // random 4 digit
-    const prefix = `${phoneSuffix}${random}`; // 8 digit awal
+    const phoneSuffix = from?.slice(-4) || "0000"; // 4 digit terakhir nomor
+    const random = Math.floor(1000 + Math.random() * 9000); // 4 digit random
+    const prefix = `${phoneSuffix}${random}`; // jadi 8 digit
 
-    // Cari sessionId yang sudah ada dengan prefix ini
-    const regex = new RegExp(`^${prefix}\\d{4}$`);
-    const existingCount = await Report.countDocuments({ sessionId: { $regex: regex } });
+    // Hitung semua laporan di DB
+    const totalReports = await Report.countDocuments(); // jumlah global
 
-    const order = (existingCount + 1).toString().padStart(4, "0"); // 0001, 0002, dst
+    const order = (totalReports + 1).toString().padStart(4, "0"); // 0001, 0002, dst
 
-    return `${prefix}${order}`; // 12 digit total
+    return `${prefix}${order}`; // hasil akhir: 12 digit
 }
 
 module.exports = generateSessionId;
