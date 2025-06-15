@@ -254,40 +254,42 @@ router.get("/:sessionId", async (req, res) => {
     }
 });
 
-// PUT update report by sessionId
 router.put("/:sessionId", async (req, res) => {
     const { sessionId } = req.params;
     const { name, jenis_kelamin, message, location } = req.body;
 
     try {
         const report = await reportRepo.findBySessionId(sessionId);
-
         if (!report) {
             return res.status(404).json({ message: "Laporan tidak ditemukan" });
         }
 
-        if (message !== undefined) {
-            report.message = message;
-        }
+        const user = report.user;
+        const updatesUser = { name, jenis_kelamin };
 
-        if (name !== undefined) {
-            report.user.name = name;
-        }
-
-        if (jenis_kelamin !== undefined) {
-            report.user.jenis_kelamin = jenis_kelamin;
-        }
-
-        if (location && typeof location.description === "string") {
-            if (!report.location) {
-                report.location = {};
+        let userChanged = false;
+        for (const key in updatesUser) {
+            if (updatesUser[key] !== undefined) {
+                user[key] = updatesUser[key];
+                userChanged = true;
             }
-            report.location.description = location.description;
         }
+        if (userChanged) await user.save();
 
-        await report.save();
+        let reportChanged = false;
+        if (typeof message === "string") {
+            report.message = message;
+            reportChanged = true;
+        }
+        if (location?.description) {
+            report.location ??= {};
+            report.location.description = location.description;
+            reportChanged = true;
+        }
+        if (reportChanged) await report.save();
 
-        res.status(200).json({ message: "Laporan berhasil diperbarui", report });
+        const updatedReport = await reportRepo.findBySessionId(sessionId);
+        res.status(200).json({ message: "Laporan berhasil diperbarui", report: updatedReport });
     } catch (error) {
         console.error("Error updating report by sessionId:", error);
         res.status(500).json({ message: "Terjadi kesalahan pada server" });
