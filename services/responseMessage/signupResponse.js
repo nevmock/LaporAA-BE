@@ -84,7 +84,7 @@ function konfirmasiNama(nama) {
     `Apakah nama Anda sudah benar:\n\n*${nama}*?\n\nKetik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`,
     `Nama yang Anda masukkan adalah:\n\n*${nama}*.\n\nJika sudah benar, ketik *kirim*, jika ingin mengubah, ketik *batal*.`,
     `Tolong konfirmasi nama Anda:\n\n*${nama}*.\n\nKetik *kirim* untuk lanjut, atau *batal* untuk membatalkan.`,
-    `Nama:\n\n*${nama}*\n\nApakah sudah benar? Ketik *kirim* untuk melanjutkan, atau *batal* untuk membatalkan.`,
+    `Mohon cek kembali nama Anda:\n\n*${nama}*\n\nApakah sudah benar? Ketik *kirim* untuk melanjutkan, atau *batal* untuk membatalkan.`,
     `Konfirmasi nama:\n\n*${nama}*\n\nKetik *kirim* jika sudah benar, atau *batal* jika ingin membatalkan.`
   ];
   return randomResponse(responses);
