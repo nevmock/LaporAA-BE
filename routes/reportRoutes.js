@@ -296,12 +296,17 @@ router.put("/:sessionId", async (req, res) => {
     }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/", async (req, res) => {
+    const { sessionIds } = req.body;
+    if (!Array.isArray(sessionIds)) {
+        return res.status(400).json({ error: "sessionIds harus array" });
+    }
+
     try {
-        const result = await reportController.deleteById(req.params.id);
+        const result = await reportRepo.deleteManyBySessionIds(sessionIds);
         res.status(200).json(result);
     } catch (err) {
-        res.status(404).json({ error: err.message });
+        res.status(500).json({ error: err.message });
     }
 });
 

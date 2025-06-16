@@ -52,18 +52,16 @@ exports.findByTindakanId = async (tindakanId) => {
         .populate("tindakan");
 };
 
-exports.deleteById = async (id) => {
-    const report = await Report.findById(id);
-    if (!report) {
-        throw new Error("Report not found");
+exports.deleteManyBySessionIds = async (sessionIds) => {
+    const reports = await Report.find({ sessionId: { $in: sessionIds } });
+    const tindakanIds = reports.map((r) => r.tindakan).filter(Boolean);
+
+    if (tindakanIds.length > 0) {
+        await Tindakan.deleteMany({ _id: { $in: tindakanIds } });
     }
 
-    // Hapus tindakan terkait jika ada
-    if (report.tindakan) {
-        await Tindakan.findByIdAndDelete(report.tindakan);
-    }
+    await Report.deleteMany({ sessionId: { $in: sessionIds } });
 
-    // Hapus laporan
-    await Report.findByIdAndDelete(id);
-    return { message: "Report dan tindakan berhasil dihapus" };
+    return { message: `${reports.length} report dan tindakan berhasil dihapus` };
 };
+

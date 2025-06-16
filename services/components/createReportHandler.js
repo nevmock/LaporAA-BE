@@ -175,7 +175,7 @@ module.exports = async (from, step, input, sendReply) => {
 
         // Ensure that the input is a valid image URL
         if (!input.image?.url) {
-            return sendReply(from, createReportResponse.gagalProsesFoto());
+            return sendReply(from, createReportResponse.hanyaFoto());
         }
 
         const newPhotoUrl = input.image.url;
