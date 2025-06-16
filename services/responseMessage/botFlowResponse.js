@@ -7,14 +7,14 @@ function mainSapaan(sapaan, nama) {
     `Halo ${sapaan} ${nama}, selamat datang di *Lapor AA Bupati Bekasi!*`,
     `Hai ${sapaan} ${nama}, terima kasih sudah menghubungi *Lapor AA Bupati Bekasi*.`,
     `Selamat datang ${sapaan} ${nama} di layanan *Lapor AA Bupati Bekasi*.`,
-    `Halo ${sapaan} ${nama}, ada yang bisa kami bantu di layanan *Lapor AA Bupati Bekasi?*`,
+    `Halo ${sapaan} ${nama}, kami siap membantu melalui layanan *Lapor AA Bupati Bekasi*`,
     `Salam hormat ${sapaan} ${nama}, selamat datang di layanan *Lapor AA Bupati Bekasi*.`
   ];
   return (
     randomResponse(responses) +
     `
 
-Apabila situasi anda darurat, bisa menghubungi nomer berikut :
+Apabila *situasi Anda darurat*, bisa menghubungi nomer berikut:
 
 - 119 : PSC  (Untuk Kegawatdaruratan Medis)
 - 123 : PLN (Untuk Layanan Pengaduan Listrik)
@@ -22,9 +22,9 @@ Apabila situasi anda darurat, bisa menghubungi nomer berikut :
 - 02122137870 : MarKo (Markas Komando Pemadam Kebakaran)
 - 081219071900 : BPBD (Badan Penanggulangan Bencana Daerah)
 
-Jika tidak, silahkan *buat laporan* atau *cek status laporan* Anda.
+Jika tidak darurat, apakah Anda mau *buat laporan* atau *cek status laporan*?
 
-Setiap chat yang anda kirim, mohon selalu menunggu respon dari kami terlebih dahulu. Terima Kasih`
+Mohon untuk menunggu respon dari kami sebelum mengirim chat berikutnya. Terima kasih.`
   );
 }
 
@@ -36,23 +36,23 @@ function ratingSuccess(sapaan, nama, rating) {
     `Rating ${rating} Anda sudah tercatat. Terima kasih, ${sapaan} ${nama}!`,
     `Terima kasih, ${sapaan} ${nama}, atas rating ${rating} yang diberikan.`
   ];
-  return randomResponse(responses) + ' Kami akan terus meningkatkan layanan.';
+  return randomResponse(responses) + 'Kami akan terus meningkatkan layanan.';
 }
 
 function laporanDitolak(sapaan, nama, sessionId, kesimpulan) {
   const responses = [
-    `Mohon maaf ${sapaan} ${nama}, laporan Anda dengan ID *${sessionId}* *tidak dapat ditindaklanjuti*.`,
-    `Laporan Anda dengan ID *${sessionId}* atas nama ${sapaan} ${nama} telah *ditolak* oleh petugas.`,
+    `Mohon maaf ${sapaan} ${nama}, laporan dengan ID *${sessionId}* *tidak dapat ditindaklanjuti*.`,
+    `Laporan Anda dengan ID *${sessionId}* atas nama ${sapaan} ${nama} *tidak bisa diproses* oleh petugas.`,
     `Laporan Anda dengan ID (*${sessionId}*) *tidak dapat diproses* lebih lanjut, ${sapaan} ${nama}.`,
-    `Maaf ${sapaan} ${nama}, laporan Anda dengan ID *${sessionId}* *tidak bisa kami tindaklanjuti*.`,
-    `Laporan dengan ID *${sessionId}* telah *ditolak*.`
+    `Maaf ${sapaan} ${nama}, laporan Anda dengan ID *${sessionId}* *tidak bisa kami lanjutkan*.`,
+    `Laporan dengan ID *${sessionId}* *belum bisa diproses lebih lanjut*.`
   ];
   return (
     randomResponse(responses) +
     `
-Alasan penolakan: ${kesimpulan || 'Tidak tersedia'}
+Alasan tidak bisa ditindaklanjut adalah: ${kesimpulan || 'Tidak tersedia'}
 Silahkan untuk membuat laporan ulang dengan memperbaiki kesalahannya.
-Terima kasih ${sapaan} ${nama}, laporan akan kami tutup..`
+Terima kasih ${sapaan} ${nama}, laporan akan kami tutup.`
   );
 }
 
@@ -65,7 +65,7 @@ function puasReply(sapaan, nama, sessionId) {
   ];
   return (
     randomResponse(responses) +
-    ' Sebagai bentuk peningkatan layanan, mohon berikan rating 1-5. Cukup input angka 1-5 saja.'
+    'Sebagai bentuk peningkatan layanan, mohon berikan rating dengan *menginput angka 1-5*'
   );
 }
 
@@ -78,20 +78,20 @@ function belumReply(sapaan, nama, sessionId, pendingCount) {
     `Terima kasih atas feedback Anda, laporan *${sessionId}* akan kami tindak lanjuti.`
   ];
   let reply =
-    randomResponse(responses) + ' Terimakasih sudah menanggapi laporannya.';
+    randomResponse(responses) + 'Terimakasih sudah menanggapi laporannya.';
   if (pendingCount > 0) {
-    reply += ` Masih ada ${pendingCount} laporan lain yang menunggu respon. Balas "puas" atau "belum" untuk melakukan penyelesaian laporan *${sessionId}*.`;
+    reply += `Masih ada ${pendingCount} laporan lain yang belum diberi rating kepuasannya.\n\nHarap balas "puas" atau "belum" untuk melakukan penyelesaian laporan tersebut. *${sessionId}*.`;
   }
   return reply;
 }
 
 function pendingKonfirmasi(sapaan, nama) {
   const responses = [
-    `Mohon maaf ${sapaan} ${nama}, Anda masih memiliki laporan yang menunggu konfirmasi tingkat kepuasannya.`,
-    `Masih ada laporan yang perlu Anda konfirmasi tingkat kepuasannya, ${sapaan} ${nama}.`,
-    `Anda belum menyelesaikan konfirmasi tingkat kepuasan laporan, ${sapaan} ${nama}.`,
-    `Silakan konfirmasi tingkat kepuasan laporan terlebih dahulu, ${sapaan} ${nama}.`,
-    `Ada laporan yang masih menunggu konfirmasi tingkat kepuasannya dari Anda, ${sapaan} ${nama}.`
+    `Mohon maaf ${sapaan} ${nama}, Anda masih memiliki laporan yang harus dinilai kepuasannya.`,
+    `Masih ada laporan yang perlu Anda nilai kepuasannya, ${sapaan} ${nama}.`,
+    `Anda belum memberi penilaian kepuasan laporan, ${sapaan} ${nama}.`,
+    `Silakan beri penilaian kepuasan laporan terlebih dahulu, ${sapaan} ${nama}.`,
+    `Masih ada laporan yang harus dinilai kepuasannya dari Anda, ${sapaan} ${nama}.`
   ];
   return (
     randomResponse(responses) +
@@ -101,11 +101,11 @@ function pendingKonfirmasi(sapaan, nama) {
 
 function ratingInvalid(sapaan, nama) {
   const responses = [
-    `Rating tidak valid, ${sapaan} ${nama}. Mohon hanya input angka.`,
-    `Mohon masukkan rating dengan angka, ${sapaan} ${nama}.`,
-    `Rating yang Anda masukkan salah, ${sapaan} ${nama}. `,
-    `Rating harus berupa angka, ${sapaan} ${nama}.`,
-    `Input rating tidak sesuai, ${sapaan} ${nama}.`
+    `Rating tidak valid, ${sapaan} ${nama}. Mohon *hanya input angka*.`,
+    `Mohon masukkan rating *hanya dengan angka*, ${sapaan} ${nama}.`,
+    `Rating yang Anda masukkan salah, ${sapaan} ${nama}. Harap *input angka saja* `,
+    `Rating *harus berupa angka*, ${sapaan} ${nama}.`,
+    `Beri rating *hanya dengan angka*, ${sapaan} ${nama}.`
   ];
   return (
     randomResponse(responses) + ' Silakan berikan rating antara 1 hingga 5.'
@@ -113,7 +113,7 @@ function ratingInvalid(sapaan, nama) {
 }
 
 function laporanSelesaiDiarahkanKeBaru(sapaan, nama) {
-  return `Halo ${sapaan} ${nama}, laporan Anda telah diselesaikan dengan rating 5 karena telah mencapai batas ketidakpuasan. Jika Anda memiliki masalah lain, silakan buat laporan baru.`;
+  return `Halo ${sapaan} ${nama}, laporan Anda telah diselesaikan dengan rating 5 karena telah mencapai batas ketidakpuasan.\n\nJika Anda memiliki masalah lain, silakan buat laporan baru.`;
 }
 
 function laporanTidakDitemukan(sapaan, nama) {
@@ -121,8 +121,8 @@ function laporanTidakDitemukan(sapaan, nama) {
     `Laporan tidak ditemukan, ${sapaan} ${nama}.`,
     `Mohon maaf, laporan Anda tidak ditemukan, ${sapaan} ${nama}.`,
     `Kami tidak menemukan laporan Anda, ${sapaan} ${nama}.`,
-    `Laporan yang dimaksud tidak ada, ${sapaan} ${nama}.`,
-    `Data laporan tidak ditemukan, ${sapaan} ${nama}.`
+    `Laporan yang Anda maksud tidak ada, ${sapaan} ${nama}.`,
+    `Laporan tidak ditemukan, ${sapaan} ${nama}.`
   ];
   return randomResponse(responses);
 }
@@ -142,18 +142,18 @@ function gagalSimpanRating() {
 
 function limitResponse() {
   const responses = [
-    `Mohon Maaf, dikarenakan banyaknya laporan yang masuk, kami tidak dapat memproses laporan Anda saat ini. Mohon untuk mencoba lagi esok hari 🙏🏼.`,
+    `Mohon Maaf, dikarenakan banyaknya laporan yang masuk, kami tidak dapat memproses laporan Anda saat ini. Mohon untuk mencoba lagi di esok hari 🙏🏼.`,
   ];
   return randomResponse(responses);
 }
 
 function terimakasihResponse(sapaan, nama){
   const responses = [
-    `Siap ${sapaan} ${nama}, terima kasih telah menggunakan layanan kami. Jika ada yang ingin Anda tanyakan, silakan hubungi kami kembali.`,
-    `Terima kasih ${sapaan} ${nama}, kami senang bisa membantu Anda. Jika ada pertanyaan lain, jangan ragu untuk menghubungi kami.`,
-    `Sama-sama ${sapaan} ${nama}, kami siap membantu kapan saja. Jika ada yang ingin Anda tanyakan, silakan hubungi kami.`,
-    `Sama-sama ${sapaan} ${nama}, kami menghargai kepercayaan Anda. Jika ada pertanyaan atau laporan lain, silakan hubungi kami.`,
-    `Terima kasih ${sapaan} ${nama}, kami senang bisa membantu Anda. Jika ada yang ingin Anda tanyakan, silakan hubungi kami kembali.`
+    `Siap ${sapaan} ${nama}, terima kasih telah menggunakan layanan kami.`,
+    `Terima kasih ${sapaan} ${nama}, kami senang bisa membantu Anda.`,
+    `Sama-sama ${sapaan} ${nama}, kami siap membantu kapan saja.`,
+    `Sama-sama ${sapaan} ${nama}, kami menghargai kepercayaan Anda.`,
+    `Terima kasih ${sapaan} ${nama}, kami senang bisa membantu Anda.`
   ]
   return randomResponse(responses);  
 }
