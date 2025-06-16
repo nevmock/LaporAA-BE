@@ -47,7 +47,6 @@ function handlerDefault() {
     `Silakan mengikuti tahapan pembuatan laporan.\n\nUntuk mengikuti tahapan tersebut, ketik *menu*.`,
     `Proses pembuatan laporan mesti sesuai dengan tahapan.\n\nKetik *menu* untuk menyesuaikan.`,
     `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik *menu*.`
-    // `Pelaporan mesti sesuai dengan proses pelaporan, mohon ketik *menu*. (checkReportResponse DEFAULT)`
   ];
   return randomResponse(responses);
 }
