@@ -4,11 +4,11 @@ function randomResponse(arr) {
 
 function belumTerdaftar() {
   const responses = [
-    `Sebelum melapor, harap sebutkan *nama lengkap* Anda sesuai KTP.`,
-    `Sebutkan *nama lengkap* Anda sesuai KTP terlebih dahulu sebelum membuat laporan.`,
-    `*Nama lengkap* Anda yang sesuai dengan KTP harus disebutkan terlebih dahulu sebelum membuat laporan.`,
-    `Anda wajib menyebutkan *nama lengkap* sesuai KTP sebelum menceritakan keluhan Anda.`,
-    `Harap menuliskan *nama lengkap* Anda sesuai KTP, sebelum melanjutkan proses pelaporan.`
+    `Sebelum lanjut lapor, harap mendaftarkan diri Anda terlebih dahulu.\n\nPertama-tama, sebutkan *nama lengkap* Anda sesuai KTP.`,
+    `Mohon mendaftarkan diri terlebih dahulu secara bertahap sebelum melapor.\n\nPertama, tolong sebutkan *nama lengkap* Anda sesuai KTP.`,
+    `Anda harus mendaftar dulu, sebelum menjelaskan keluhan.\n\nDi tahap ini, tolong sebutkan *Nama lengkap* Anda yang sesuai dengan KTP.`,
+    `Anda wajib mendaftar dulu sebelum menuliskan keluhan.\n\nPertama, tolong sebutkan *nama lengkap* sesuai KTP.`,
+    `Harap mendaftar dulu sebelum melanjutkan pelaporan. \n\nPertama-tama, tolong tuliskan *nama lengkap* Anda sesuai KTP.`
   ];
   return randomResponse(responses);
 }

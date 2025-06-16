@@ -150,11 +150,11 @@ function minimalFoto(sapaan, nama) {
 
 function ringkasanLaporan(session) {
   const responses = [
-    `Berikut ringkasan laporan Anda:\n\n📍 Lokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n📝 Keluhan:\n${session.message}\n📷 Jumlah Foto: ${session.photos.length}\n\nJika sudah benar, ketik *benar*. Jika ingin mengirim ulang, ketik *salah*.`,
-    `Ringkasan laporan:\n\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nJumlah Foto: ${session.photos.length}\n\nKetik *betul* jika sudah betul laporannya, atau ketik *salah* untuk mengulang.`,
-    `Cek kembali laporan Anda:\n\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nFoto: ${session.photos.length}\n\nKetik *benar* jika benar, atau ketik *salah* untuk mengulang kembali.`,
-    `Berikut detail laporan Anda:\n\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nJumlah Foto: ${session.photos.length}\n\nKetik *benar* jika sudah benar laporannya, atau ketik *salah* untuk mengulang.`,
-    `Laporan Anda adalah:\n\nLokasi: ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\nKeluhan:\n${session.message}\nFoto: ${session.photos.length}\n\nJika laporan sudah betul, ketik *betul*, atau ketik *salah* untuk mengulang kembali.`
+    `Berikut ringkasan laporan Anda:\n\n📍 *Lokasi:* ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n\n📝 *Keluhan:*\n${session.message}\n\n📷 *Jumlah Foto:* ${session.photos.length}\n\nJika sudah benar, ketik *benar*. Jika ingin mengirim ulang, ketik *salah*.`,
+    `Ringkasan laporan:\n\n*Lokasi:* ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n\n*Keluhan:*\n${session.message}\n\n*Jumlah Foto:* ${session.photos.length}\n\nKetik *betul* jika sudah betul laporannya, atau ketik *salah* untuk mengulang.`,
+    `Cek kembali laporan Anda:\n\n*Lokasi:* ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n\n*Keluhan:*\n${session.message}\n\n*Foto:* ${session.photos.length}\n\nKetik *benar* jika benar, atau ketik *salah* untuk mengulang kembali.`,
+    `Berikut detail laporan Anda:\n\n*Lokasi:* ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n\n*Keluhan:*\n${session.message}\n\n*Jumlah Foto:* ${session.photos.length}\n\nKetik *benar* jika sudah benar laporannya, atau ketik *salah* untuk mengulang.`,
+    `Laporan Anda adalah:\n\n*Lokasi:* ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n\n*Keluhan:*\n${session.message}\n\n*Foto:* ${session.photos.length}\n\nJika laporan sudah betul, ketik *betul*, atau ketik *salah* untuk mengulang kembali.`
   ];
   return randomResponse(responses);
 }

@@ -37,11 +37,11 @@ function jenisKelaminTidakValid() {
 
 function konfirmasiData(name, jenis_kelamin) {
   const responses = [
-    `Berikut adalah data Anda:\nNama: *${name}*\nJenis Kelamin: *${jenis_kelamin}*\n\nJika sudah benar, silakan ketik *kirim* untuk menyimpan data anda, atau *batal* untuk membatalkan.`,
-    `Cek kembali data berikut:\nNama: *${name}*\nJenis Kelamin: *${jenis_kelamin}*\nKetik *kirim* jika sudah benar, atau *batal* untuk membatalkan.`,
-    `Data Anda:\nNama: *${name}*\nJenis Kelamin: *${jenis_kelamin}*\n\nKetik *kirim* untuk simpan, atau *batal* untuk membatalkan.`,
-    `Nama: *${name}*\nJenis Kelamin: *${jenis_kelamin}*\n\nKetik *kirim* untuk menyimpan, atau *batal* untuk membatalkan.`,
-    `Konfirmasi data:\nNama: *${name}*\nJenis Kelamin: *${jenis_kelamin}*\n\nKetik *kirim* jika benar, atau *batal* jika ingin membatalkan.`
+    `Berikut adalah data Anda:\n\nNama: *${name}*\n\nJenis Kelamin: *${jenis_kelamin}*\n\nJika sudah benar, silakan ketik *kirim* untuk menyimpan data anda, atau *batal* untuk membatalkan.`,
+    `Cek kembali data berikut:\n\nNama: *${name}*\n\nJenis Kelamin: *${jenis_kelamin}*\nKetik *kirim* jika sudah benar, atau *batal* untuk membatalkan.`,
+    `Data Anda:\n\nNama: *${name}*\n\nJenis Kelamin: *${jenis_kelamin}*\n\nKetik *kirim* untuk simpan, atau *batal* untuk membatalkan.`,
+    `Nama: *${name}*\n\nJenis Kelamin: *${jenis_kelamin}*\n\nKetik *kirim* untuk menyimpan, atau *batal* untuk membatalkan.`,
+    `Konfirmasi data:\n\nNama: *${name}*\n\nJenis Kelamin: *${jenis_kelamin}*\n\nKetik *kirim* jika benar, atau *batal* jika ingin membatalkan.`
   ];
   return randomResponse(responses);
 }
@@ -92,10 +92,10 @@ function konfirmasiNama(nama) {
 
 function namaTerlaluPanjang() {
   const responses = [
-    `Nama terlalu panjang.\n\nSilakan masukkan nama yang lebih singkat.`,
+    `Nama terlalu panjang.\n\nSilakan masukkan nama yang lebih pendek.`,
     `Nama Anda terlalu panjang.\n\nMohon gunakan nama yang lebih pendek.`,
-    `Nama yang Anda masukkan terlalu panjang.\n\nSilakan coba lagi dengan nama yang lebih singkat.`,
-    `Maaf, nama Anda terlalu panjang.\n\nSilakan masukkan nama yang lebih singkat.`,
+    `Nama yang Anda masukkan terlalu panjang.\n\nSilakan coba lagi dengan nama yang lebih pendek.`,
+    `Maaf, nama Anda terlalu panjang.\n\nSilakan masukkan nama yang lebih pendek.`,
     `Nama tidak boleh lebih dari 30 huruf.\n\nSilakan coba lagi dengan nama yang lebih pendek.`
   ];
   return randomResponse(responses);
