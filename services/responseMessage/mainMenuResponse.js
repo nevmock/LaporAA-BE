@@ -4,36 +4,36 @@ function randomResponse(arr) {
 
 function belumTerdaftar() {
   const responses = [
-    `Data diri Anda *belum terdaftar* di sistem kami. Silakan masukkan *nama lengkap* sesuai KTP sebelum membuat laporan.`,
-    `Anda *belum terdaftar*. Mohon isi *nama lengkap* sesuai KTP untuk melanjutkan.`,
-    `Nama Anda belum ada di sistem kami. Masukkan *nama lengkap* sesuai KTP agar bisa membuat laporan.`,
-    `Sebelum membuat laporan, silakan daftarkan *nama lengkap* Anda sesuai KTP.`,
-    `Data belum ditemukan. Masukkan *nama lengkap* sesuai KTP untuk proses selanjutnya.`
+    `Sebelum lanjut lapor, harap mendaftarkan diri Anda terlebih dahulu.\n\nPertama-tama, sebutkan *nama lengkap* Anda sesuai KTP.`,
+    `Mohon mendaftarkan diri terlebih dahulu secara bertahap sebelum melapor.\n\nPertama, tolong sebutkan *nama lengkap* Anda sesuai KTP.`,
+    `Anda harus mendaftar dulu, sebelum menjelaskan keluhan.\n\nDi tahap ini, tolong sebutkan *Nama lengkap* Anda yang sesuai dengan KTP.`,
+    `Anda wajib mendaftar dulu sebelum menuliskan keluhan.\n\nPertama, tolong sebutkan *nama lengkap* sesuai KTP.`,
+    `Harap mendaftar dulu sebelum melanjutkan pelaporan. \n\nPertama-tama, tolong tuliskan *nama lengkap* Anda sesuai KTP.`
   ];
   return randomResponse(responses);
 }
 
 function mulaiLaporan(sapaan, nama) {
   const responses = [
-    `Silakan ${sapaan} ${nama}, ceritakan keluhan atau kejadian yang ingin Anda laporkan.`,
-    `Yuk, ${sapaan} ${nama}, tuliskan keluhan atau kejadian yang ingin dilaporkan.`,
+    `Silakan ${sapaan} ${nama}, ceritakan keluhan atau kejadian yang ingin dilaporkan.`,
+    `${sapaan} ${nama}, tuliskan keluhan atau kejadian yang ingin dilaporkan.`,
     `Silakan sampaikan keluhan Anda, ${sapaan} ${nama}.`,
-    `Ceritakan masalah atau kejadian yang ingin dilaporkan, ${sapaan} ${nama}.`,
-    `Tulis keluhan atau kejadian yang ingin Anda laporkan, ${sapaan} ${nama}.`
+    `Ceritakan masalah yang ingin dilaporkan, ${sapaan} ${nama}.`,
+    `Tulis keluhan atau kejadian yang ingin dilaporkan, ${sapaan} ${nama}.`
   ];
   return randomResponse(responses);
 }
 
-function cekBelumTerdaftar() {
-  const responses = [
-    `Belum ada laporan terdaftar di sistem kami. Mohon buat laporan terlebih dahulu.`,
-    `Maaf, Anda belum memiliki laporan yang bisa dicek. Mohon buat laporan baru.`,
-    `Tidak ditemukan laporan terdaftar. Mohon buat laporan sebelum melakukan pengecekan.`,
-    `Sistem belum menemukan laporan Anda. Mohon buat laporan terlebih dahulu.`,
-    `Belum ada data laporan. Mohon buat laporan untuk bisa melakukan pengecekan.`
-  ];
-  return randomResponse(responses) + `Silakan ketik "buat laporan"`;
-}
+// function cekBelumTerdaftar() {
+//   const responses = [
+//     `Anda belum pernah mendaftarkan diri. Mohon mendaftarkan diri terlebih dahulu.`,
+//     `Maaf, sepertinya Anda belum membuat laporan. Mohon buat laporan baru.`,
+//     `Laporan tersebut tidak ditemukan. Mohon buat laporan sebelum melakukan pengecekan.`,
+//     `Sistem belum menemukan laporan Anda. Mohon buat laporan terlebih dahulu.`,
+//     `Belum ada data laporan. Mohon buat laporan untuk bisa melakukan pengecekan.`
+//   ];
+//   return randomResponse(responses) + `Silakan ketik "buat laporan"`;
+// }
 
 function mintaIdLaporan(sapaan, nama) {
   const responses = [
@@ -48,46 +48,50 @@ function mintaIdLaporan(sapaan, nama) {
 
 function mainMenuDefault() {
   const responses = [
-    `Mohon ikuti langkah pelaporan sesuai instruksi. Atau silahkan ketik *menu* untuk informasi lebih lengkap.`,
-    `Mohon ikuti arahan pelaporan. Agar sesuai dengan arahan, Atau silahkan ketik *menu* untuk informasi lebih lengkap.`,
-    `Silakan mengikuti tahapan pembuatan laporan. Untuk mengikuti tahapan tersebut, Atau silahkan ketik *menu* untuk informasi lebih lengkap.`,
-    `Proses pembuatan laporan mesti sesuai dengan tahapan, Atau silahkan ketik *menu* untuk informasi lebih lengkap.`,
-    `Pelaporan mesti sesuai dengan proses pelaporan, Atau silahkan ketik *menu* untuk informasi lebih lengkap.`
+    `Mohon ikuti langkah pelaporan sesuai instruksi.\n\nSilahkan ketik *menu* agar sesuai dengan instruksi.`,
+    `Mohon ikuti arahan pelaporan.\n\nAgar sesuai dengan arahan, silahkan ketik *menu* agar sesuai dengan arahan.`,
+    `Silakan mengikuti tahapan pembuatan laporan.\n\nUntuk mengikuti tahapan tersebut, silahkan ketik *menu*.`,
+    `Proses pembuatan laporan mesti sesuai dengan tahapan.\n\nSilahkan ketik *menu* agar sesuai dengan tahapan.`,
+    `Pelaporan mesti sesuai dengan proses pelaporan.\n\nSilahkan ketik *menu* agar sesuai dengan tahap pelaporan.`
   ];
   return randomResponse(responses);
 }
 
 function angryComplaintResponse() {
   const responses = [
-    `Mohon maaf atas apa yang terjadi, kami mengerti anda kesal, dan marah, kami siap menerima laporan anda, silahkan untuk menjelaskan dengan detail keluhannya.`,
+    `Mohon maaf atas apa yang terjadi, kami mengerti kekesalah dan kemarahan Anda.\n\nKami siap menerima laporan anda, silahkan jelaskan dengan detail keluhannya.`,
   ];
   return randomResponse(responses);
 }
 
 function angryComplaintSignup() {
   const responses = [
-    `Mohon maaf atas apa yang terjadi, kami mengerti anda kesal, dan marah, kami siap menerima laporan anda, akan tetapi data diri anda *belum terdaftar* di sistem kami, silahkan sebutkan *nama lengkap* anda sesuai KTP untuk melanjutkan proses pelaporan.`,
+    `Mohon maaf atas apa yang terjadi, kami mengerti bahwa Anda sedang kesal dan marah. Kami siap menerima laporan anda.\n\nAkan tetapi data diri anda *belum terdaftar* di sistem kami, silahkan sebutkan *nama lengkap* anda sesuai KTP untuk melanjutkan proses pelaporan.`,
   ];
   return randomResponse(responses);
 }
 
 function complaintResponse() {
   const responses = [
-    `Mohon maaf atas apa yang terjadi, kami mengerti, dan kami siap menerima laporan anda, silahkan untuk menjelaskan dengan detail keluhannya.`,
+    `Mohon maaf atas apa yang terjadi, kami mengerti, dan kami siap menerima laporan anda.\n\nSilahkan jelaskan dengan detail keluhannya.`,
   ];
   return randomResponse(responses);
 }
 
 function complaintSignup() {
   const responses = [
-    `Mohon maaf atas apa yang terjadi, kami mengerti, dan kami siap menerima laporan anda, akan tetapi data diri anda *belum terdaftar* di sistem kami, silahkan sebutkan *nama lengkap* anda sesuai KTP untuk melanjutkan proses pelaporan.`,
+    `Mohon maaf atas apa yang terjadi, kami mengerti, dan kami siap menerima laporan anda. Akan tetapi kami memerlukan perlu mengetahui diri Anda terlebih dahulu.\n\nSilahkan sebutkan *nama lengkap* Anda sesuai KTP untuk melanjutkan proses pelaporan.`,
   ];
   return randomResponse(responses);
 }
 
 function menuTakDikenal(sapaan, nama) {
   const responses = [
-    `Mohon Maaf ${sapaan} ${nama}, `,
+    `Mohon Maaf ${sapaan} ${nama}, kami perlu tahu kebutuhan Anda terlebih dahulu.\n\nApakah Anda ingin *membuat laporan* atau *cek status laporan*?`,
+    'Maaf, harap sebutkan kebutuhan Anda terlebih dahulu.\n\nApakah Anda ingin *buat laporan* atau *cek status laporan*?',
+    'Sebutkan terlebih dahulu keinginan Anda.\n\nApakah Anda ingin *buat laporan* atau *cek status laporan*?',
+    'Harap sebutkan keinginan Anda dulu.\n\nApakah Anda ingin *cek status laporan* atau *buat laporan*?',
+    'Mohon maaf, kami harus tahu kebutuhan Anda terlebih dahulu.\n\nApakah Anda ingin *membuat laporan* atau *cek status laporan*?'
   ];
   return (
     randomResponse(responses)
@@ -97,7 +101,7 @@ function menuTakDikenal(sapaan, nama) {
 module.exports = {
   belumTerdaftar,
   mulaiLaporan,
-  cekBelumTerdaftar,
+  // cekBelumTerdaftar,
   mintaIdLaporan,
   mainMenuDefault,
   angryComplaintResponse,
