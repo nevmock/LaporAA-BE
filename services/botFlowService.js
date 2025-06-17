@@ -8,6 +8,7 @@ const tindakanRepo = require("../repositories/tindakanRepo");
 const tindakanResponse = require("./responseMessage/tindakanResponse");
 const botFlowResponse = require("./responseMessage/botFlowResponse");
 const { combinedContext } = require("../utils/openAiHelper");
+const { affirmativeInputs, negativeInputs } = require("../utils/inputTypes");
 
 exports.handleUserMessage = async ({ from, message, sendReply }) => {
     const user = await userProfileRepo.findByFrom(from);
@@ -23,20 +24,6 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
     const context = await combinedContext(input);
 
     if (session.mode === "manual") return null;
-
-    // === Handle manual mode ===
-    // if (session.mode === "manual") {
-    //     const now = new Date();
-
-    //     if (session.manualModeUntil && now > session.manualModeUntil) {
-    //         session.mode = "bot";
-    //         session.manualModeUntil = null;
-    //         await session.save();
-    //     } else {
-    //         const waitSeconds = Math.ceil((session.manualModeUntil.getTime() - now.getTime()) / 1000);
-    //         return sendReply(from, `Anda sedang dalam mode manual. Mohon tunggu selama ${waitSeconds} detik lagi sebelum bot kembali aktif.`);
-    //     }
-    // }
 
     // === Greeting check untuk reset session dan tampilkan menu utama ===
     if ((step === "MAIN_MENU" && !session.currentAction && input === "menu") || (step === "MAIN_MENU" && !session.currentAction && context === "greeting")) {

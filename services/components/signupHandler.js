@@ -2,6 +2,7 @@ const userRepo = require("../../repositories/userRepo");
 const userProfileRepo = require("../../repositories/userProfileRepo");
 const signupResponse = require("../responseMessage/signupResponse");
 const checkReportResponse = require("../responseMessage/checkReportResponse");
+const { affirmativeInputs, negativeInputs, genderInputs } = require("../../utils/inputTypes");
 
 module.exports = async (from, step, input, sendReply) => {
     const session = await userRepo.getOrCreateSession(from);
@@ -13,7 +14,15 @@ module.exports = async (from, step, input, sendReply) => {
     const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" :
         jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
 
-    const lowerInput = input?.toLowerCase?.() || "";
+    const lowerInput = input?.toLowerCase?.().trim() || "";
+    const affirmative = affirmativeInputs.includes(lowerInput);
+    const negative = negativeInputs.includes(lowerInput);
+    const gender = genderInputs.male.includes(lowerInput)
+        ? "pria"
+        : genderInputs.female.includes(lowerInput)
+            ? "wanita"
+            : null;
+
 
     // Reset ke menu utama
     if (lowerInput === "menu" || lowerInput === "kembali") {
@@ -57,7 +66,7 @@ module.exports = async (from, step, input, sendReply) => {
     if (step === "CONFIRM_NAME" && currentAction === "signup") {
         const lowerInput = input?.toLowerCase?.() || "";
 
-        if (lowerInput === "kirim") {
+        if (lowerInput === affirmative) {
             await userRepo.updateSession(from, {
                 step: "ASK_SEX",
                 data: session.data
@@ -66,7 +75,7 @@ module.exports = async (from, step, input, sendReply) => {
             return sendReply(from, signupResponse.terimaKasihNama(session.data.name));
         }
 
-        if (lowerInput === "batal") {
+        if (lowerInput === negative) {
             await userRepo.resetSession(from);
             return sendReply(from, signupResponse.pendaftaranDibatalkan(session.data.name || nama));
         }
@@ -76,22 +85,27 @@ module.exports = async (from, step, input, sendReply) => {
 
     // STEP 2: Masukkan jenis kelamin
     if (step === "ASK_SEX" && currentAction === "signup") {
-        if (lowerInput !== "pria" && lowerInput !== "wanita") {
+        if (!gender) {
             return sendReply(from, signupResponse.jenisKelaminTidakValid());
         }
+
+        const updatedData = {
+            ...session.data,
+            jenis_kelamin: gender,
+        };
 
         // Save jenis_kelamin as lowercase
         await userRepo.updateSession(from, {
             step: "CONFIRM_DATA",
-            data: { ...session.data, jenis_kelamin: lowerInput }
+            data: updatedData
         });
 
-        return sendReply(from, signupResponse.konfirmasiData(session.data.name || nama, lowerInput));
+        return sendReply(from, signupResponse.konfirmasiData(updatedData.name || nama, gender));
     }
 
     // STEP 3: Konfirmasi dan simpan data
     if (step === "CONFIRM_DATA" && currentAction === "signup") {
-        if (lowerInput === "kirim") {
+        if (lowerInput === affirmative) {
             const { name, jenis_kelamin } = session.data;
 
             try {
@@ -110,7 +124,7 @@ module.exports = async (from, step, input, sendReply) => {
             }
         }
 
-        if (lowerInput === "batal") {
+        if (lowerInput === negative) {
             await userRepo.resetSession(from);
             return sendReply(from, signupResponse.pendaftaranDibatalkan(nama));
         }

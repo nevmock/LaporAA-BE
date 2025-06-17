@@ -2,7 +2,7 @@ const randomResponse = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 const daruratMessage = (sapaan, nama, sessionId) => {
   const responses = [
-`Terimakasih ${sapaan} ${nama} telah menghubungi kami.
+    `Terimakasih ${sapaan} ${nama} telah menghubungi kami.
 
 Laporan Anda dengan ID: *${sessionId}*
 
@@ -20,7 +20,7 @@ Dari hasil verifikasi Tim Admin, laporan Anda termasuk dalam situasi darurat, si
 
 const selesaiPenangananMessage = (sapaan, nama, sessionId, formattedKesimpulan) => {
   const responses = [
-`Terimakasih ${sapaan} ${nama}, Laporan ${sessionId} telah selesai ditangani.
+    `Terimakasih ${sapaan} ${nama}, Laporan ${sessionId} telah selesai ditangani.
 Berikut ini adalah hasil penanganan laporannya:
 
 ${formattedKesimpulan}
@@ -33,7 +33,7 @@ Jika *sudah puas*, cukup balas dengan "puas".`
 };
 
 const ditolakMessage = (sapaan, nama, sessionId, kesimpulan) => {
-    const responses = [
+  const responses = [
     `Mohon maaf ${sapaan} ${nama}, laporan Anda dengan ID *${sessionId}* *tidak dapat ditindaklanjuti*.`,
     `Laporan Anda dengan ID *${sessionId}* atas nama ${sapaan} ${nama} telah *tidak terproses* oleh petugas.`,
     `Laporan Anda dengan ID (*${sessionId}*) *tidak dapat diproses* lebih lanjut, ${sapaan} ${nama}.`,
@@ -49,26 +49,28 @@ Terima kasih ${sapaan} ${nama}, laporan akan kami tutup..`
   );
 }
 
-const tindakLanjutLaporanMessage = (sapaan, nama, sessionId, keluhan, kesimpulanList) => {
-  const kesimpulanText = kesimpulanList.length > 0
-    ? kesimpulanList.map((k, i) => {
-      const date = new Date(k.timestamp);
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
-      const year = date.getFullYear();
-      const hours = date.getHours().toString().padStart(2, '0');
-      const minutes = date.getMinutes().toString().padStart(2, '0');
-      return `- [${day}/${month}/${year} ${hours}:${minutes}]\n${k.text}\n`;
-    }).join("\n")
-    : "Belum ada tindak lanjut yang tercatat.";
+const tindakLanjutLaporanMessage = (sapaan, nama, sessionId, keluhan, kesimpulanObj) => {
+  if (!kesimpulanObj || !kesimpulanObj.text) {
+    return `Halo ${sapaan} ${nama}, belum ada tindak lanjut terbaru untuk laporan Anda (${sessionId}) mengenai: ${keluhan}`;
+  }
+
+  const date = new Date(kesimpulanObj.timestamp);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+
+  const kesimpulanText = `- [${day}/${month}/${year} ${hours}:${minutes}]\n${kesimpulanObj.text}`;
 
   const responses = [
-    `Halo ${sapaan} ${nama}, Tindak Lanjut Laporan Anda (${sessionId})\nTentang: ${keluhan}\n\n${kesimpulanText}`,
-    `Berikut adalah Tindak Lanjut Laporan Anda (${sessionId})\nTentang: ${keluhan}\n\n${kesimpulanText}`,
-    `Informasi terbaru untuk Laporan Anda (${sessionId})\nTentang: ${keluhan}\n\n${kesimpulanText}`,
-    `Update Tindak Lanjut untuk Laporan Anda (${sessionId})\nTentang: ${keluhan}\n\n${kesimpulanText}`,
-    `Pemberitahuan Tindak Lanjut Laporan Anda (${sessionId})\nTentang: ${keluhan}\n\n${kesimpulanText}`
+    `Halo ${sapaan} ${nama}, berikut adalah tindak lanjut terbaru untuk Laporan Anda (${sessionId})\nTentang: ${keluhan}\n\n${kesimpulanText}`,
+    `Update terkini untuk Laporan Anda (${sessionId})\nTentang: ${keluhan}\n\n${kesimpulanText}`,
+    `Berikut tindak lanjut terbaru dari Laporan Anda (${sessionId})\nTentang: ${keluhan}\n\n${kesimpulanText}`,
+    `Kami telah menangani laporan Anda (${sessionId})\nTentang: ${keluhan}\n\n${kesimpulanText}`,
+    `Pembaruan Tindak Lanjut untuk Laporan Anda (${sessionId})\nTentang: ${keluhan}\n\n${kesimpulanText}`
   ];
+
   return randomResponse(responses);
 };
 

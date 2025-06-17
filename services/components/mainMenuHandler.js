@@ -11,7 +11,7 @@ module.exports = async (from, input, sendReply) => {
     const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" :
         jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
 
-    const lowerInput = typeof input === "string" ? input.toLowerCase() : "";
+    const lowerInput = typeof input === "string" ? input?.toLowerCase?.().trim() : "";
     let session = await userRepo.getOrCreateSession(from);
 
     const context = await combinedContext(input);

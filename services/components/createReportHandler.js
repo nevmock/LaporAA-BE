@@ -6,6 +6,7 @@ const { findWilayahFromPoint } = require("../../utils/findWilayahFromPoint");
 const messageController = require("../../controllers/messageController");
 const createReportResponse = require("../responseMessage/createReportReponse");
 const checkReportResponse = require("../responseMessage/checkReportResponse");
+const { affirmativeInputs, negativeInputs } = require("../../utils/inputTypes");
 
 module.exports = async (from, step, input, sendReply) => {
     const session = await userRepo.getOrCreateSession(from);
@@ -13,7 +14,9 @@ module.exports = async (from, step, input, sendReply) => {
     const nama = user?.name || "Warga";
     const jenisKelamin = user?.jenis_kelamin || "";
     const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
-    const lowerInput = typeof input === "string" ? input.toLowerCase() : "";
+    const lowerInput = typeof input === "string" ? input?.toLowerCase?.().trim() : "";
+    const affirmative = affirmativeInputs.includes(lowerInput);
+    const negative = negativeInputs.includes(lowerInput);
 
     // Check for 'menu' or 'kembali' input to reset session and go to main menu
     if (lowerInput === "menu" || lowerInput === "kembali") {
@@ -33,10 +36,9 @@ module.exports = async (from, step, input, sendReply) => {
 
     // STEP 2: Append the complaint message or handle cancellation
     if (step === "APPEND_MESSAGE") {
-        const msg = lowerInput;
         const currentMessage = session.data.message || "";
 
-        if (msg === "kirim") {
+        if (lowerInput === affirmative) {
             await userRepo.updateSession(from, {
                 step: "CONFIRM_MESSAGE",
                 data: session.data
@@ -44,12 +46,12 @@ module.exports = async (from, step, input, sendReply) => {
             return sendReply(from, createReportResponse.konfirmasiKeluhan(session.data.message));
         }
 
-        if (step = "APPEND_MESSAGE" && msg === "menu") {
+        if (step = "APPEND_MESSAGE" && lowerInput === "menu") {
             await userRepo.resetSession(from);
             return sendReply(from, createReportResponse.laporanDibatalkan(sapaan, nama));
         }
 
-        if (msg === "batal") {
+        if (lowerInput === negative) {
             await userRepo.resetSession(from);
             return sendReply(from, createReportResponse.laporanDibatalkan(sapaan, nama));
         }
@@ -67,7 +69,7 @@ module.exports = async (from, step, input, sendReply) => {
 
     // STEP 3: Confirm the complaint message
     if (step === "CONFIRM_MESSAGE") {
-        if (lowerInput === "kirim") {
+        if (lowerInput === affirmative) {
             await userRepo.updateSession(from, {
                 step: "ASK_LOCATION",
                 data: session.data
@@ -82,7 +84,7 @@ module.exports = async (from, step, input, sendReply) => {
             }
         }
 
-        if (lowerInput === "batal") {
+        if (lowerInput === negative) {
             await userRepo.updateSession(from, {
                 step: "ASK_MESSAGE",
                 data: session.data
@@ -128,7 +130,7 @@ module.exports = async (from, step, input, sendReply) => {
 
     // STEP 5: Confirm the location
     if (step === "CONFIRM_LOCATION") {
-        if (lowerInput === "kirim") {
+        if (lowerInput === affirmative) {
             await userRepo.updateSession(from, {
                 step: "ASK_PHOTO",
                 data: { ...session.data, photos: [] }
@@ -136,7 +138,7 @@ module.exports = async (from, step, input, sendReply) => {
             return sendReply(from, createReportResponse.mintaFoto());
         }
 
-        if (lowerInput === "batal") {
+        if (lowerInput === negative) {
             await userRepo.updateSession(from, {
                 step: "ASK_LOCATION",
                 data: session.data
@@ -152,7 +154,7 @@ module.exports = async (from, step, input, sendReply) => {
         const photos = session.data.photos || [];
 
         if (typeof input === "string") {
-            if (lowerInput === "kirim") {
+            if (lowerInput === affirmative) {
                 if (photos.length < 1) {
                     return sendReply(from, createReportResponse.minimalFoto(sapaan, nama)); // Need at least one photo
                 }
@@ -165,7 +167,7 @@ module.exports = async (from, step, input, sendReply) => {
                 return sendReply(from, createReportResponse.ringkasanLaporan(session.data));
             }
 
-            if (lowerInput === "batal") {
+            if (lowerInput === negative) {
                 await userRepo.resetSession(from);
                 return sendReply(from, createReportResponse.laporanDibatalkanMenu());
             }
@@ -200,7 +202,7 @@ module.exports = async (from, step, input, sendReply) => {
 
     // STEP 7: Review and confirm the report
     if (step === "REVIEW") {
-        if (lowerInput === "konfirmasi") {
+        if (lowerInput === affirmative) {
             try {
                 const sessionId = await generateSessionId(from);
                 await reportRepo.create({
@@ -221,7 +223,7 @@ module.exports = async (from, step, input, sendReply) => {
             }
         }
 
-        if (lowerInput === "batal") {
+        if (lowerInput === negative) {
             await userRepo.resetSession(from);
             return sendReply(from, createReportResponse.ulangLaporan());
         }
