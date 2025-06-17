@@ -26,6 +26,7 @@ router.get("/", async (req, res) => {
         const skip = (page - 1) * limit;
         const statusFilter = req.query.status;
         const searchQuery = req.query.search?.trim();
+        const rawSorts = req.query.sorts;
 
         const statusOrder = [
             "Perlu Verifikasi",
@@ -37,8 +38,49 @@ router.get("/", async (req, res) => {
             "Ditolak"
         ];
 
-        const pipeline = [
-            // JOIN ke UserProfile
+        // Parse sort
+        let sortArray = [];
+        try {
+            sortArray = rawSorts ? JSON.parse(rawSorts) : [];
+        } catch (err) {
+            console.warn("Invalid sorts param:", err);
+        }
+
+        const sortObject = {};
+        for (const { key, order } of sortArray) {
+            const sortVal = order === "asc" ? 1 : -1;
+            switch (key) {
+                case "prioritas":
+                    sortObject["prioritasScore"] = sortVal;
+                    break;
+                case "status":
+                    sortObject["statusScore"] = sortVal;
+                    break;
+                case "situasi":
+                    sortObject["tindakan.situasi"] = sortVal;
+                    break;
+                case "lokasi_kejadian":
+                    sortObject["location.desa"] = sortVal;
+                    break;
+                case "opd":
+                    sortObject["tindakan.opd"] = sortVal;
+                    break;
+                case "timer":
+                case "date":
+                    sortObject["createdAt"] = sortVal;
+                    break;
+                default:
+                    sortObject[key] = sortVal;
+            }
+        }
+
+        if (Object.keys(sortObject).length === 0) {
+            sortObject["prioritasScore"] = -1;
+            sortObject["statusScore"] = 1;
+            sortObject["createdAt"] = -1;
+        }
+
+        const basePipeline = [
             {
                 $lookup: {
                     from: "userprofiles",
@@ -53,8 +95,6 @@ router.get("/", async (req, res) => {
                     preserveNullAndEmptyArrays: true
                 }
             },
-
-            // JOIN ke Tindakan
             {
                 $lookup: {
                     from: "tindakans",
@@ -69,33 +109,6 @@ router.get("/", async (req, res) => {
                     preserveNullAndEmptyArrays: true
                 }
             },
-
-            // Filter pencarian (jika ada)
-            ...(searchQuery
-                ? [{
-                    $match: {
-                        $or: [
-                            { sessionId: { $regex: searchQuery, $options: "i" } },
-                            { from: { $regex: searchQuery, $options: "i" } },
-                            { "location.desa": { $regex: searchQuery, $options: "i" } },
-                            { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
-                            { "tindakan.opd": { $regex: searchQuery, $options: "i" } },
-                            { "user.name": { $regex: searchQuery, $options: "i" } },
-                        ]
-                    }
-                }]
-                : []),
-
-            // Filter status (jika bukan "Semua")
-            ...(statusFilter && statusFilter !== "Semua"
-                ? [{
-                    $match: {
-                        "tindakan.status": statusFilter
-                    }
-                }]
-                : []),
-
-            // Tambahkan skor prioritas dan urutan status
             {
                 $addFields: {
                     prioritasScore: {
@@ -106,21 +119,37 @@ router.get("/", async (req, res) => {
                     }
                 }
             },
+            ...(searchQuery ? [{
+                $match: {
+                    $or: [
+                        { sessionId: { $regex: searchQuery, $options: "i" } },
+                        { from: { $regex: searchQuery, $options: "i" } },
+                        { "location.desa": { $regex: searchQuery, $options: "i" } },
+                        { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
+                        { "tindakan.opd": { $regex: searchQuery, $options: "i" } },
+                        { "user.name": { $regex: searchQuery, $options: "i" } },
+                    ]
+                }
+            }] : []),
+            ...(statusFilter && statusFilter !== "Semua" ? [{
+                $match: {
+                    "tindakan.status": statusFilter
+                }
+            }] : []),
+            { $sort: sortObject },
+        ];
 
-            // Urutkan
-            { $sort: { prioritasScore: -1, statusScore: 1, createdAt: -1 } },
-
-            // Paginate
+        const pipeline = [
+            ...basePipeline,
             { $skip: skip },
             { $limit: limit }
         ];
 
-        // Pipeline untuk total count (tanpa skip & limit)
-        const countPipeline = pipeline.filter(stage =>
-            !("$skip" in stage) && !("$limit" in stage)
-        ).concat({ $count: "total" });
+        const countPipeline = [
+            ...basePipeline,
+            { $count: "total" }
+        ];
 
-        // Eksekusi query
         const [reports, countResult] = await Promise.all([
             Report.aggregate(pipeline),
             Report.aggregate(countPipeline)
