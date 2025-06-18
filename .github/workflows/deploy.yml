@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    if: github.repository == 'nevmock/LaporAA-Executive-FE'  # ⬅️ hanya di repo kerjaan
+    if: github.repository == 'nevmock/LaporAA-Executive-FE'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
