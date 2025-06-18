@@ -38,7 +38,7 @@ module.exports = async (from, step, input, sendReply) => {
     if (step === "APPEND_MESSAGE") {
         const currentMessage = session.data.message || "";
 
-        if (lowerInput === affirmative) {
+        if (lowerInput === "kirim" || lowerInput === affirmative) {
             await userRepo.updateSession(from, {
                 step: "CONFIRM_MESSAGE",
                 data: session.data
@@ -51,7 +51,7 @@ module.exports = async (from, step, input, sendReply) => {
             return sendReply(from, createReportResponse.laporanDibatalkan(sapaan, nama));
         }
 
-        if (lowerInput === negative) {
+        if (lowerInput === "batal" || lowerInput === negative) {
             await userRepo.resetSession(from);
             return sendReply(from, createReportResponse.laporanDibatalkan(sapaan, nama));
         }
@@ -69,7 +69,7 @@ module.exports = async (from, step, input, sendReply) => {
 
     // STEP 3: Confirm the complaint message
     if (step === "CONFIRM_MESSAGE") {
-        if (lowerInput === affirmative) {
+        if (lowerInput === "kirim" || lowerInput === affirmative) {
             await userRepo.updateSession(from, {
                 step: "ASK_LOCATION",
                 data: session.data
@@ -84,7 +84,7 @@ module.exports = async (from, step, input, sendReply) => {
             }
         }
 
-        if (lowerInput === negative) {
+        if (lowerInput === "batal" || lowerInput === negative) {
             await userRepo.updateSession(from, {
                 step: "ASK_MESSAGE",
                 data: session.data
@@ -130,7 +130,7 @@ module.exports = async (from, step, input, sendReply) => {
 
     // STEP 5: Confirm the location
     if (step === "CONFIRM_LOCATION") {
-        if (lowerInput === affirmative) {
+        if (lowerInput === "kirim" || lowerInput === affirmative) {
             await userRepo.updateSession(from, {
                 step: "ASK_PHOTO",
                 data: { ...session.data, photos: [] }
@@ -138,7 +138,7 @@ module.exports = async (from, step, input, sendReply) => {
             return sendReply(from, createReportResponse.mintaFoto());
         }
 
-        if (lowerInput === negative) {
+        if (lowerInput === "batal" || lowerInput === negative) {
             await userRepo.updateSession(from, {
                 step: "ASK_LOCATION",
                 data: session.data
@@ -154,7 +154,7 @@ module.exports = async (from, step, input, sendReply) => {
         const photos = session.data.photos || [];
 
         if (typeof input === "string") {
-            if (lowerInput === affirmative) {
+            if (lowerInput === "kirim" || lowerInput === affirmative) {
                 if (photos.length < 1) {
                     return sendReply(from, createReportResponse.minimalFoto(sapaan, nama)); // Need at least one photo
                 }
@@ -167,7 +167,7 @@ module.exports = async (from, step, input, sendReply) => {
                 return sendReply(from, createReportResponse.ringkasanLaporan(session.data));
             }
 
-            if (lowerInput === negative) {
+            if (lowerInput === "batal" || lowerInput === negative) {
                 await userRepo.resetSession(from);
                 return sendReply(from, createReportResponse.laporanDibatalkanMenu());
             }
@@ -202,7 +202,7 @@ module.exports = async (from, step, input, sendReply) => {
 
     // STEP 7: Review and confirm the report
     if (step === "REVIEW") {
-        if (lowerInput === affirmative) {
+        if (lowerInput === "kirim" || lowerInput === "konfirmasi" || lowerInput === "selesai" || lowerInput === affirmative) {
             try {
                 const sessionId = await generateSessionId(from);
                 await reportRepo.create({
@@ -223,7 +223,7 @@ module.exports = async (from, step, input, sendReply) => {
             }
         }
 
-        if (lowerInput === negative) {
+        if (lowerInput === "batal" || lowerInput === negative) {
             await userRepo.resetSession(from);
             return sendReply(from, createReportResponse.ulangLaporan());
         }

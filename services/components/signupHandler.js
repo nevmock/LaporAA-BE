@@ -66,7 +66,7 @@ module.exports = async (from, step, input, sendReply) => {
     if (step === "CONFIRM_NAME" && currentAction === "signup") {
         const lowerInput = input?.toLowerCase?.() || "";
 
-        if (lowerInput === affirmative) {
+        if (lowerInput === "kirim" || lowerInput === affirmative) {
             await userRepo.updateSession(from, {
                 step: "ASK_SEX",
                 data: session.data
@@ -75,7 +75,7 @@ module.exports = async (from, step, input, sendReply) => {
             return sendReply(from, signupResponse.terimaKasihNama(session.data.name));
         }
 
-        if (lowerInput === negative) {
+        if (lowerInput === "batal" || lowerInput === negative) {
             await userRepo.resetSession(from);
             return sendReply(from, signupResponse.pendaftaranDibatalkan(session.data.name || nama));
         }
@@ -105,7 +105,7 @@ module.exports = async (from, step, input, sendReply) => {
 
     // STEP 3: Konfirmasi dan simpan data
     if (step === "CONFIRM_DATA" && currentAction === "signup") {
-        if (lowerInput === affirmative) {
+        if (lowerInput === "kirim" || lowerInput === affirmative) {
             const { name, jenis_kelamin } = session.data;
 
             try {
@@ -124,7 +124,7 @@ module.exports = async (from, step, input, sendReply) => {
             }
         }
 
-        if (lowerInput === negative) {
+        if (lowerInput === "batal" || lowerInput === negative) {
             await userRepo.resetSession(from);
             return sendReply(from, signupResponse.pendaftaranDibatalkan(nama));
         }
