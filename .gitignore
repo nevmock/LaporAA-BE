@@ -47,3 +47,6 @@ pids/
 
 # Next.js telemetry
 .next/telemetry
+
+# custom script
+push.sh
