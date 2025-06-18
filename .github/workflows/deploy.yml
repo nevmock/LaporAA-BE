@@ -6,10 +6,11 @@ on:
       - 'DEV_Ismail'
   pull_request:
     branches: 
-      - 'DEV_Ismail'  # Trigger on all branches
+      - 'DEV_Ismail'
 
 jobs:
   build:
+    if: github.repository == 'nevmock/LaporAA-Executive-FE'  # ⬅️ hanya di repo kerjaan
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -25,9 +26,9 @@ jobs:
         npm config set registry https://registry.npmmirror.com
     - name: Install dependencies
       run: npm install
-        
+
   deploy:
-    if: github.ref == 'refs/heads/DEV_Ismail'  # Only deploy on main branch
+    if: github.repository == 'nevmock/LaporAA-Executive-FE' && github.ref == 'refs/heads/DEV_Ismail'
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -46,6 +47,3 @@ jobs:
           docker compose down
           docker compose up -d --build
           docker system prune -f
-          
-
-          
