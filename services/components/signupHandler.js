@@ -14,7 +14,7 @@ module.exports = async (from, step, input, sendReply) => {
     const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" :
         jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
 
-    const lowerInput = input?.toLowerCase?.().trim() || "";
+    const lowerInput = typeof input === "string" ? input?.toLowerCase?.().trim() : "";
     const affirmative = affirmativeInputs.includes(lowerInput);
     const negative = negativeInputs.includes(lowerInput);
     const gender = genderInputs.male.includes(lowerInput)

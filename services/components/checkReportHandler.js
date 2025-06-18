@@ -9,7 +9,7 @@ module.exports = async (from, step, input, sendReply) => {
     const jenisKelamin = user?.jenis_kelamin || "";
     const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
 
-    const msg = input?.toLowerCase?.().trim() || "";
+    const msg = typeof input === "string" ? input?.toLowerCase?.().trim() : "";
 
     // Step 1: Ask for the report ID
     if (step === "ASK_REPORT_ID") {
