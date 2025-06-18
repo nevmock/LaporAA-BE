@@ -1,7 +1,7 @@
 // utils/inputTypes.js
 
 const affirmativeInputs = [
-    "konfirmasi", "betul", "benar", "siap", "oke", "iya", "ya", "baik", "sudah", "lanjut", "sip", "mantap", "aman", "udah", "ok", "lanjutkan", "bener",
+    "konfirmasi", "kirim", "betul", "benar", "siap", "oke", "iya", "ya", "baik", "sudah", "lanjut", "sip", "mantap", "aman", "udah", "ok", "lanjutkan", "bener",
     "konfirmasi pak", "betul pak", "benar pak", "siap pak", "oke pak", "iya pak", "ya pak", "baik pak", "sudah pak", "lanjut pak", "sip pak", "mantap pak", "aman pak", "udah pak", "ok pak", "lanjutkan pak", "bener pak",
     "konfirmasi pa", "betul pa", "benar pa", "siap pa", "oke pa", "iya pa", "ya pa", "baik pa", "sudah pa", "lanjut pa", "sip pa", "mantap pa", "aman pa", "udah pa", "ok pa", "lanjutkan pa", "bener pa",
 ];

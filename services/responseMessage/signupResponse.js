@@ -101,6 +101,17 @@ function namaTerlaluPanjang() {
   return randomResponse(responses);
 }
 
+function namaTidakValid() {
+  const responses = [
+    `Nama tidak valid.\n\nSilakan masukkan nama yang valid.`,
+    `Mohon masukkan nama yang valid.`,
+    `Nama yang Anda masukkan tidak valid.\n\nSilakan coba lagi dengan nama yang valid.`,
+    `Maaf, nama Anda tidak valid.\n\nSilakan coba lagi dengan nama yang valid.`,
+    `Nama tidak boleh mengandung karakter khusus.\n\nSilakan coba lagi dengan nama yang valid.`
+  ];
+  return randomResponse(responses);
+}
+
 function handlerDefault() {
   const responses = [
     `Mohon ikuti langkah pelaporan sesuai instruksi.\n\nSilahkan ketik *menu*.`,
@@ -122,5 +133,6 @@ module.exports = {
   konfirmasiKirimAtauBatal,
   handlerDefault,
   konfirmasiNama,
-  namaTerlaluPanjang
+  namaTerlaluPanjang,
+  namaTidakValid
 };
