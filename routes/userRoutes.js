@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const userProfileRepo = require("../repositories/userProfileRepo");
 const UserSession = require("../models/UserSession");
+const Report = require("../models/Report");
 
 // Update forceModeManual
 router.patch('/session/force-mode/:from', async (req, res) => {
@@ -81,5 +82,25 @@ router.delete("/user/:from", async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+// routes/publicReportRoutes.js
+router.get('/public-reports/:sessionId', async (req, res) => {
+    const { sessionId } = req.params;
+    try {
+        const report = await Report.findOne({ sessionId }).populate('user');
+        if (!report) return res.status(404).json({ error: 'Not found' });
+
+        // Hanya return data yang diperlukan
+        return res.json({
+            user: {
+                name: report.user?.name || 'Warga'
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 
 module.exports = router;
