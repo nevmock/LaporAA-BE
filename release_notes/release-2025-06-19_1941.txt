@@ -1,0 +1,22 @@
+🔄 Commit terbaru di branch DEV_Ismail
+
+📝 feat: update app.js, controllers/dashboardController.js, models/Tindakan.js
+📅 2025-06-19_1941
+
+📂 Perubahan file:
+app.js
+controllers/dashboardController.js
+models/Tindakan.js
+package.json
+repositories/effectivenessRepo.js
+repositories/efisiensiRepo.js
+rest.http
+routes/dashboardRoute.js
+routes/reportRoutes.js
+routes/tindakanRoutes.js
+services/botFlowService.js
+services/components/feedbackHandler.js
+services/responseMessage/botFlowResponse.js
+services/responseMessage/tindakanResponse.js
+
+🚀 Meluncur

@@ -5,12 +5,12 @@ const diverifikasiStatuses = [
     "Proses OPD Terkait",
     "Selesai Penanganan",
     "Selesai Pengaduan",
-    "Ditolak"
+    "Ditutup"
 ];
 
 const selesaiStatuses = [
     "Selesai Pengaduan",
-    "Ditolak"
+    "Ditutup"
 ];
 
 async function countDiverifikasi() {

@@ -41,6 +41,7 @@ const dashboardRoute = require("./routes/dashboardRoute");
 const userLogin = require("./routes/userLogin");
 const login = require("./routes/auth");
 const authMiddleware = require("./middlewares/authMiddleware");
+const fix = require("./routes/fixApi");
 
 const autoCloseFeedback = require("./utils/autoCloseFeedback");
 const limitMiddleware = require("./middlewares/limitMiddleware");
@@ -104,6 +105,7 @@ app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 app.use("/uploadsTindakan", express.static(path.join(__dirname, "public/uploadsTindakan")));
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 app.use("/user", userRoutes);
+app.use("/fix", fix);
 
 // Apply authMiddleware to all routes except /webhook
 app.use(authMiddleware);

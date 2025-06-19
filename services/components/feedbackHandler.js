@@ -6,8 +6,8 @@ module.exports = async function feedbackHandler({ from, input, session, sapaan, 
     const tindakanId = session.pendingFeedbackFor[0];
     const tindakan = await tindakanRepo.findById(tindakanId);
 
-    if (tindakan?.status === "Ditolak" && tindakan.feedbackStatus === "Sudah Ditanya") {
-        tindakan.feedbackStatus = "Selesai Ditolak";
+    if (tindakan?.status === "Ditutup" && tindakan.feedbackStatus === "Sudah Ditanya") {
+        tindakan.feedbackStatus = "Selesai Ditutup";
         await tindakan.save();
 
         session.pendingFeedbackFor.shift();
@@ -15,7 +15,7 @@ module.exports = async function feedbackHandler({ from, input, session, sapaan, 
         await session.save();
 
         const sessionId = tindakan.report?.sessionId || "Tidak diketahui";
-        return sendReply(from, botFlowResponse.laporanDitolak(sapaan, nama, sessionId, tindakan.kesimpulan));
+        return sendReply(from, botFlowResponse.laporanDitutup(sapaan, nama, sessionId, tindakan.kesimpulan));
     }
 
     if (["puas", "belum"].includes(input)) {

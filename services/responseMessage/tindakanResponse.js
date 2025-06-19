@@ -32,7 +32,7 @@ Jika *sudah puas*, cukup balas dengan "puas".`
   return randomResponse(responses);
 };
 
-const ditolakMessage = (sapaan, nama, sessionId, kesimpulan) => {
+const DitutupMessage = (sapaan, nama, sessionId, kesimpulan) => {
   const responses = [
     `Mohon maaf ${sapaan} ${nama}, laporan Anda dengan ID *${sessionId}* *tidak dapat ditindaklanjuti*.`,
     `Laporan Anda dengan ID *${sessionId}* atas nama ${sapaan} ${nama} telah *tidak terproses* oleh petugas.`,
@@ -133,7 +133,7 @@ const puasReply5 = (sapaan, nama, sessionId) => {
 module.exports = {
   daruratMessage,
   selesaiPenangananMessage,
-  ditolakMessage,
+  DitutupMessage,
   tindakLanjutLaporanMessage,
   finalizeAndAskNewReport,
   belumReply,

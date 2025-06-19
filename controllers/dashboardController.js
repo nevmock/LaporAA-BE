@@ -276,7 +276,7 @@ async function getStatusSummary(req, res) {
       "Proses OPD Terkait",
       "Selesai Penanganan",
       "Selesai Pengaduan",
-      "Ditolak",
+      "Ditutup",
     ];
     allStatuses.forEach(status => {
       if (!(status in result)) {

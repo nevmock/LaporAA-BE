@@ -35,7 +35,7 @@ router.get("/", async (req, res) => {
             "Proses OPD Terkait",
             "Selesai Penanganan",
             "Selesai Pengaduan",
-            "Ditolak"
+            "Ditutup"
         ];
 
         // Parse sort
@@ -201,7 +201,7 @@ router.get("/map", async (req, res) => {
                                 "Proses OPD Terkait",
                                 "Selesai Penanganan",
                                 "Selesai Pengaduan",
-                                "Ditolak"
+                                "Ditutup"
                             ],
                             "$tindakan.status"
                         ]

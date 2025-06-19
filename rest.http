@@ -98,3 +98,7 @@ GET http://localhost:3001/user/user-mode/6281385138754
 ### ❌ Hapus seluruh data user (profile, laporan, tindakan, session)
 DELETE https://api.laporaabupati.com/user/user/6288218868251
 Content-Type: application/json
+
+### Fix Ditolak
+PATCH http://localhost:3001/fix/fix-ditolak
+

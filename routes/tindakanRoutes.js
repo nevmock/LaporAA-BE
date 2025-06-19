@@ -127,9 +127,9 @@ router.put("/:reportId", async (req, res) => {
             await userRepo.removePendingFeedback(from, tindakan._id);
         }
 
-        // === CASE DITOLAK ===
-        if (status === "Ditolak") {
-            const message = tindakanResponse.ditolakMessage(sapaan, user.name, report.sessionId, keterangan);
+        // === CASE Ditutup ===
+        if (status === "Ditutup") {
+            const message = tindakanResponse.DitutupMessage(sapaan, user.name, report.sessionId, keterangan);
             await sendMessageToWhatsApp(from, message);
         }
 

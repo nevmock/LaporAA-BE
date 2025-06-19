@@ -39,7 +39,7 @@ function ratingSuccess(sapaan, nama, rating) {
   return randomResponse(responses) + 'Kami akan terus meningkatkan layanan.';
 }
 
-function laporanDitolak(sapaan, nama, sessionId, kesimpulan) {
+function laporanDitutup(sapaan, nama, sessionId, kesimpulan) {
   const responses = [
     `Mohon maaf ${sapaan} ${nama}, laporan dengan ID *${sessionId}* *tidak dapat ditindaklanjuti*.`,
     `Laporan Anda dengan ID *${sessionId}* atas nama ${sapaan} ${nama} *tidak bisa diproses* oleh petugas.`,
@@ -162,7 +162,7 @@ module.exports = {
   mainSapaan,
   ratingSuccess,
   laporanSelesaiDiarahkanKeBaru,
-  laporanDitolak,
+  laporanDitutup,
   puasReply,
   belumReply,
   pendingKonfirmasi,

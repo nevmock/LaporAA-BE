@@ -6,7 +6,7 @@ const diverifikasiStatuses = [
     "Proses OPD Terkait",
     "Selesai Penanganan",
     "Selesai Pengaduan",
-    "Ditolak"
+    "Ditutup"
 ];
 
 async function countAllReports() {
