@@ -265,6 +265,83 @@ router.get("/summary", async (req, res) => {
     }
 });
 
+// /reports/summary
+router.get("/summary-laporan", async (req, res) => {
+    try {
+        // COPY logika filter dari /reports
+        const statusOrder = [
+            "Perlu Verifikasi",
+            "Verifikasi Situasi",
+            "Verifikasi Kelengkapan Berkas",
+            "Proses OPD Terkait",
+            "Selesai Penanganan",
+            "Selesai Pengaduan",
+            "Ditutup"
+        ];
+
+        const statusFilter = req.query.status;
+        const searchQuery = req.query.search?.trim();
+
+        // --- ini mirip dengan basePipeline ---
+        const basePipeline = [
+            {
+                $lookup: {
+                    from: "userprofiles",
+                    localField: "user",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: "tindakans",
+                    localField: "tindakan",
+                    foreignField: "_id",
+                    as: "tindakan"
+                }
+            },
+            { $unwind: { path: "$tindakan", preserveNullAndEmptyArrays: true } },
+            ...(searchQuery ? [{
+                $match: {
+                    $or: [
+                        { sessionId: { $regex: searchQuery, $options: "i" } },
+                        { from: { $regex: searchQuery, $options: "i" } },
+                        { "location.desa": { $regex: searchQuery, $options: "i" } },
+                        { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
+                        { "tindakan.opd": { $regex: searchQuery, $options: "i" } },
+                        { "user.name": { $regex: searchQuery, $options: "i" } },
+                    ]
+                }
+            }] : []),
+            ...(statusFilter && statusFilter !== "Semua" ? [{
+                $match: {
+                    "tindakan.status": statusFilter
+                }
+            }] : []),
+            {
+                $group: {
+                    _id: "$tindakan.status",
+                    count: { $sum: 1 }
+                }
+            }
+        ];
+
+        const summary = await Report.aggregate(basePipeline);
+
+        // Format ke { status: jumlah }
+        const result = {};
+        summary.forEach(item => {
+            result[item._id || "Tanpa Status"] = item.count;
+        });
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.error("❌ Error summary:", error);
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
 // GET report by sessionId
 router.get("/:sessionId", async (req, res) => {
     const { sessionId } = req.params;
