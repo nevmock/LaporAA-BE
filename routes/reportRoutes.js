@@ -268,7 +268,6 @@ router.get("/summary", async (req, res) => {
 // /reports/summary
 router.get("/summary-laporan", async (req, res) => {
     try {
-        // COPY logika filter dari /reports
         const statusOrder = [
             "Perlu Verifikasi",
             "Verifikasi Situasi",
@@ -279,10 +278,13 @@ router.get("/summary-laporan", async (req, res) => {
             "Ditutup"
         ];
 
-        const statusFilter = req.query.status;
+        // Ambil filter selain status
         const searchQuery = req.query.search?.trim();
+        const opd = req.query.opd?.trim();
+        const kecamatan = req.query.kecamatan?.trim();
+        const desa = req.query.desa?.trim();
 
-        // --- ini mirip dengan basePipeline ---
+        // Pipeline mirip data utama, TAPI **TIDAK ADA filter status**
         const basePipeline = [
             {
                 $lookup: {
@@ -302,6 +304,7 @@ router.get("/summary-laporan", async (req, res) => {
                 }
             },
             { $unwind: { path: "$tindakan", preserveNullAndEmptyArrays: true } },
+
             ...(searchQuery ? [{
                 $match: {
                     $or: [
@@ -314,11 +317,10 @@ router.get("/summary-laporan", async (req, res) => {
                     ]
                 }
             }] : []),
-            ...(statusFilter && statusFilter !== "Semua" ? [{
-                $match: {
-                    "tindakan.status": statusFilter
-                }
-            }] : []),
+            ...(opd ? [{ $match: { "tindakan.opd": opd } }] : []),
+            ...(kecamatan ? [{ $match: { "location.kecamatan": kecamatan } }] : []),
+            ...(desa ? [{ $match: { "location.desa": desa } }] : []),
+
             {
                 $group: {
                     _id: "$tindakan.status",
@@ -329,7 +331,7 @@ router.get("/summary-laporan", async (req, res) => {
 
         const summary = await Report.aggregate(basePipeline);
 
-        // Format ke { status: jumlah }
+        // Format jadi { status: count }
         const result = {};
         summary.forEach(item => {
             result[item._id || "Tanpa Status"] = item.count;

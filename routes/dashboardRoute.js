@@ -4,9 +4,8 @@ const dashboardController = require("../controllers/dashboardController");
 const dayjs = require("dayjs");
 const isoWeek = require("dayjs/plugin/isoWeek");
 const Report = require("../models/Report");
-dayjs.extend(isoWeek);
-
 const Tindakan = require("../models/Tindakan");
+dayjs.extend(isoWeek);
 
 router.get("/efisiensi", dashboardController.getEfisiensi);
 router.get("/effectiveness", dashboardController.getEffectiveness);
@@ -195,6 +194,80 @@ router.get("/map", async (req, res) => {
         });
     } catch (error) {
         console.error("❌ Error fetching reports:", error);
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+router.get("/summary-dashboard", async (req, res) => {
+    try {
+        const { mode = "monthly", year, month, week } = req.query;
+
+        let matchStage = {};
+        // Mode ALL
+        if (mode === "all") {
+            // Tidak ada filter tanggal
+        } else {
+            if (!year) {
+                return res.status(400).json({ message: "Parameter 'year' diperlukan" });
+            }
+
+            let startDate, endDate;
+            if (mode === "yearly") {
+                startDate = dayjs(`${year}-01-01`).startOf("day").toDate();
+                endDate = dayjs(`${year}-12-31`).endOf("day").toDate();
+            } else if (mode === "monthly") {
+                if (!month) return res.status(400).json({ message: "Parameter 'month' diperlukan" });
+                startDate = dayjs(`${year}-${month}-01`).startOf("month").toDate();
+                endDate = dayjs(`${year}-${month}-01`).endOf("month").toDate();
+            } else if (mode === "weekly") {
+                if (!month || !week) {
+                    return res.status(400).json({ message: "Parameter 'month' dan 'week' diperlukan untuk mode 'weekly'" });
+                }
+                const firstDayOfMonth = dayjs(`${year}-${month}-01`);
+                let startOfWeek = firstDayOfMonth.startOf('week').add(1, 'day'); // Senin
+                for (let i = 1; i < week; i++) {
+                    startOfWeek = startOfWeek.add(1, 'week');
+                }
+                startDate = startOfWeek.startOf("day").toDate();
+                endDate = startOfWeek.endOf("week").endOf("day").toDate();
+            } else {
+                return res.status(400).json({ message: "Mode tidak valid" });
+            }
+
+            matchStage = { "tindakan.createdAt": { $gte: startDate, $lte: endDate } };
+        }
+
+        const pipeline = [
+            {
+                $lookup: {
+                    from: "tindakans",
+                    localField: "tindakan",
+                    foreignField: "_id",
+                    as: "tindakan"
+                }
+            },
+            { $unwind: { path: "$tindakan", preserveNullAndEmptyArrays: true } },
+        ];
+        if (mode !== "all") {
+            pipeline.push({ $match: matchStage });
+        }
+        pipeline.push({
+            $group: {
+                _id: "$tindakan.status",
+                count: { $sum: 1 }
+            }
+        });
+
+        const summary = await Report.aggregate(pipeline);
+
+        const result = {};
+        summary.forEach(item => {
+            result[item._id || "Tanpa Status"] = item.count;
+        });
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.error("❌ Error summary-dashboard:", error);
         res.status(500).json({ message: "Terjadi kesalahan pada server" });
     }
 });
