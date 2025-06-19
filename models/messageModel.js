@@ -1,10 +1,13 @@
+// models/messageModel.js
 const mongoose = require("mongoose");
 
-const MessageSchema = new mongoose.Schema({
-    from: { type: String, required: true }, // Nomor WhatsApp pengirim
-    senderName: { type: String, required: true }, // Nama pengirim
-    message: { type: String, required: true }, // Isi pesan
-    timestamp: { type: Date, default: Date.now }, // Waktu pesan dikirim
+const messageSchema = new mongoose.Schema({
+    from: String,
+    senderName: String,
+    message: String,
+    type: { type: String, default: "text" }, // ✅ text / image / location / etc
+    mediaUrl: String,                        // ✅ jika type === image
+    timestamp: Date,
 });
 
-module.exports = mongoose.model("Message", MessageSchema);
+module.exports = mongoose.model("Message", messageSchema);

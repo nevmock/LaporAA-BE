@@ -8,16 +8,19 @@ GET http://localhost:3001/tindakan
 GET http://localhost:3001/reportCount
 
 ###
+GET http://localhost:3001/reports/summary
+
+###
 GET http://localhost:3001/reports/680b798d2914fdacfe27faa7
 
 ###
-GET http://localhost:3001/tindakan/6805f6780b81ae80bcac6fda
+GET http://localhost:3001/tindakan/68218eec0967afbc6b49fa23
 
 ###
 GET http://localhost:3001/tindakan/6805f6780b81ae80bcac6fda
 
 ###
-POST http://localhost:3001/tindakan
+PUT http://localhost:3001/tindakan/68218eec0967afbc6b49fa23
 Content-Type: application/json
 
 {
@@ -42,9 +45,11 @@ GET http://localhost:3001/dashboard/distribusi
 ###
 GET http://localhost:3001/dashboard/kepuasan
 
-### 📄 Get all user logins
-GET http://localhost:3001/userLogin
-Content-Type: application/json
+###
+GET http://localhost:3001/reports/
+
+###
+GET http://localhost:3001/dashboard/opd-summary
 
 ###
 
@@ -55,29 +60,45 @@ Content-Type: application/json
 ###
 
 ### ➕ Create new user login
-POST http://localhost:3001/userLogin
+POST https://api.laporaabupati.com/userLogin
 Content-Type: application/json
 
 {
-  "username": "bupati",
-  "password": "bupati123",
-  "role": "Bupati"
+  "username": "superadmin",
+  "password": "superAdmin777!",
+  "role": "SuperAdmin"
 }
 
 ###
 
+### 📄 Get all user logins
+GET http://localhost:3001/userLogin
+Content-Type: application/json
+
 ### 📝 Update user login (change password or role)
-PUT http://localhost:3001/userLogin/:userId
+PUT http://localhost:3001/userLogin/6846de31b4b75f9855fdda9d
 Content-Type: application/json
 
 {
   "username": "admin",
-  "password": "newpassword123",  // kosongkan atau hapus jika tidak ingin ubah password
-  "role": "Bupati"
+  "password": "admin777",
+  "role": "Admin"
 }
-
-###
 
 ### ❌ Delete user login
 DELETE http://localhost:3001/userLogin/:userId
 Content-Type: application/json
+
+###
+GET http://localhost:3001/dashboard/harian
+
+###
+GET http://localhost:3001/user/user-mode/6281385138754
+
+### ❌ Hapus seluruh data user (profile, laporan, tindakan, session)
+DELETE https://api.laporaabupati.com/user/user/6288218868251
+Content-Type: application/json
+
+### Fix Ditolak
+PATCH https://api.laporaabupati.com/fix/fix-ditolak
+

@@ -1,19 +1,22 @@
 const Report = require("../models/Report");
 const Tindakan = require("../models/Tindakan");
 
-exports.create = async ({ sessionId, from, user, location, message, photos }) => {
-    const newReport = await Report.create({ sessionId, from, user, location, message, photos });
+exports.create = async ({ sessionId, from, user, location, message, photos, url, keterangan, status_laporan }) => {
+    const newReport = await Report.create({ sessionId, from, user, location, message, photos, url, keterangan, status_laporan });
 
     const defaultTindakan = await Tindakan.create({
         report: newReport._id,
         hasil: "",
-        kesimpulan: "",
+        kesimpulan: [],
         trackingId: null,
         prioritas: null,
         situasi: null,
         status: "Perlu Verifikasi",
         opd: "",
         photos: [],
+        url: "",
+        keterangan: "",
+        status_laporan: "Menunggu Diproses OPD Terkait",
     });
 
     newReport.tindakan = defaultTindakan._id;
@@ -48,3 +51,17 @@ exports.findByTindakanId = async (tindakanId) => {
         .populate("user")
         .populate("tindakan");
 };
+
+exports.deleteManyBySessionIds = async (sessionIds) => {
+    const reports = await Report.find({ sessionId: { $in: sessionIds } });
+    const tindakanIds = reports.map((r) => r.tindakan).filter(Boolean);
+
+    if (tindakanIds.length > 0) {
+        await Tindakan.deleteMany({ _id: { $in: tindakanIds } });
+    }
+
+    await Report.deleteMany({ sessionId: { $in: sessionIds } });
+
+    return { message: `${reports.length} report dan tindakan berhasil dihapus` };
+};
+

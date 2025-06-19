@@ -3,38 +3,55 @@ const signupHandler = require("./components/signupHandler");
 const createReportHandler = require("./components/createReportHandler");
 const checkReportHandler = require("./components/checkReportHandler");
 const userRepo = require("../repositories/userRepo");
-const tindakanRepo = require("../repositories/tindakanRepo");
 const userProfileRepo = require("../repositories/userProfileRepo");
+const tindakanRepo = require("../repositories/tindakanRepo");
+const tindakanResponse = require("./responseMessage/tindakanResponse");
+const botFlowResponse = require("./responseMessage/botFlowResponse");
+const { combinedContext } = require("../utils/openAiHelper");
+const { affirmativeInputs, negativeInputs } = require("../utils/inputTypes");
 
-exports.handleUserMessage = async ({ from, message }) => {
+exports.handleUserMessage = async ({ from, message, sendReply }) => {
     const user = await userProfileRepo.findByFrom(from);
     const nama = user?.name || "Warga";
+    const jenisKelamin = user?.jenis_kelamin || "";
+    const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
 
     let session = await userRepo.getOrCreateSession(from);
-    if (session.mode === "manual") return null;
-
+    const ratingInput = message;
     const input = typeof message === "string" ? message.trim().toLowerCase() : message;
     const step = session.step;
 
-    // Reset session jika user ketik 'menu' atau 'reset'
-    if (input === "menu" || input === "reset") {
+    const context = await combinedContext(input);
+
+    if (session.mode === "manual") return null;
+
+    // === Greeting check untuk reset session dan tampilkan menu utama ===
+    if ((step === "MAIN_MENU" && !session.currentAction && input === "menu") || (step === "MAIN_MENU" && !session.currentAction && context === "greeting")) {
         await userRepo.resetSession(from);
-        return `warga ${nama} memilih menu awal. pilih 1 untuk membuat laporan dan 2 untuk cek status laporan.`;
+        return mainMenuHandler(from, input, sendReply);
     }
 
-    // Handle Rating setelah laporan selesai
+    // === Rating flow ===
     if (step === "WAITING_FOR_RATING") {
-        const rating = parseInt(input);
+        const rating = parseInt(ratingInput || 5);
         const tindakanId = session.pendingFeedbackFor?.[0];
+        const tindakan = await tindakanRepo.findById(tindakanId);
+        const sessionId = tindakan.report?.sessionId || "Tidak diketahui";
 
         if (isNaN(rating) || rating < 1 || rating > 5) {
-            return `beri tahu warga ${nama} kalau rating tidak valid. Silakan berikan rating antara 1 hingga 5.`;
+            return sendReply(from, botFlowResponse.ratingInvalid(sapaan, nama));
+        }
+
+        const replyFunc = tindakanResponse[`puasReply${rating}`];
+        if (typeof replyFunc !== "function") {
+            console.warn(`Function puasReply${rating} tidak ditemukan di botFlowResponse`);
+            return sendReply(from, botFlowResponse.ratingInvalid(sapaan, nama));
         }
 
         try {
             const tindakan = await tindakanRepo.findById(tindakanId);
             if (!tindakan) {
-                return `beri tahu warga ${nama} kalau Laporan tidak ditemukan.`;
+                return sendReply(from, botFlowResponse.laporanTidakDitemukan(sapaan, nama));
             }
 
             tindakan.rating = rating;
@@ -45,75 +62,97 @@ exports.handleUserMessage = async ({ from, message }) => {
             session.currentAction = null;
             await session.save();
 
-            return `beri tahu warga ${nama} Terima kasih atas rating ${rating} untuk laporan Anda! Kami akan terus meningkatkan layanan.`;
+            const replyMessage = replyFunc(sapaan, nama, sessionId);
+            return sendReply(from, replyMessage);
         } catch (err) {
             console.error("Gagal menyimpan rating:", err);
-            return `beri tahu warga ${nama} Terjadi kesalahan saat menyimpan rating. Silakan coba lagi.`;
+            return sendReply(from, botFlowResponse.gagalSimpanRating());
         }
     }
 
-    // Handle Konfirmasi Penyelesaian Laporan
-    if (session.pendingFeedbackFor && session.pendingFeedbackFor.length > 0) {
+    // === Feedback flow ===
+    if (session.pendingFeedbackFor && session.pendingFeedbackFor?.length > 0) {
         const tindakanId = session.pendingFeedbackFor[0];
         const tindakan = await tindakanRepo.findById(tindakanId);
-    
-        // Kasus laporan Ditolak
-        if (tindakan?.status === "Ditolak" && tindakan.feedbackStatus === "Sudah Ditanya") {
-            // Tandai laporan sebagai selesai tanpa rating
-            tindakan.feedbackStatus = "Selesai Ditolak";
+
+        if (tindakan?.status === "Ditutup" && tindakan.feedbackStatus === "Sudah Ditanya") {
+            tindakan.feedbackStatus = "Selesai Ditutup";
             await tindakan.save();
-    
-            session.pendingFeedbackFor = session.pendingFeedbackFor.filter(id => id.toString() !== tindakanId.toString());
+
+            session.pendingFeedbackFor.shift();
             session.step = "MAIN_MENU";
             await session.save();
-    
-            return `beri tahu warga ${nama} Mohon maaf, laporan dengan ID ${tindakan.report.sessionId} *tidak dapat ditindaklanjuti* dan telah *ditolak* oleh petugas.\n\nAlasan penolakan: ${tindakan.kesimpulan || "Tidak tersedia"}\n\nTerima kasih atas partisipasi Anda.`;
+
+            const sessionId = tindakan.report?.sessionId || "Tidak diketahui";
+            return sendReply(from, botFlowResponse.laporanDitutup(sapaan, nama, sessionId, tindakan.kesimpulan));
         }
-    
-        // Kasus laporan selesai normal (dengan rating)
-        if (["ya", "belum"].includes(input)) {
+
+        if (["puas", "belum"].includes(input)) {
+            const sessionId = tindakan.report?.sessionId || "Tidak diketahui";
+
             if (tindakan?.status === "Selesai Penanganan" && tindakan.feedbackStatus === "Sudah Ditanya") {
                 let reply;
-    
-                if (input === "ya") {
+
+                if (input === "puas") {
                     tindakan.feedbackStatus = "Sudah Jawab Beres";
                     tindakan.status = "Selesai Pengaduan";
                     await tindakan.save();
-    
+
                     session.step = "WAITING_FOR_RATING";
                     await session.save();
-    
-                    reply = `beri tahu warga ${nama} Terima kasih atas konfirmasi Anda!\nLaporan ${tindakan.report.sessionId} ditutup.\n\nSebagai bentuk peningkatan layanan, mohon berikan rating 1-5.`;
+
+                    reply = botFlowResponse.puasReply(sapaan, nama, sessionId);
                 } else {
-                    tindakan.feedbackStatus = "Sudah Jawab Belum Beres";
-                    tindakan.status = "Proses OPD Terkait";
-                    await tindakan.save();
-    
-                    session.pendingFeedbackFor = session.pendingFeedbackFor.filter(id => id.toString() !== tindakanId.toString());
-                    session.step = "MAIN_MENU";
-                    await session.save();
-    
-                    reply = `beri tahu warga ${nama} Laporan ${tindakan.report.sessionId} akan segera ditindaklanjuti ulang. Terima kasih atas respon Anda!`;
-    
-                    if (session.pendingFeedbackFor.length > 0) {
-                        reply += `\nMasih ada ${session.pendingFeedbackFor.length} laporan lain yang menunggu respon. Balas "ya" atau "belum".`;
+                    if (!tindakan.hasBeenReprocessed) {
+                        tindakan.feedbackStatus = "Sudah Jawab Belum Beres";
+                        tindakan.status = "Proses OPD Terkait";
+                        tindakan.hasBeenReprocessed = true;
+                        await tindakan.save();
+
+                        session.pendingFeedbackFor.shift();
+                        session.step = "MAIN_MENU";
+                        await session.save();
+
+                        reply = botFlowResponse.belumReply(sapaan, nama, sessionId, session.pendingFeedbackFor.length);
+                    } else {
+                        tindakan.feedbackStatus = "Sudah Jawab Beres";
+                        tindakan.status = "Selesai Pengaduan";
+                        tindakan.rating = 5;
+                        await tindakan.save();
+
+                        session.pendingFeedbackFor.shift();
+                        session.step = "MAIN_MENU";
+                        await session.save();
+
+                        reply = tindakanResponse.finalizeAndAskNewReport(sapaan, nama);
                     }
                 }
-    
-                return reply;
+
+                return sendReply(from, reply);
             }
         }
-    
-        return `beri tahu warga ${nama} Anda masih memiliki laporan yang menunggu konfirmasi penyelesaian. Balas "ya" jika sudah selesai, atau "belum" jika masih ada masalah.`;
-    }    
 
-    // Handle Main Menu dan Langkah-langkah Bot
-    if (!session.currentAction && step === "MAIN_MENU") return await mainMenuHandler(from, input);
-    if (session.currentAction === "signup") return await signupHandler(from, step, input);
-    if (session.currentAction === "create_report") return await createReportHandler(from, step, input);
-    if (session.currentAction === "check_report") return await checkReportHandler(from, step, input);
+        return sendReply(from, botFlowResponse.pendingKonfirmasi(sapaan, nama));
+    }
 
-    // Default Reset kalau semua gak cocok
+    // === Routing berdasarkan currentAction ===
+    if (!session.currentAction && step === "MAIN_MENU") {
+        return mainMenuHandler(from, input, sendReply);
+    }
+
+    if (session.currentAction === "signup") {
+        return signupHandler(from, step, input, sendReply);
+    }
+
+    if (session.currentAction === "create_report") {
+        return createReportHandler(from, step, input, sendReply);
+    }
+
+    if (session.currentAction === "check_report") {
+        return checkReportHandler(from, step, input, sendReply);
+    }
+
+    // === Fallback: Reset session jika tidak cocok ===
     await userRepo.resetSession(from);
-    return `Warga dengan nama ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
+    return sendReply(from, botFlowResponse.mainSapaan());
 };

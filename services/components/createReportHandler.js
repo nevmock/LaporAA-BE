@@ -1,23 +1,115 @@
 const userRepo = require("../../repositories/userRepo");
-const userProfileRepo = require("../../repositories/userProfileRepo");
 const reportRepo = require("../../repositories/reportRepo");
+const userProfileRepo = require("../../repositories/userProfileRepo");
 const generateSessionId = require("../../utils/generateSessionId");
 const { findWilayahFromPoint } = require("../../utils/findWilayahFromPoint");
+const messageController = require("../../controllers/messageController");
+const createReportResponse = require("../responseMessage/createReportReponse");
+const checkReportResponse = require("../responseMessage/checkReportResponse");
+const { affirmativeInputs, negativeInputs } = require("../../utils/inputTypes");
 
-module.exports = async (from, step, input) => {
+module.exports = async (from, step, input, sendReply) => {
     const session = await userRepo.getOrCreateSession(from);
     const user = await userProfileRepo.findByFrom(from);
     const nama = user?.name || "Warga";
+    const jenisKelamin = user?.jenis_kelamin || "";
+    const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
+    const lowerInput = typeof input === "string" ? input?.toLowerCase?.().trim() : "";
+    const affirmative = affirmativeInputs.includes(lowerInput);
+    const negative = negativeInputs.includes(lowerInput);
 
-    // STEP 1: Lokasi
+    // Check for 'menu' or 'kembali' input to reset session and go to main menu
+    if (lowerInput === "menu" || lowerInput === "kembali") {
+        await userRepo.resetSession(from);
+        return sendReply(from, checkReportResponse.kembaliKeMenu(sapaan, nama));
+    }
+
+    // STEP 1: Ask for the complaint message
+    if (step === "ASK_MESSAGE") {
+        const newMessage = input;
+        await userRepo.updateSession(from, {
+            step: "APPEND_MESSAGE",
+            data: { ...session.data, message: newMessage }
+        });
+        return sendReply(from, createReportResponse.mintaKeluhan());
+    }
+
+    // STEP 2: Append the complaint message or handle cancellation
+    if (step === "APPEND_MESSAGE") {
+        const currentMessage = session.data.message || "";
+
+        if (lowerInput === "kirim" || affirmative) {
+            await userRepo.updateSession(from, {
+                step: "CONFIRM_MESSAGE",
+                data: session.data
+            });
+            return sendReply(from, createReportResponse.konfirmasiKeluhan(session.data.message));
+        }
+
+        if (step === "APPEND_MESSAGE" && lowerInput === "menu") {
+            await userRepo.resetSession(from);
+            return sendReply(from, createReportResponse.laporanDibatalkan(sapaan, nama));
+        }
+
+        if (lowerInput === "batal" || negative) {
+            await userRepo.resetSession(from);
+            return sendReply(from, createReportResponse.laporanDibatalkan(sapaan, nama));
+        }
+
+        const updatedMessage = currentMessage
+            ? `${currentMessage}, ${input}`
+            : input;
+
+        await userRepo.updateSession(from, {
+            step: "APPEND_MESSAGE",
+            data: { ...session.data, message: updatedMessage }
+        });
+        return sendReply(from, createReportResponse.keluhanDitambahkan());
+    }
+
+    // STEP 3: Confirm the complaint message
+    if (step === "CONFIRM_MESSAGE") {
+        if (lowerInput === "kirim" || affirmative) {
+            await userRepo.updateSession(from, {
+                step: "ASK_LOCATION",
+                data: session.data
+            });
+
+            const success = await messageController.sendTutorialImagesToUser(from);
+
+            if (success) {
+                return sendReply(from, createReportResponse.mintaLokasi(sapaan, nama));
+            } else {
+                return sendReply(from, "❌ Maaf, gagal mengirim gambar tutorial lokasi Silahkan untukk share lokasi kejadian secara manual dengan mengirimkan lokasi melalui fitur kirim lokasi pada WhatsApp.");
+            }
+        }
+
+        if (lowerInput === "batal" || negative) {
+            await userRepo.updateSession(from, {
+                step: "ASK_MESSAGE",
+                data: session.data
+            });
+            return sendReply(from, createReportResponse.ulangKeluhan(sapaan, nama));
+        }
+
+        return sendReply(from, createReportResponse.konfirmasiAtauBatal());
+    }
+
+    // STEP 4: Ask for the user's location
     if (step === "ASK_LOCATION") {
         if (typeof input !== "object" || input.type !== "location") {
-            return `Halo ${nama}, mohon kirimkan *lokasi kejadian* menggunakan fitur *Kirim Lokasi* di WhatsApp. Lokasi ini penting untuk kami tindaklanjuti. 🙏`;
+            return sendReply(from, createReportResponse.mintaLokasi(sapaan, nama)); // Ask for location again if input is not correct
         }
-    
+
         const { latitude, longitude, description } = input.location;
         const wilayah = findWilayahFromPoint(latitude, longitude);
-    
+
+        // Check if location is within the required region
+        if (!wilayah || wilayah.kabupaten.toUpperCase() !== "BEKASI") {
+            await userRepo.resetSession(from);
+            return sendReply(from, createReportResponse.lokasiBukanBekasi(sapaan, nama, wilayah?.kabupaten || "wilayah lain"));
+        }
+
         const locationData = {
             type: "map",
             latitude,
@@ -27,99 +119,117 @@ module.exports = async (from, step, input) => {
             kecamatan: wilayah.kecamatan,
             kabupaten: wilayah.kabupaten
         };
-    
+
         await userRepo.updateSession(from, {
-            step: "ASK_MESSAGE",
+            step: "CONFIRM_LOCATION",
             data: { ...session.data, location: locationData }
         });
-    
-        return `Terima kasih ${nama}, lokasi sudah kami terima. Sekarang silakan ceritakan secara singkat apa yang terjadi atau apa yang ingin Anda laporkan.`;
-    }    
 
-    // STEP 2: Pesan keluhan
-    if (step === "ASK_MESSAGE") {
-        await userRepo.updateSession(from, {
-            step: "ASK_PHOTO",
-            data: { ...session.data, message: input, photos: [] }
-        });
-
-        return `Baik ${nama}, sekarang mohon kirimkan *foto pendukung* yang berkaitan dengan laporan Anda.\n\n📸 *Minimal 1 foto*, maksimal 3 foto. Jika sudah selesai mengirimkan, balas dengan ketik *selesai*.`;
+        return sendReply(from, createReportResponse.lokasiDiterima(wilayah));
     }
 
-    // STEP 3: Foto
+    // STEP 5: Confirm the location
+    if (step === "CONFIRM_LOCATION") {
+        if (lowerInput === "kirim" || affirmative) {
+            await userRepo.updateSession(from, {
+                step: "ASK_PHOTO",
+                data: { ...session.data, photos: [] }
+            });
+            return sendReply(from, createReportResponse.mintaFoto());
+        }
+
+        if (lowerInput === "batal" || negative) {
+            await userRepo.updateSession(from, {
+                step: "ASK_LOCATION",
+                data: session.data
+            });
+            return sendReply(from, createReportResponse.ulangLokasi());
+        }
+
+        return sendReply(from, createReportResponse.konfirmasiLokasi());
+    }
+
+    // STEP 6: Ask for photos (1–3)
     if (step === "ASK_PHOTO") {
         const photos = session.data.photos || [];
 
-        if (typeof input === "string" && input.toLowerCase() === "selesai") {
-            if (photos.length === 0) {
-                return `Mohon kirimkan *setidaknya 1 foto* sebelum melanjutkan.`;
-            }
+        if (typeof input === "string") {
+            if (lowerInput === "kirim" || affirmative) {
+                if (photos.length < 1) {
+                    return sendReply(from, createReportResponse.minimalFoto(sapaan, nama)); // Need at least one photo
+                }
 
-            await userRepo.updateSession(from, {
-                step: "CONFIRMATION",
-                data: { ...session.data, photos }
-            });
-
-            return `📎 Foto sudah kami terima.\n\n${nama}, jika semua data sudah benar, ketik *kirim* untuk mengirimkan laporan Anda, atau *batal* jika ingin membatalkan.`;
-        }
-
-        if (typeof input === "object" && input.type === "image") {
-            const newPhotoUrl = input.image?.url;
-            if (!newPhotoUrl) {
-                return `Maaf ${nama}, kami tidak dapat memproses foto tersebut. Coba kirim ulang fotonya.`;
-            }
-
-            const updatedPhotos = [...photos, newPhotoUrl];
-
-            if (updatedPhotos.length >= 3) {
                 await userRepo.updateSession(from, {
-                    step: "CONFIRMATION",
-                    data: { ...session.data, photos: updatedPhotos }
+                    step: "REVIEW",
+                    data: session.data
                 });
 
-                return `✅ Kami telah menerima 3 foto.\n\n${nama}, jika semua data sudah benar, ketik *kirim* untuk melanjutkan atau *batal* untuk membatalkan.`;
+                return sendReply(from, createReportResponse.ringkasanLaporan(session.data));
             }
 
+            if (lowerInput === "batal" || negative) {
+                await userRepo.resetSession(from);
+                return sendReply(from, createReportResponse.laporanDibatalkanMenu());
+            }
+
+            return sendReply(from, createReportResponse.hanyaFoto());
+        }
+
+        // Ensure that the input is a valid image URL
+        if (!input.image?.url) {
+            return sendReply(from, createReportResponse.hanyaFoto());
+        }
+
+        const newPhotoUrl = input.image.url;
+        const updatedPhotos = [...photos, newPhotoUrl];
+
+        // Allow only 3 photos
+        if (updatedPhotos.length >= 3) {
             await userRepo.updateSession(from, {
-                step: "ASK_PHOTO",
+                step: "REVIEW",
                 data: { ...session.data, photos: updatedPhotos }
             });
-
-            return `📸 Foto sudah diterima (${updatedPhotos.length}/3).\nJika sudah cukup, ketik *selesai*.`;
+            return sendReply(from, createReportResponse.sudah3Foto());
         }
 
-        return `Mohon kirimkan *foto pendukung* atau ketik *selesai* jika sudah selesai mengirim foto.`;
+        await userRepo.updateSession(from, {
+            step: "ASK_PHOTO",
+            data: { ...session.data, photos: updatedPhotos }
+        });
+
+        return sendReply(from, createReportResponse.fotoBerhasilDiterima(3 - updatedPhotos.length));
     }
 
-    // STEP 4: Konfirmasi
-    if (step === "CONFIRMATION") {
-        const msg = typeof input === "string" ? input.toLowerCase() : "";
+    // STEP 7: Review and confirm the report
+    if (step === "REVIEW") {
+        if (lowerInput === "kirim" || lowerInput === "konfirmasi" || lowerInput === "selesai" || affirmative) {
+            try {
+                const sessionId = generateSessionId(from);
+                await reportRepo.create({
+                    sessionId,
+                    from,
+                    user: user._id,
+                    message: session.data.message,
+                    location: session.data.location,
+                    photos: session.data.photos
+                });
 
-        if (msg === "kirim") {
-            const user = await userProfileRepo.findByFrom(from);
-            const sessionId = generateSessionId(from);
-
-            await reportRepo.create({
-                sessionId,
-                from,
-                user: user._id,
-                location: session.data.location,
-                message: session.data.message,
-                photos: session.data.photos || []
-            });
-
-            await userRepo.resetSession(from);
-
-            return `🎉 Terima kasih ${nama}, laporan Anda telah berhasil dikirim dengan ID *${sessionId}*.\n\nTim kami akan segera memprosesnya. Anda dapat mengecek status laporan ini kapan saja dengan memasukkan ID-nya. 🙏`;
+                await userRepo.resetSession(from);
+                const nomorLaporan = sessionId;
+                return sendReply(from, createReportResponse.laporanBerhasil(sapaan, nama, nomorLaporan));
+            } catch (err) {
+                console.error("Gagal simpan laporan:", err);
+                return sendReply(from, createReportResponse.gagalSimpanLaporan());
+            }
         }
 
-        if (msg === "batal") {
+        if (lowerInput === "batal" || negative) {
             await userRepo.resetSession(from);
-            return `Laporan dibatalkan.\nJika ingin mulai lagi, silakan pilih menu kembali.`;
+            return sendReply(from, createReportResponse.ulangLaporan());
         }
 
-        return `Ketik *kirim* untuk mengirim laporan Anda atau *batal* untuk membatalkan.`;
+        return sendReply(from, createReportResponse.ringkasanLaporan(session.data));
     }
 
-    return `Warga dengan nama ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
+    return sendReply(from, createReportResponse.handlerDefault());
 };

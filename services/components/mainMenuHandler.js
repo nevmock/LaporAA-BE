@@ -1,42 +1,117 @@
 const userRepo = require("../../repositories/userRepo");
 const userProfileRepo = require("../../repositories/userProfileRepo");
+const { combinedContext } = require("../../utils/openAiHelper");
+const mainMenuResponse = require("../responseMessage/mainMenuResponse");
+const botFlowResponse = require("../responseMessage/botFlowResponse");
 
-module.exports = async (from, input) => {
+module.exports = async (from, input, sendReply) => {
     const user = await userProfileRepo.findByFrom(from);
     const nama = user?.name || "Warga";
+    const jenisKelamin = user?.jenis_kelamin || "";
+    const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" :
+        jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
 
-    // Opsi 1: Buat laporan baru
-    if (input === "1") {
-        
-        // Jika belum terdaftar, alihkan ke proses pendaftaran
-        if (!user) {
-            await userRepo.updateSession(from, {
-                currentAction: "signup",
-                step: "ASK_NAME",
-            });
-            return `Warga belum terdaftar, tapi memilih menu 1 untuk membuat laporan. sebelum warga melanjutkan Minta nama lengkap warga Sesuai Dengan KTP.`;
-        }
+    const lowerInput = typeof input === "string" ? input?.toLowerCase?.().trim() : "";
+    let session = await userRepo.getOrCreateSession(from);
 
-        // Jika sudah terdaftar, mulai proses pembuatan laporan
+    const context = await combinedContext(input);
+
+    const promptSignup = async () => {
+        await userRepo.updateSession(from, {
+            currentAction: "signup",
+            step: "ASK_NAME",
+        });
+        return sendReply(from, mainMenuResponse.belumTerdaftar());
+    };
+
+    const promptAngrySignup = async () => {
+        await userRepo.updateSession(from, {
+            currentAction: "signup",
+            step: "ASK_NAME",
+        });
+        return sendReply(from, mainMenuResponse.angryComplaintSignup());
+    };
+
+    const promptMengeluhSignup = async () => {
+        await userRepo.updateSession(from, {
+            currentAction: "signup",
+            step: "ASK_NAME",
+        });
+        return sendReply(from, mainMenuResponse.complaintSignup());
+    };
+
+    // ✅ Reset session dan kirim menu utama
+    if (lowerInput === "menu" || lowerInput === "kembali" || lowerInput === "reset") {
+        await userRepo.resetSession(from);
+        const res1 = botFlowResponse.mainSapaan(sapaan, nama);
+        return sendReply(from, res1);
+    }
+
+    if ((session.step === "MAIN_MENU" && context === "terimakasih")) {
+        const res1 = botFlowResponse.terimakasihResponse(sapaan, nama);
+        return sendReply(from, res1);
+    }
+
+    // ✅ Greetings
+    if (session.step === "MAIN_MENU" && session.currentAction === null && (context === "greeting" && process.env.AI_CONTEXT_READER)) {
+        await userRepo.resetSession(from);
+        const res1 = botFlowResponse.mainSapaan(sapaan, nama);
+        return sendReply(from, res1);
+    }
+
+    // ✅ Buat laporan baru
+    if (session.step === "MAIN_MENU" && input === 1 || (context === "new_report" && process.env.AI_CONTEXT_READER)) {
+        if (!user) return promptSignup();
+
         await userRepo.updateSession(from, {
             currentAction: "create_report",
-            step: "ASK_LOCATION",
+            step: "ASK_MESSAGE",
             data: {},
         });
 
-        return `Warga dengan nama${nama} memilih menu 1 untuk membuat laporan, dan data dari user: ${nama} sudah ada di database. jadi bisa langsung share lokasi kejadian laporannya dengan cara menggunakan fitur share location di whatsapp.`;
+        return sendReply(from, mainMenuResponse.mulaiLaporan(sapaan, nama));
     }
 
-    // Opsi 2: Cek status laporan berdasarkan sessionId
-    if (input === "2") {
-        
+    // ✅ Cek status laporan
+    if (session.step === "MAIN_MENU" && input === 2 || (context === "check_report" && process.env.AI_CONTEXT_READER)) {
+        if (!user) return promptSignup();
+
         await userRepo.updateSession(from, {
             currentAction: "check_report",
             step: "ASK_REPORT_ID",
         });
-        return `Warga dengan nama ${nama} memilih menu 2. selanjutnya minta user untuk memasukkan ID laporan. contoh formatnya langsung saja angkanya, gausah pake LPRAA-`;
+
+        return sendReply(from, mainMenuResponse.mintaIdLaporan(sapaan, nama));
     }
 
-    // Tanggapan default jika input tidak dikenali
-    return `Warga dengan nama ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
+    // ✅ Keluhan marah
+    if (session.step === "MAIN_MENU" && input === 3 || (context === "angry_complaint" && process.env.AI_CONTEXT_READER)) {
+        if (!user) return promptAngrySignup();
+
+        await userRepo.updateSession(from, {
+            currentAction: "create_report",
+            step: "ASK_MESSAGE",
+            data: {},
+        });
+
+        return sendReply(from, mainMenuResponse.angryComplaintResponse());
+    }
+
+    // ✅ Keluhan umum
+    if (session.step === "MAIN_MENU" && input === 4 || (context === "complaint" && process.env.AI_CONTEXT_READER)) {
+        if (!user) return promptMengeluhSignup();
+
+        await userRepo.updateSession(from, {
+            currentAction: "create_report",
+            step: "ASK_MESSAGE",
+            data: {},
+        });
+
+        return sendReply(from, mainMenuResponse.complaintResponse());
+    }
+
+    // ✅ Respon default (tidak dikenali)
+    const res1 = await mainMenuResponse.menuTakDikenal(sapaan, nama);
+    const res2 = await mainMenuResponse.mainMenuDefault();
+    return sendReply(from, res1 + res2);
 };

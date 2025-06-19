@@ -1,47 +1,54 @@
 const userRepo = require("../../repositories/userRepo");
-const reportRepo = require("../../repositories/reportRepo");
 const userProfileRepo = require("../../repositories/userProfileRepo");
+const reportRepo = require("../../repositories/reportRepo");
+const checkReportResponse = require("../responseMessage/checkReportResponse");
 
-module.exports = async (from, step, input) => {
+module.exports = async (from, step, input, sendReply) => {
     const user = await userProfileRepo.findByFrom(from);
-    const nama = user?.name || "Warga";
-    // Langkah pertama: cek apakah sedang dalam tahap pengecekan laporan berdasarkan ID
+    const nama = user?.name || "Warga/i";
+    const jenisKelamin = user?.jenis_kelamin || "";
+    const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
+
+    const msg = typeof input === "string" ? input?.toLowerCase?.().trim() : "";
+
+    // Step 1: Ask for the report ID
     if (step === "ASK_REPORT_ID") {
-        // Format laporan diasumsikan diawali dengan LPRAA-
-        const report = await reportRepo.findBySessionId("LPRAA-" + input);
-
-        // Setelah pengecekan, sesi direset agar kembali ke main menu
-        await userRepo.resetSession(from);
-
-        // Jika laporan tidak ditemukan, beri pesan kegagalan
-        if (!report) {
-            return `Beritahu warga ${nama} kalau no laporan ${input} tidak ditemukan.`;
+        // Handle if the user wants to go back to the main menu
+        if (msg === "menu" || msg === "kembali") {
+            await userRepo.resetSession(from);
+            return sendReply(from, checkReportResponse.kembaliKeMenu(sapaan, nama));
         }
 
-        // Ambil informasi tindakan terbaru dari laporan jika tersedia
-        const tindakan = report?.tindakan;
+        // Validate if the input matches the expected session ID format:
+        const sessionId = input;
+        const nomorLaporan = sessionId;
 
-        // Tampilkan detail laporan secara terstruktur
-        return (
-`
-Beritahu wagra ${nama} tentang detail laporan dengan data seprti dibawah ini:
+        if (!nomorLaporan || isNaN(nomorLaporan)) {
+            // If session ID is invalid, prompt the user to enter a valid report ID
+            return sendReply(from, checkReportResponse.laporanTidakDitemukan(sapaan, nama));
+        }
 
-Laporan ${report.sessionId}
+        try {
+            // Try to find the report by session ID
+            const report = await reportRepo.findBySessionId(sessionId);
 
-Lokasi: ${report.location.description}
-Isi Laporan: ${report.message}
+            if (!report) {
+                // If no report found, inform the user
+                return sendReply(from, checkReportResponse.laporanTidakDitemukan(sapaan, nama, nomorLaporan));
+            }
 
-Tindakan Terbaru:
-OPD Terkait: ${tindakan?.opd || "-"}
-Tingkat Kedaruratan: ${tindakan?.situasi || "-"}
-Status: ${tindakan?.status || "-"}
+            // If report is found, display the details and reset the session
+            await userRepo.resetSession(from);
+            return sendReply(from, checkReportResponse.detailLaporan(sapaan, nama, nomorLaporan, report));
 
-Kesimpulan Tindakan: ${tindakan?.kesimpulan || "-"}
-`
-        );
+        } catch (error) {
+            // Handle errors like database issues
+            console.error("Error fetching report:", error);
+            return sendReply(from, checkReportResponse.errorMencariLaporan(sapaan, nama));
+        }
     }
 
-    // Jika tidak dalam kondisi ASK_REPORT_ID, reset sesi dan kembali ke menu utama
+    // Fallback if the step does not match the expected steps
     await userRepo.resetSession(from);
-    return `Warga dengan nama ${nama} memilih menu yang tidak dikenali. Silakan pilih menu yang tersedia. atau ketik 'menu' untuk melihat menu.`;
+    return sendReply(from, checkReportResponse.handlerDefault());
 };

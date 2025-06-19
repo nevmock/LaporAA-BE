@@ -11,16 +11,21 @@ const actionSchema = new mongoose.Schema({
         default: "",
     },
     kesimpulan: {
-        type: String, // Kesimpulan atau rekomendasi tindakan
-        default: "",
-    },
+        type: [
+            {
+                text: String,
+                timestamp: { type: Date, default: Date.now }
+            }
+        ],
+        default: [],
+    },       
     trackingId: {
         type: Number,
         default: null,
     },
     prioritas: {
         type: String,
-        enum: ["Ya", "Tidak"],
+        enum: ["Ya", "-"],
         default: null,
     },
     situasi: {
@@ -30,14 +35,11 @@ const actionSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Perlu Verifikasi", "Verifikasi Kelengkapan Berkas", "Proses OPD Terkait", "Selesai Penanganan", "Selesai Pengaduan", "Ditolak"],
+        enum: ["Perlu Verifikasi", "Verifikasi Situasi", "Verifikasi Kelengkapan Berkas", "Proses OPD Terkait", "Selesai Penanganan", "Selesai Pengaduan", "Ditutup"],
         default: "Perlu Verifikasi",
+        index: true
     },
     opd: {
-        type: String,
-        default: "",
-    },
-    disposisi: {
         type: String,
         default: "",
     },
@@ -55,15 +57,34 @@ const actionSchema = new mongoose.Schema({
     },
     feedbackStatus: {
         type: String,
-        enum: ["Belum Ditanya", "Sudah Ditanya", "Sudah Jawab Beres", "Sudah Jawab Belum Beres", "Selesai Ditolak", "Auto Rated"],
+        enum: ["Belum Ditanya", "Sudah Ditanya", "Sudah Jawab Beres", "Sudah Jawab Belum Beres", "Selesai Ditutup", "Auto Rated"],
         default: null,
+        index: true
     },
     rating: {
         type: Number,
         min: 1,
         max: 5,
+        default: null,
+        index: true
+    },
+    url: {
+        type: String,
         default: null
-    }
+    },
+    keterangan: {
+        type: String,
+        default: null
+    },
+    status_laporan: {
+        type: String,
+        enum: ["Menunggu Diproses OPD Terkait", "Sedang Diproses OPD Terkait", "Telah Diproses OPD Terkait"],
+        default: "Menunggu Diproses OPD Terkait",
+    },
+    hasBeenReprocessed: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 module.exports = mongoose.model("Tindakan", actionSchema);
