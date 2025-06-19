@@ -100,5 +100,5 @@ DELETE https://api.laporaabupati.com/user/user/6288218868251
 Content-Type: application/json
 
 ### Fix Ditolak
-PATCH http://localhost:3001/fix/fix-ditolak
+PATCH https://api.laporaabupati.com/fix/fix-ditolak
 
