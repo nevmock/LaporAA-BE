@@ -47,7 +47,7 @@ module.exports = async (from, step, input, sendReply) => {
             return sendReply(from, signupResponse.namaTidakValid());
         }
 
-        // Nice
+        // Nice 2
         // Format input name: Kapitalisasi kata
         const formattedName = trimmedInput
             .split(' ')
