@@ -4,6 +4,7 @@ const affirmativeInputs = [
     "konfirmasi", "kirim", "betul", "benar", "siap", "oke", "iya", "ya", "baik", "sudah", "lanjut", "sip", "mantap", "aman", "udah", "ok", "lanjutkan", "bener",
     "konfirmasi pak", "betul pak", "benar pak", "siap pak", "oke pak", "iya pak", "ya pak", "baik pak", "sudah pak", "lanjut pak", "sip pak", "mantap pak", "aman pak", "udah pak", "ok pak", "lanjutkan pak", "bener pak",
     "konfirmasi pa", "betul pa", "benar pa", "siap pa", "oke pa", "iya pa", "ya pa", "baik pa", "sudah pa", "lanjut pa", "sip pa", "mantap pa", "aman pa", "udah pa", "ok pa", "lanjutkan pa", "bener pa",
+    "cukup", "cukup pak", "cukup pa"
 ];
 
 const negativeInputs = [
@@ -27,7 +28,7 @@ const negativeInputs = [
 ];
 
 const genderInputs = {
-    male: ["pria", "laki", "laki-laki", "cowok", "cowo", "lelaki", "jantan"],
+    male: ["pria", "laki", "laki-laki", "laki laki", "cowok", "cowo", "lelaki", "jantan"],
     female: ["wanita", "perempuan", "cewek", "cewe", "betina"],
 };
 

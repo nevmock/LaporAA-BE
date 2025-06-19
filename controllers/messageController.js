@@ -9,30 +9,38 @@ const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
 
 exports.sendMessageToWhatsApp = async (to, rawMessage, mode = "bot") => {
     const url = `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_ID}/messages`;
+    const headers = {
+        Authorization: `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+        "Content-Type": "application/json",
+    };
+    const MAX_MSG_LENGTH = 4096;
+
+    // Helper: delay antar pesan
+    const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+    // ======== SPLIT TEXT JIKA PANJANG =========
+    if (typeof rawMessage === "string" && rawMessage.length > MAX_MSG_LENGTH) {
+        let idx = 0;
+        while (idx < rawMessage.length) {
+            const part = rawMessage.slice(idx, idx + MAX_MSG_LENGTH);
+            await exports.sendMessageToWhatsApp(to, part, mode);
+            await delay(700); // Biar aman, ga dibanned WA
+            idx += MAX_MSG_LENGTH;
+        }
+        return; // Penting! Biar tidak lanjut ke bawah lagi
+    }
 
     let payload;
 
-    // Jika rawMessage adalah string → kirim teks
+    // String pendek atau sudah split
     if (typeof rawMessage === "string") {
-        let message = rawMessage;
-
-        if (mode === "bot") {
-            try {
-                message = rawMessage;
-            } catch (err) {
-                console.error("❌ Gagal generate dari Gemini, fallback ke raw message");
-                message = rawMessage;
-            }
-        }
-
         payload = {
             messaging_product: "whatsapp",
             to,
             type: "text",
-            text: { body: String(message) },
+            text: { body: String(rawMessage) },
         };
     }
-
     // Jika rawMessage adalah object → kirim media
     else if (typeof rawMessage === "object" && rawMessage.type === "image") {
         payload = {
@@ -49,11 +57,7 @@ exports.sendMessageToWhatsApp = async (to, rawMessage, mode = "bot") => {
         return;
     }
 
-    const headers = {
-        Authorization: `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
-        "Content-Type": "application/json",
-    };
-
+    // Kirim pesan ke WhatsApp
     await axios.post(url, payload, { headers });
 
     // Simpan pesan ke database (opsional untuk image)
@@ -137,8 +141,6 @@ exports.sendEvidencePhotosToUser = async (photos = [], to) => {
         }
     }
 };
-
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 exports.sendTutorialImagesToUser = async (to) => {
     const tutorialImages = [
