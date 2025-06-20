@@ -20,16 +20,19 @@ router.post("/login", async (req, res) => {
         }
 
         // Buat token (opsional, bisa skip kalau belum pakai JWT)
-        const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET || "rahasia", {
+        const token = jwt.sign({ userId: user._id, role: user.role, username: user.username, nama_admin: user.nama_admin }, process.env.JWT_SECRET || "rahasia", {
             expiresIn: "1d"
         });
 
         res.json({
             message: "Login berhasil",
             token,
+            _id: user._id,
             role: user.role,
-            username: user.username
+            username: user.username,
+            nama_admin: user.nama_admin
         });
+        
     } catch (err) {
         console.error("Login error:", err);
         res.status(500).json({ message: "Terjadi kesalahan server" });

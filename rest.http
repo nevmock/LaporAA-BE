@@ -76,13 +76,14 @@ GET http://localhost:3001/userLogin
 Content-Type: application/json
 
 ### 📝 Update user login (change password or role)
-PUT http://localhost:3001/userLogin/6846de31b4b75f9855fdda9d
+PUT http://localhost:3001/userLogin/684ffeb267fb45515f4ecb87
 Content-Type: application/json
 
 {
-  "username": "admin",
-  "password": "admin777",
-  "role": "Admin"
+  "nama_admin":"Ini Adalah Super Admin",
+  "username": "superadmin",
+  "password": "superAdmin777!",
+  "role": "SuperAdmin"
 }
 
 ### ❌ Delete user login

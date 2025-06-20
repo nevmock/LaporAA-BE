@@ -61,6 +61,10 @@ const reportSchema = new mongoose.Schema({
     tindakan: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Tindakan",
+    },
+    processed_by: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "UserLogin",
     }
 }, {
     timestamps: true,

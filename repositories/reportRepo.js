@@ -24,32 +24,37 @@ exports.create = async ({ sessionId, from, user, location, message, photos, url,
 
     return await Report.findById(newReport._id)
         .populate("user")
-        .populate("tindakan");
+        .populate("tindakan")
+        .populate("processed_by");
 };
 
 exports.findAll = async () => {
     return await Report.find()
         .populate("user")
         .populate("tindakan")
+        .populate("processed_by")
         .sort({ createdAt: -1 });
 };
 
 exports.findBySessionId = async (sessionId) => {
     return await Report.findOne({ sessionId })
         .populate("user")
-        .populate("tindakan");
+        .populate("tindakan")
+        .populate("processed_by");
 };
 
 exports.findById = async (id) => {
     return await Report.findById(id)
         .populate("user")
-        .populate("tindakan");
+        .populate("tindakan")
+        .populate("processed_by");
 };
 
 exports.findByTindakanId = async (tindakanId) => {
     return await Report.findOne({ tindakan: tindakanId })
         .populate("user")
-        .populate("tindakan");
+        .populate("tindakan")
+        .populate("processed_by");
 };
 
 exports.deleteManyBySessionIds = async (sessionIds) => {
@@ -65,3 +70,11 @@ exports.deleteManyBySessionIds = async (sessionIds) => {
     return { message: `${reports.length} report dan tindakan berhasil dihapus` };
 };
 
+// Update processed_by di Report
+exports.updateProcessedBy = async (reportId, userLoginId) => {
+    return await Report.findByIdAndUpdate(
+        reportId,
+        { processed_by: userLoginId },
+        { new: true }
+    );
+};
