@@ -64,15 +64,33 @@ POST https://api.laporaabupati.com/userLogin
 Content-Type: application/json
 
 {
-  "username": "superadmin",
-  "password": "superAdmin777!",
-  "role": "SuperAdmin"
+  "nama_admin":"M. Reza A.",
+  "username": "reza",
+  "password": "reza777",
+  "role": "Admin"
 }
 
 ###
 
+Tambahan akun admin :
+
+1.⁠ ⁠Budi G.
+Pass : budi777
+
+2.⁠ ⁠⁠Yoguntara S.
+Pass : yoguntara777
+
+3.⁠ ⁠⁠Anggi A. P.
+Pass : anggi777
+
+4.⁠ ⁠⁠Tiara R. R
+Pass : tiara777
+
+5.⁠ ⁠⁠M. Reza A.
+Pass : reza777
+
 ### 📄 Get all user logins
-GET http://localhost:3001/userLogin
+GET https://api.laporaabupati.com/userLogin
 Content-Type: application/json
 
 ### 📝 Update user login (change password or role)
