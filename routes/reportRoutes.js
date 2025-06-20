@@ -69,6 +69,12 @@ router.get("/", async (req, res) => {
                 case "date":
                     sortObject["createdAt"] = sortVal;
                     break;
+                case "admin":
+                    sortObject["processed_by.nama_admin"] = sortVal;
+                    break;
+                case "from":
+                    sortObject["from"] = sortVal;
+                    break;
                 default:
                     sortObject[key] = sortVal;
             }
@@ -110,6 +116,20 @@ router.get("/", async (req, res) => {
                 }
             },
             {
+                $lookup: {
+                    from: "userlogins",
+                    localField: "processed_by",
+                    foreignField: "_id",
+                    as: "processed_by"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$processed_by",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
                 $addFields: {
                     prioritasScore: {
                         $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
@@ -128,6 +148,7 @@ router.get("/", async (req, res) => {
                         { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
                         { "tindakan.opd": { $regex: searchQuery, $options: "i" } },
                         { "user.name": { $regex: searchQuery, $options: "i" } },
+                        { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
                     ]
                 }
             }] : []),

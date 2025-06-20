@@ -140,6 +140,27 @@ router.put("/:reportId", async (req, res) => {
     }
 });
 
+// PATCH /report/:id/processed-by
+router.patch("/:id/processed-by", async (req, res) => {
+    const { id } = req.params;
+    const { userLoginId } = req.body; // Ini harus _id_ dari UserLogin
+
+    if (!userLoginId) {
+        return res.status(400).json({ message: "UserLogin ID diperlukan" });
+    }
+
+    try {
+        const updated = await reportRepo.updateProcessedBy(id, userLoginId);
+        if (!updated) {
+            return res.status(404).json({ message: "Report tidak ditemukan" });
+        }
+        res.status(200).json(updated);
+    } catch (err) {
+        console.error("Error update processed_by:", err);
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
 // === PATCH prioritas ===
 router.patch("/:reportId/prioritas", async (req, res) => {
     const { reportId } = req.params;
