@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const reportRepo = require("../repositories/reportRepo");
 const Report = require("../models/Report");
+const Tindakan = require("../models/Tindakan");
 
 // GET all reports
 // router.get("/", async (req, res) => {
@@ -28,6 +29,8 @@ router.get("/", async (req, res) => {
         const searchQuery = req.query.search?.trim();
         const rawSorts = req.query.sorts;
         const isPinned = req.query.is_pinned === 'true';
+        const opdFilter = req.query.opd?.trim();
+        const situasiFilter = req.query.situasi?.trim();
 
         const statusOrder = [
             "Perlu Verifikasi",
@@ -147,7 +150,7 @@ router.get("/", async (req, res) => {
                         { from: { $regex: searchQuery, $options: "i" } },
                         { "location.desa": { $regex: searchQuery, $options: "i" } },
                         { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.opd": { $regex: searchQuery, $options: "i" } },
+                        { "tindakan.opd": { $elemMatch: { $regex: searchQuery, $options: "i" } } },
                         { "user.name": { $regex: searchQuery, $options: "i" } },
                         { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
                         { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
@@ -159,6 +162,16 @@ router.get("/", async (req, res) => {
             ...(statusFilter && statusFilter !== "Semua" ? [{
                 $match: {
                     "tindakan.status": statusFilter
+                }
+            }] : []),
+            ...(opdFilter ? [{
+                $match: {
+                    "tindakan.opd": { $in: [opdFilter] }
+                }
+            }] : []),
+            ...(situasiFilter ? [{
+                $match: {
+                    "tindakan.situasi": situasiFilter
                 }
             }] : []),
             ...(isPinned ? [{
@@ -351,12 +364,12 @@ router.get("/summary-laporan", async (req, res) => {
                         { from: { $regex: searchQuery, $options: "i" } },
                         { "location.desa": { $regex: searchQuery, $options: "i" } },
                         { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.opd": { $regex: searchQuery, $options: "i" } },
+                        { "tindakan.opd": { $elemMatch: { $regex: searchQuery, $options: "i" } } },
                         { "user.name": { $regex: searchQuery, $options: "i" } },
                     ]
                 }
             }] : []),
-            ...(opd ? [{ $match: { "tindakan.opd": opd } }] : []),
+            ...(opd ? [{ $match: { "tindakan.opd": { $in: [opd] } } }] : []),
             ...(kecamatan ? [{ $match: { "location.kecamatan": kecamatan } }] : []),
             ...(desa ? [{ $match: { "location.desa": desa } }] : []),
 
@@ -379,6 +392,105 @@ router.get("/summary-laporan", async (req, res) => {
         res.status(200).json(result);
     } catch (error) {
         console.error("❌ Error summary:", error);
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+// GET list of all unique OPD
+router.get("/opd-list", async (req, res) => {
+    try {
+        const opdList = await Report.aggregate([
+            {
+                $lookup: {
+                    from: "tindakans",
+                    localField: "tindakan",
+                    foreignField: "_id",
+                    as: "tindakan"
+                }
+            },
+            { $unwind: { path: "$tindakan", preserveNullAndEmptyArrays: true } },
+            {
+                $match: {
+                    "tindakan.opd": { $exists: true, $ne: null, $not: { $size: 0 } }
+                }
+            },
+            // Unwind the opd array to handle multiple OPDs per report
+            { $unwind: { path: "$tindakan.opd", preserveNullAndEmptyArrays: false } },
+            {
+                $match: {
+                    "tindakan.opd": { $ne: null, $ne: "" }
+                }
+            },
+            {
+                $group: {
+                    _id: "$tindakan.opd",
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { _id: 1 }  // Sort alphabetically
+            },
+            {
+                $project: {
+                    _id: 0,
+                    opd: "$_id",
+                    count: 1
+                }
+            }
+        ]);
+
+        res.status(200).json({
+            total: opdList.length,
+            data: opdList
+        });
+    } catch (error) {
+        console.error("❌ Error fetching OPD list:", error);
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+// GET list of all unique Situasi
+router.get("/situasi-list", async (req, res) => {
+    try {
+        const situasiList = await Report.aggregate([
+            {
+                $lookup: {
+                    from: "tindakans",
+                    localField: "tindakan",
+                    foreignField: "_id",
+                    as: "tindakan"
+                }
+            },
+            { $unwind: { path: "$tindakan", preserveNullAndEmptyArrays: true } },
+            {
+                $match: {
+                    "tindakan.situasi": { $exists: true, $ne: null, $ne: "" }
+                }
+            },
+            {
+                $group: {
+                    _id: "$tindakan.situasi",
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { _id: 1 }  // Sort alphabetically
+            },
+            {
+                $project: {
+                    _id: 0,
+                    situasi: "$_id",
+                    count: 1
+                }
+            }
+        ]);
+
+        res.status(200).json({
+            total: situasiList.length,
+            data: situasiList
+        });
+    } catch (error) {
+        console.error("❌ Error fetching Situasi list:", error);
         res.status(500).json({ message: "Terjadi kesalahan pada server" });
     }
 });

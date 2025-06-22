@@ -125,7 +125,7 @@ Pass : tiara777
 Pass : reza777
 
 ### 📄 Get all user logins
-GET http://localhost:3001/userLogin
+GET https://api.laporaabupati.com/userLogin
 Content-Type: application/json
 
 ### 📝 Update user login (change password or role)
@@ -154,11 +154,13 @@ Content-Type: application/json
 PATCH https://api.laporaabupati.com/fix/fix-ditolak
 
 ### Fix Array OPD
-POST http://localhost:3001/dashboard/convert-opd-to-array
-
+POST https://api.laporaabupati.com/fix/convert-opd-to-array
 
 ###
 GET http://localhost:3001/reports/pinned
+
+###
+GET http://localhost:3001/reports/opd-list
 
 ###
 GET http://localhost:3001/reports/pinned/LPRAA-87549274
