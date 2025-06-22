@@ -29,9 +29,44 @@ Content-Type: application/json
     "kesimpulan": "Laporan sedang di kerjakan",
     "status": "Dalam Proses",
     "situasi": "Darurat",
-    "opd": "Dinas Kebersihan",
-    "photos": ["https://example.com/photo1.jpg", "https://example.com/photo2.jpg"]
+    "opd": ["Dinas Kebersihan", "Dinas Lingkungan Hidup"],
+    "photos": ["https://example.com/photo1.jpg", "https://example.com/photo2.jpg"],
+    "tag": [{"hash_tag": "PohonTumbang"}, {"hash_tag": "JalanTerhalang"}]
 }
+
+### Menambahkan tag baru
+POST http://localhost:3001/tindakan/68218eec0967afbc6b49fa23/tag
+Content-Type: application/json
+
+{
+    "hash_tag": "ButuhBantuan"
+}
+
+### Menghapus tag
+DELETE http://localhost:3001/tindakan/68218eec0967afbc6b49fa23/tag/ButuhBantuan
+
+### Memperbarui semua tag
+PUT http://localhost:3001/tindakan/68218eec0967afbc6b49fa23/tags
+Content-Type: application/json
+
+{
+    "tags": ["PohonTumbang", "JalanTerhalang", "Darurat"]
+}
+
+### Mendapatkan semua tag yang ada di sistem
+GET http://localhost:3001/tindakan/tags/all
+
+### Mencari tag untuk autocomplete (tanpa query - menampilkan populer)
+GET http://localhost:3001/tindakan/tags/search
+
+### Mencari tag untuk autocomplete (dengan query)
+GET http://localhost:3001/tindakan/tags/search?q=Pohon
+
+### Mencari tag untuk autocomplete (query lain)
+GET http://localhost:3001/tindakan/tags/search?q=Jal
+
+### Mencari tindakan berdasarkan tag
+GET http://localhost:3001/tindakan/tags/PohonTumbang
 
 ###
 GET http://localhost:3001/dashboard/efisiensi
@@ -90,18 +125,15 @@ Pass : tiara777
 Pass : reza777
 
 ### 📄 Get all user logins
-GET https://api.laporaabupati.com/userLogin
+GET http://localhost:3001/userLogin
 Content-Type: application/json
 
 ### 📝 Update user login (change password or role)
-PUT http://localhost:3001/userLogin/684ffeb267fb45515f4ecb87
+PUT http://localhost:3001/userLogin/684cec88272df89959c18200
 Content-Type: application/json
 
 {
-  "nama_admin":"Ini Adalah Super Admin",
-  "username": "superadmin",
-  "password": "superAdmin777!",
-  "role": "SuperAdmin"
+  "nama_admin":"Boro Ganteng"
 }
 
 ### ❌ Delete user login
@@ -121,3 +153,19 @@ Content-Type: application/json
 ### Fix Ditolak
 PATCH https://api.laporaabupati.com/fix/fix-ditolak
 
+### Fix Array OPD
+POST http://localhost:3001/dashboard/convert-opd-to-array
+
+
+###
+GET http://localhost:3001/reports/pinned
+
+###
+GET http://localhost:3001/reports/pinned/LPRAA-87549274
+
+### Get report's pin status (may be pinned or unpinned)
+GET http://localhost:3001/reports/pinned/87548050
+
+### Toggle pin status by sessionId
+PUT http://localhost:3001/reports/session/87548050/toggle-pin
+Content-Type: application/json

@@ -12,7 +12,7 @@ exports.create = async ({ sessionId, from, user, location, message, photos, url,
         prioritas: null,
         situasi: null,
         status: "Perlu Verifikasi",
-        opd: "",
+        opd: [],
         photos: [],
         url: "",
         keterangan: "",
@@ -77,4 +77,60 @@ exports.updateProcessedBy = async (reportId, userLoginId) => {
         { processed_by: userLoginId },
         { new: true }
     );
+};
+
+// Toggle status is_pinned
+exports.togglePinned = async (reportId) => {
+    const report = await Report.findById(reportId);
+    if (!report) {
+        throw new Error('Report not found');
+    }
+    
+    report.is_pinned = !report.is_pinned;
+    await report.save();
+    
+    return report;
+};
+
+// Toggle status is_pinned by sessionId
+exports.togglePinnedBySessionId = async (sessionId) => {
+    const report = await Report.findOne({ sessionId });
+    if (!report) {
+        throw new Error('Report not found');
+    }
+    
+    report.is_pinned = !report.is_pinned;
+    await report.save();
+    
+    return await Report.findById(report._id)
+        .populate("user")
+        .populate("tindakan")
+        .populate("processed_by");
+};
+
+// Find all pinned reports
+exports.findAllPinned = async () => {
+    return await Report.find({ is_pinned: true })
+        .populate("user")
+        .populate("tindakan")
+        .populate("processed_by")
+        .sort({ createdAt: -1 });
+};
+
+// Find pinned report by sessionId
+exports.findPinnedBySessionId = async (sessionId) => {
+    return await Report.findOne({ sessionId, is_pinned: true })
+        .populate("user")
+        .populate("tindakan")
+        .populate("processed_by");
+};
+
+// Check pin status of a report by sessionId - returns report with pin status info
+exports.checkPinStatusBySessionId = async (sessionId) => {
+    const report = await Report.findOne({ sessionId })
+        .populate("user")
+        .populate("tindakan")
+        .populate("processed_by");
+    
+    return report;
 };
