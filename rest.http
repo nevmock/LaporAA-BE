@@ -171,3 +171,9 @@ GET http://localhost:3001/reports/pinned/87548050
 ### Toggle pin status by sessionId
 PUT http://localhost:3001/reports/session/87548050/toggle-pin
 Content-Type: application/json
+
+###
+GET http://localhost:3001/reports/test
+
+###
+GET http://localhost:3001/reports/opd-list
