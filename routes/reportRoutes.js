@@ -399,6 +399,7 @@ router.get("/summary-laporan", async (req, res) => {
 // GET list of all unique OPD
 router.get("/opd-list", async (req, res) => {
     try {
+        // Use direct aggregation on Tindakan collection for better performance
         const opdList = await Report.aggregate([
             {
                 $lookup: {
@@ -408,17 +409,17 @@ router.get("/opd-list", async (req, res) => {
                     as: "tindakan"
                 }
             },
-            { $unwind: { path: "$tindakan", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$tindakan", preserveNullAndEmptyArrays: false } },
             {
                 $match: {
-                    "tindakan.opd": { $exists: true, $ne: null, $not: { $size: 0 } }
+                    "tindakan.opd": { $exists: true, $type: "array", $not: { $size: 0 } }
                 }
             },
             // Unwind the opd array to handle multiple OPDs per report
-            { $unwind: { path: "$tindakan.opd", preserveNullAndEmptyArrays: false } },
+            { $unwind: { path: "$tindakan.opd" } },
             {
                 $match: {
-                    "tindakan.opd": { $ne: null, $ne: "" }
+                    "tindakan.opd": { $ne: null, $ne: "", $type: "string" }
                 }
             },
             {
@@ -437,7 +438,7 @@ router.get("/opd-list", async (req, res) => {
                     count: 1
                 }
             }
-        ]);
+        ]).allowDiskUse(true); // Allow disk usage for large datasets
 
         res.status(200).json({
             total: opdList.length,
@@ -446,6 +447,21 @@ router.get("/opd-list", async (req, res) => {
     } catch (error) {
         console.error("❌ Error fetching OPD list:", error);
         res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+// GET simple test endpoint
+router.get("/test", async (req, res) => {
+    try {
+        const count = await Report.countDocuments();
+        res.status(200).json({ 
+            message: "API working", 
+            totalReports: count,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error("❌ Error in test endpoint:", error);
+        res.status(500).json({ message: "Database connection error" });
     }
 });
 
