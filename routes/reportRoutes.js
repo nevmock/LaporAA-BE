@@ -27,6 +27,7 @@ router.get("/", async (req, res) => {
         const statusFilter = req.query.status;
         const searchQuery = req.query.search?.trim();
         const rawSorts = req.query.sorts;
+        const isPinned = req.query.is_pinned === 'true';
 
         const statusOrder = [
             "Perlu Verifikasi",
@@ -149,6 +150,9 @@ router.get("/", async (req, res) => {
                         { "tindakan.opd": { $regex: searchQuery, $options: "i" } },
                         { "user.name": { $regex: searchQuery, $options: "i" } },
                         { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
+                        { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
+                        { "tindakan.tag": { $regex: searchQuery, $options: "i" } }, // optional: string tag in array
+                        { "tags": { $regex: searchQuery, $options: "i" } }, // optional: legacy root-level tags
                     ]
                 }
             }] : []),
@@ -157,8 +161,22 @@ router.get("/", async (req, res) => {
                     "tindakan.status": statusFilter
                 }
             }] : []),
+            ...(isPinned ? [{
+                $match: {
+                    "is_pinned": true
+                }
+            }] : []),
             { $sort: sortObject },
         ];
+
+        // Tambahkan filter is_pinned jika ada di query
+        if (typeof req.query.is_pinned !== "undefined") {
+            basePipeline.push({
+                $match: {
+                    is_pinned: req.query.is_pinned === "true"
+                }
+            });
+        }
 
         const pipeline = [
             ...basePipeline,
@@ -436,6 +454,88 @@ router.delete("/", async (req, res) => {
         res.status(200).json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+// GET all pinned reports
+router.get("/pinned", async (req, res) => {
+    try {
+        const pinnedReports = await reportRepo.findAllPinned();
+
+        if (!pinnedReports || pinnedReports.length === 0) {
+            return res.status(404).json({ message: "Tidak ada laporan yang dipin" });
+        }
+
+        res.status(200).json(pinnedReports);
+    } catch (error) {
+        console.error("Error fetching pinned reports:", error);
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+// GET pinned report by sessionId
+router.get("/pinned/:sessionId", async (req, res) => {
+    try {
+        const sessionId = req.params.sessionId;
+        // First check if the report exists at all, regardless of pin status
+        const report = await reportRepo.checkPinStatusBySessionId(sessionId);
+
+        if (!report) {
+            // Report doesn't exist at all
+            return res.status(404).json({ message: "Laporan dengan sessionId tersebut tidak ditemukan" });
+        }
+
+        if (!report.is_pinned) {
+            // Report exists but isn't pinned
+            return res.status(202).json({
+                message: "Laporan belum dipin",
+                // report: report 
+            });
+        }
+
+        // Report exists and is pinned
+        res.status(200).json(report);
+    } catch (error) {
+        console.error("Error fetching pinned report by sessionId:", error);
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+// Toggle pin status of a report by ID (keeping for backward compatibility)
+router.put("/:id/toggle-pin", async (req, res) => {
+    try {
+        const reportId = req.params.id;
+        const updatedReport = await reportRepo.togglePinned(reportId);
+
+        res.status(200).json({
+            message: updatedReport.is_pinned ? "Laporan berhasil dipin" : "Laporan berhasil diunpin",
+            report: updatedReport
+        });
+    } catch (error) {
+        console.error("Error toggling pin status:", error);
+        if (error.message === 'Report not found') {
+            return res.status(404).json({ message: "Laporan tidak ditemukan" });
+        }
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+// Toggle pin status of a report by sessionId
+router.put("/session/:sessionId/toggle-pin", async (req, res) => {
+    try {
+        const sessionId = req.params.sessionId;
+        const updatedReport = await reportRepo.togglePinnedBySessionId(sessionId);
+
+        res.status(200).json({
+            message: updatedReport.is_pinned ? "Laporan berhasil dipin" : "Laporan berhasil diunpin",
+            report: updatedReport
+        });
+    } catch (error) {
+        console.error("Error toggling pin status by sessionId:", error);
+        if (error.message === 'Report not found') {
+            return res.status(404).json({ message: "Laporan tidak ditemukan" });
+        }
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
     }
 });
 

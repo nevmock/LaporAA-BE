@@ -65,6 +65,10 @@ const reportSchema = new mongoose.Schema({
     processed_by: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "UserLogin",
+    },
+    is_pinned: {
+        type: Boolean,
+        default: false,
     }
 }, {
     timestamps: true,

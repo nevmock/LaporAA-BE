@@ -36,6 +36,13 @@ exports.appendPendingFeedback = async (from, tindakanId) => {
     );
 };
 
+exports.appendPendingFeedbacks = async (from, tindakanIds) => {
+    await UserSession.updateOne(
+        { from },
+        { $addToSet: { pendingFeedbackFor: { $each: tindakanIds } } } // hindari duplikat
+    );
+};
+
 exports.resetSession = async (from) => {
     return await UserSession.findOneAndUpdate(
         { from },
