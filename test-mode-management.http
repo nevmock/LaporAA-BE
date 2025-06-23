@@ -1,0 +1,205 @@
+### Mode Management API - Pengelolaan Terpusat
+
+# Test user number
+@userNumber = 6281234567890
+@baseUrl = http://localhost:3001
+
+# =========================
+# FORCE MODE (Saklar Utama)
+# =========================
+
+### Aktivasi Force Mode Manual (TIDAK ADA TIMEOUT)
+POST {{baseUrl}}/mode/force/{{userNumber}}
+Content-Type: application/json
+
+{
+  "force": true
+}
+
+### Nonaktifkan Force Mode Manual
+POST {{baseUrl}}/mode/force/{{userNumber}}
+Content-Type: application/json
+
+{
+  "force": false
+}
+
+### Error test - invalid parameter
+POST {{baseUrl}}/mode/force/{{userNumber}}
+Content-Type: application/json
+
+{
+  "force": "invalid"
+}
+
+# ========================
+# MANUAL MODE WITH TIMEOUT
+# ========================
+
+### Set Manual Mode dengan timeout 5 menit
+POST {{baseUrl}}/mode/manual/{{userNumber}}
+Content-Type: application/json
+
+{
+  "minutes": 5
+}
+
+### Set Manual Mode dengan timeout 0.1 menit (6 detik)
+POST {{baseUrl}}/mode/manual/{{userNumber}}
+Content-Type: application/json
+
+{
+  "minutes": 0.1
+}
+
+### Test ketika force mode aktif (should fail)
+POST {{baseUrl}}/mode/force/{{userNumber}}
+Content-Type: application/json
+
+{
+  "force": true
+}
+
+###
+POST {{baseUrl}}/mode/manual/{{userNumber}}
+Content-Type: application/json
+
+{
+  "minutes": 5
+}
+
+# =============
+# MODE BIASA
+# =============
+
+### Set mode ke manual (tanpa timeout)
+PUT {{baseUrl}}/mode/{{userNumber}}
+Content-Type: application/json
+
+{
+  "mode": "manual"
+}
+
+### Set mode ke bot
+PUT {{baseUrl}}/mode/{{userNumber}}
+Content-Type: application/json
+
+{
+  "mode": "bot"
+}
+
+### Reset mode ke default (bot)
+DELETE {{baseUrl}}/mode/{{userNumber}}
+
+# ====================
+# INFO & MONITORING
+# ====================
+
+### Get mode info user
+GET {{baseUrl}}/mode/{{userNumber}}
+
+### Check apakah user dalam manual mode
+GET {{baseUrl}}/mode/{{userNumber}}/is-manual
+
+### Get semua user dalam mode manual
+GET {{baseUrl}}/mode/manual/list
+
+### Cleanup expired sessions
+POST {{baseUrl}}/mode/cleanup
+
+# =====================
+# SKENARIO TESTING
+# =====================
+
+### Skenario 1: Force Mode Override
+# 1. Set manual mode dengan timeout
+POST {{baseUrl}}/mode/manual/{{userNumber}}
+Content-Type: application/json
+
+{
+  "minutes": 10
+}
+
+###
+# 2. Aktivasi force mode (akan menghapus timeout)
+POST {{baseUrl}}/mode/force/{{userNumber}}
+Content-Type: application/json
+
+{
+  "force": true
+}
+
+###
+# 3. Cek status (timeout harus null)
+GET {{baseUrl}}/mode/{{userNumber}}
+
+###
+# 4. Matikan force mode
+POST {{baseUrl}}/mode/force/{{userNumber}}
+Content-Type: application/json
+
+{
+  "force": false
+}
+
+###
+# 5. Cek status final (harus bot mode)
+GET {{baseUrl}}/mode/{{userNumber}}
+
+### Skenario 2: Timeout Expiry Test
+# 1. Set manual mode dengan timeout 0.1 menit
+POST {{baseUrl}}/mode/manual/{{userNumber}}
+Content-Type: application/json
+
+{
+  "minutes": 0.1
+}
+
+###
+# 2. Tunggu 7 detik lalu cek (harus sudah expired)
+GET {{baseUrl}}/mode/{{userNumber}}
+
+### Skenario 3: Force Mode vs Manual Mode
+# 1. Aktivasi force mode
+POST {{baseUrl}}/mode/force/{{userNumber}}
+Content-Type: application/json
+
+{
+  "force": true
+}
+
+###
+# 2. Coba set manual mode (harus gagal)
+POST {{baseUrl}}/mode/manual/{{userNumber}}
+Content-Type: application/json
+
+{
+  "minutes": 5
+}
+
+###
+# 3. Coba set mode biasa (harus gagal)
+PUT {{baseUrl}}/mode/{{userNumber}}
+Content-Type: application/json
+
+{
+  "mode": "bot"
+}
+
+###
+# 4. Reset force mode
+POST {{baseUrl}}/mode/force/{{userNumber}}
+Content-Type: application/json
+
+{
+  "force": false
+}
+
+###
+# 5. Sekarang set mode biasa harus berhasil
+PUT {{baseUrl}}/mode/{{userNumber}}
+Content-Type: application/json
+
+{
+  "mode": "bot"
+}

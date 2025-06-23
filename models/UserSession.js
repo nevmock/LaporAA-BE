@@ -50,6 +50,27 @@ userSessionSchema.methods.activateManualMode = function (minutes = 1) {
   return this.save();
 };
 
+// Method untuk mengecek mode efektif berdasarkan forceModeManual dan timeout
+userSessionSchema.methods.getEffectiveMode = function () {
+  // Jika forceModeManual diaktifkan, selalu manual
+  if (this.forceModeManual) {
+    return "manual";
+  }
+  
+  // Jika mode manual dan ada timeout, cek apakah sudah expired
+  if (this.mode === "manual" && this.manualModeUntil) {
+    if (new Date() > this.manualModeUntil) {
+      // Timeout expired, kembalikan ke bot mode
+      this.mode = "bot";
+      this.manualModeUntil = null;
+      this.save();
+      return "bot";
+    }
+  }
+  
+  return this.mode;
+};
+
 // import ini untuk mengaktifkan mode manual
 // await session.activateManualMode(); // Default: 1 menit
 
