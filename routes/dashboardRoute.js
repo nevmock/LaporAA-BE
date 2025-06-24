@@ -152,7 +152,7 @@ router.get("/map", async (req, res) => {
                 },
             },
 
-            ...(status && status !== "Semua"
+            ...(status && status !== "Semua Status"
                 ? [
                     {
                         $match: {

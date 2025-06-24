@@ -155,11 +155,12 @@ router.get("/", async (req, res) => {
                         { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
                         { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
                         { "tindakan.tag": { $regex: searchQuery, $options: "i" } }, // optional: string tag in array
-                        { "tags": { $regex: searchQuery, $options: "i" } }, // optional: legacy root-level tags
+                        { "tags": { $regex: searchQuery, $options: "i" } },
+                        { "processed_by": { $regex: searchQuery, $options: "i" } }, // optional: legacy root-level tags
                     ]
                 }
             }] : []),
-            ...(statusFilter && statusFilter !== "Semua" ? [{
+            ...(statusFilter ? [{
                 $match: {
                     "tindakan.status": statusFilter
                 }
@@ -399,7 +400,7 @@ router.get("/summary-laporan", async (req, res) => {
 // GET list of all unique OPD
 router.get("/opd-list", async (req, res) => {
     try {
-        // Use direct aggregation on Tindakan collection for better performance
+        // Pipeline untuk mendapatkan daftar OPD dengan count masing-masing
         const opdList = await Report.aggregate([
             {
                 $lookup: {
@@ -440,8 +441,32 @@ router.get("/opd-list", async (req, res) => {
             }
         ]).allowDiskUse(true); // Allow disk usage for large datasets
 
+        // Pipeline terpisah untuk menghitung total laporan yang memiliki OPD
+        const totalReportsWithOPD = await Report.aggregate([
+            {
+                $lookup: {
+                    from: "tindakans",
+                    localField: "tindakan",
+                    foreignField: "_id",
+                    as: "tindakan"
+                }
+            },
+            { $unwind: { path: "$tindakan", preserveNullAndEmptyArrays: false } },
+            {
+                $match: {
+                    "tindakan.opd": { $exists: true, $type: "array", $not: { $size: 0 } }
+                }
+            },
+            {
+                $count: "total"
+            }
+        ]);
+
+        const totalReports = totalReportsWithOPD[0]?.total || 0;
+
         res.status(200).json({
-            total: opdList.length,
+            total: totalReports, // Total laporan yang memiliki OPD
+            totalOPD: opdList.length, // Jumlah OPD unik
             data: opdList
         });
     } catch (error) {
@@ -501,8 +526,32 @@ router.get("/situasi-list", async (req, res) => {
             }
         ]);
 
+        // Pipeline terpisah untuk menghitung total laporan yang memiliki situasi
+        const totalReportsWithSituasi = await Report.aggregate([
+            {
+                $lookup: {
+                    from: "tindakans",
+                    localField: "tindakan",
+                    foreignField: "_id",
+                    as: "tindakan"
+                }
+            },
+            { $unwind: { path: "$tindakan", preserveNullAndEmptyArrays: true } },
+            {
+                $match: {
+                    "tindakan.situasi": { $exists: true, $ne: null, $ne: "" }
+                }
+            },
+            {
+                $count: "total"
+            }
+        ]);
+
+        const totalReports = totalReportsWithSituasi[0]?.total || 0;
+
         res.status(200).json({
-            total: situasiList.length,
+            total: totalReports, // Total laporan yang memiliki situasi
+            totalSituasi: situasiList.length, // Jumlah situasi unik
             data: situasiList
         });
     } catch (error) {
