@@ -321,13 +321,12 @@ router.get("/summary-laporan", async (req, res) => {
             "Ditutup"
         ];
 
-        // Ambil filter selain status
+        // Ambil semua filter yang sama dengan endpoint utama (KECUALI statusFilter)
         const searchQuery = req.query.search?.trim();
-        const opd = req.query.opd?.trim();
-        const kecamatan = req.query.kecamatan?.trim();
-        const desa = req.query.desa?.trim();
+        const opdFilter = req.query.opd?.trim();
+        const situasiFilter = req.query.situasi?.trim();
 
-        // Pipeline mirip data utama, TAPI **TIDAK ADA filter status**
+        // Pipeline yang sama dengan endpoint utama, TAPI **TIDAK ADA filter status**
         const basePipeline = [
             {
                 $lookup: {
@@ -337,7 +336,12 @@ router.get("/summary-laporan", async (req, res) => {
                     as: "user"
                 }
             },
-            { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+            {
+                $unwind: {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
             {
                 $lookup: {
                     from: "tindakans",
@@ -346,8 +350,36 @@ router.get("/summary-laporan", async (req, res) => {
                     as: "tindakan"
                 }
             },
-            { $unwind: { path: "$tindakan", preserveNullAndEmptyArrays: true } },
-
+            {
+                $unwind: {
+                    path: "$tindakan",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "userlogins",
+                    localField: "processed_by",
+                    foreignField: "_id",
+                    as: "processed_by"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$processed_by",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    prioritasScore: {
+                        $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
+                    },
+                    statusScore: {
+                        $indexOfArray: [statusOrder, "$tindakan.status"]
+                    }
+                }
+            },
             ...(searchQuery ? [{
                 $match: {
                     $or: [
@@ -357,13 +389,30 @@ router.get("/summary-laporan", async (req, res) => {
                         { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
                         { "tindakan.opd": { $elemMatch: { $regex: searchQuery, $options: "i" } } },
                         { "user.name": { $regex: searchQuery, $options: "i" } },
+                        { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
+                        { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
+                        { "tindakan.tag": { $regex: searchQuery, $options: "i" } }, // optional: string tag in array
+                        { "tags": { $regex: searchQuery, $options: "i" } },
+                        { "processed_by": { $regex: searchQuery, $options: "i" } }, // optional: legacy root-level tags
                     ]
                 }
             }] : []),
-            ...(opd ? [{ $match: { "tindakan.opd": { $in: [opd] } } }] : []),
-            ...(kecamatan ? [{ $match: { "location.kecamatan": kecamatan } }] : []),
-            ...(desa ? [{ $match: { "location.desa": desa } }] : []),
-
+            // TIDAK ADA statusFilter disini karena ini untuk summary
+            ...(opdFilter ? [{
+                $match: {
+                    "tindakan.opd": { $in: [opdFilter] }
+                }
+            }] : []),
+            ...(situasiFilter ? [{
+                $match: {
+                    "tindakan.situasi": situasiFilter
+                }
+            }] : []),
+            ...(typeof req.query.is_pinned !== "undefined" ? [{
+                $match: {
+                    "is_pinned": req.query.is_pinned === "true"
+                }
+            }] : []),
             {
                 $group: {
                     _id: "$tindakan.status",
