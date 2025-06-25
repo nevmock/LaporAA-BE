@@ -100,11 +100,11 @@ exports.sendMessageHandler = async (req, res) => {
         if (mode === "manual") {
             let label = "";
             if (role === "Admin") {
-                label = `\n\n- Admin${nama_admin ? " : " + nama_admin : ""}`;
+                label = `\n\n-Admin ${nama_admin ? " : " + nama_admin : ""}`;
             } else if (role === "SuperAdmin") {
-                label = "\n\n- Superadmin";
+                label = "\n\n-Superadmin";
             } else if (role === "Bupati") {
-                label = "\n\n- Bupati";
+                label = "\n\n-Bupati";
             }
             rawMessage += label;
         }
