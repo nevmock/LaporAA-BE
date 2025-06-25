@@ -110,7 +110,7 @@ app.use("/fix", fix);
 app.use("/mode", modeRoutes); // Routes terpusat untuk pengelolaan mode
 
 // Apply authMiddleware to all routes except /webhook
-// app.use(authMiddleware);
+app.use(authMiddleware);
 
 app.use("/reports", reportRoutes);
 app.use("/dashboard", dashboardRoute); 
