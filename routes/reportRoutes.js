@@ -28,7 +28,6 @@ router.get("/", async (req, res) => {
         const statusFilter = req.query.status;
         const searchQuery = req.query.search?.trim();
         const rawSorts = req.query.sorts;
-        const isPinned = req.query.is_pinned === 'true';
         const opdFilter = req.query.opd?.trim();
         const situasiFilter = req.query.situasi?.trim();
 
@@ -175,22 +174,13 @@ router.get("/", async (req, res) => {
                     "tindakan.situasi": situasiFilter
                 }
             }] : []),
-            ...(isPinned ? [{
+            ...(typeof req.query.is_pinned !== "undefined" ? [{
                 $match: {
-                    "is_pinned": true
+                    "is_pinned": req.query.is_pinned === "true"
                 }
             }] : []),
             { $sort: sortObject },
         ];
-
-        // Tambahkan filter is_pinned jika ada di query
-        if (typeof req.query.is_pinned !== "undefined") {
-            basePipeline.push({
-                $match: {
-                    is_pinned: req.query.is_pinned === "true"
-                }
-            });
-        }
 
         const pipeline = [
             ...basePipeline,
