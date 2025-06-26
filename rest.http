@@ -129,11 +129,11 @@ GET https://api.laporaabupati.com/userLogin
 Content-Type: application/json
 
 ### 📝 Update user login (change password or role)
-PUT https://api.laporaabupati.com/userLogin/6850a5d4cffdb8546a952c8a
+PUT https://api.laporaabupati.com/userLogin/6849b4dc626cd56898c9dcab
 Content-Type: application/json
 
 {
-  "nama_admin":"Super Admin"
+  "nama_admin":"Bupati"
 }
 
 ### ❌ Delete user login
