@@ -48,7 +48,6 @@ jobs:
             echo "🚀 Running new container..."
             docker run -d \
               --name laporaa-api-dev \
-              --network host \
               --restart unless-stopped \
               -e NODE_ENV=production \
               -e PORT=3000 \
