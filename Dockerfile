@@ -11,9 +11,6 @@ RUN npm install
 # Salin seluruh source code
 COPY . .
 
-# Build aplikasi
-RUN npm run build
-
 # Ubah port ke 5XXX untuk lingkungan development
 EXPOSE 3000
 
