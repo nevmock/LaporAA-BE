@@ -30,8 +30,8 @@ const actionSchema = new mongoose.Schema({
     },
     situasi: {
         type: String,
-        enum: ["Darurat", "Permintaan Informasi", "Berpengawasan", "Tidak Berpengawasan"],
-        default: null,
+        enum: ["", "Darurat", "Permintaan Informasi", "Berpengawasan", "Tidak Berpengawasan"],
+        default: "",
     },
     status: {
         type: String,
