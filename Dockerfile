@@ -1,5 +1,5 @@
-# Gunakan Node.js versi 22 berbasis Debian
-FROM node:22
+# Gunakan image Node.js resmi versi LTS
+FROM node:20-alpine
 
 # Set working directory di dalam container
 WORKDIR /app
@@ -18,4 +18,4 @@ RUN npm run build
 EXPOSE 3000
 
 # Jalankan aplikasi
-CMD ["npm", "run", "start"]
+CMD ["node", "app.js"]
