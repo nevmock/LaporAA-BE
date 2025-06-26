@@ -26,10 +26,10 @@ jobs:
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: 🛠 Build Docker Image
-        run: docker build -t laporaa2/laporaa-api-dev:latest .
+        run: docker build -t nevmock/laporaa-api-dev:latest .
 
       - name: 📤 Push Docker Image
-        run: docker push laporaa2/laporaa-api-dev:latest
+        run: docker push nevmock/laporaa-api-dev:latest
 
       - name: 🚢 Deploy to VPS Server
         uses: appleboy/ssh-action@master
@@ -39,7 +39,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "🔁 Pulling latest Docker image..."
-            docker pull laporaa2/laporaa-api-dev:latest
+            docker pull nevmock/laporaa-api-dev:latest
 
             echo "🛑 Stopping and removing old container (if exists)..."
             docker stop laporaa-api-dev || true
@@ -65,7 +65,7 @@ jobs:
               -e MAX_REPORT_PER_DAY="${{ secrets.MAX_REPORT_PER_DAY }}" \
               -p "${{ secrets.PORT }}":3000 \
               -v laporaa-api-dev:/app/public \
-              laporaa2/laporaa-api-dev:latest
+              nevmock/laporaa-api-dev:latest
 
             echo "🧹 Cleaning up unused Docker resources..."
             docker system prune -f
