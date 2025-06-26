@@ -2,6 +2,7 @@
 const mongoose = require("mongoose");
 
 const userLoginSchema = new mongoose.Schema({
+    nama_admin: { type: String, required: true },
     username: { type: String, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ["Admin", "Bupati", "SuperAdmin"], required: true },

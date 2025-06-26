@@ -32,11 +32,10 @@ module.exports = async (from, step, input, sendReply) => {
 
     // STEP 1: Masukkan nama
     if (step === "ASK_NAME" && currentAction === "signup") {
-        if (!input || input.trim() === "") {
+        if (!input || (typeof input !== "string" && typeof input !== "number") || input.toString().trim() === "") {
             return sendReply(from, signupResponse.namaTidakValid());
         }
-
-        const trimmedInput = input.trim();
+        const trimmedInput = input.toString().trim();
 
         // Validasi panjang nama
         if (trimmedInput.length > 30) {
@@ -48,6 +47,7 @@ module.exports = async (from, step, input, sendReply) => {
             return sendReply(from, signupResponse.namaTidakValid());
         }
 
+        // Nice 3
         // Format input name: Kapitalisasi kata
         const formattedName = trimmedInput
             .split(' ')

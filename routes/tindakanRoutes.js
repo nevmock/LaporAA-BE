@@ -52,7 +52,7 @@ router.put("/:reportId", async (req, res) => {
     const { reportId } = req.params;
     const {
         hasil, kesimpulan, trackingId, prioritas, situasi, status,
-        opd, photos, url, keterangan, status_laporan
+        opd, photos, url, keterangan, status_laporan, tag
     } = req.body;
 
     try {
@@ -68,7 +68,8 @@ router.put("/:reportId", async (req, res) => {
             photos,
             url,
             keterangan,
-            status_laporan
+            status_laporan,
+            tag
         });
 
         const report = await reportRepo.findById(reportId);
@@ -93,38 +94,39 @@ router.put("/:reportId", async (req, res) => {
             await tindakanDarurat.save();
         }
 
-        // === CASE SELESAI ===
+        // === CASE SELESAI PENANGANAN ===
         if (status === "Selesai Penanganan") {
-            const formattedKesimpulan = (tindakan.kesimpulan || []).map(k => `- ${k.text}`).join("\n");
-            const chunks = splitIntoChunks(formattedKesimpulan, 2500);
+            // Jika sudah pernah di-reprocess, langsung finalisasi tanpa minta feedback
+            if (tindakan.hasBeenReprocessed) {
+                tindakan.status = "Selesai Pengaduan";
+                tindakan.feedbackStatus = "Auto Rated";
+                tindakan.rating = 5;
+                await tindakan.save();
 
-            await sendEvidencePhotosToUser(tindakan.photos, from);
+                const message = tindakanResponse.finalizeAndAskNewReport(sapaan, user.name);
+                await sendMessageToWhatsApp(from, message);
+                await userRepo.removePendingFeedback(from, tindakan._id);
+            } else {
+                // Proses normal: kirim kesimpulan dan minta feedback
+                const formattedKesimpulan = (tindakan.kesimpulan || []).map(k => `- ${k.text}`).join("\n");
+                const chunks = splitIntoChunks(formattedKesimpulan, 2500);
 
-            const openingMessage = tindakanResponse.selesaiPenangananMessage(
-                sapaan, user.name, report.sessionId, chunks[0]
-            );
-            await sendMessageToWhatsApp(from, openingMessage);
+                await sendEvidencePhotosToUser(tindakan.photos, from);
 
-            for (let i = 1; i < chunks.length; i++) {
-                await sendMessageToWhatsApp(from, chunks[i]);
+                const openingMessage = tindakanResponse.selesaiPenangananMessage(
+                    sapaan, user.name, report.sessionId, chunks[0]
+                );
+                await sendMessageToWhatsApp(from, openingMessage);
+
+                for (let i = 1; i < chunks.length; i++) {
+                    await sendMessageToWhatsApp(from, chunks[i]);
+                }
+
+                const tindakanFromDb = await tindakanRepo.findById(tindakan._id);
+                tindakanFromDb.feedbackStatus = "Sudah Ditanya";
+                await tindakanFromDb.save();
+                await userRepo.appendPendingFeedback(from, tindakan._id);
             }
-
-            const tindakanFromDb = await tindakanRepo.findById(tindakan._id);
-            tindakanFromDb.feedbackStatus = "Sudah Ditanya";
-            await tindakanFromDb.save();
-            await userRepo.appendPendingFeedback(from, tindakan._id);
-        }
-
-        // === CASE SELESAI OTOMATIS SETELAH REPROCESS ===
-        if (status === "Proses OPD Terkait" && tindakan.hasBeenReprocessed) {
-            tindakan.status = "Selesai Pengaduan";
-            tindakan.feedbackStatus = "Auto Rated";
-            tindakan.rating = 5;
-            await tindakan.save();
-
-            const message = tindakanResponse.finalizeAndAskNewReport(sapaan, user.name);
-            await sendMessageToWhatsApp(from, message);
-            await userRepo.removePendingFeedback(from, tindakan._id);
         }
 
         // === CASE Ditutup ===
@@ -137,6 +139,27 @@ router.put("/:reportId", async (req, res) => {
     } catch (error) {
         console.error("Error updating action:", error);
         res.status(500).json({ message: error.message || "Terjadi kesalahan pada server" });
+    }
+});
+
+// PATCH /report/:id/processed-by
+router.patch("/:id/processed-by", async (req, res) => {
+    const { id } = req.params;
+    const { userLoginId } = req.body; // Ini harus _id_ dari UserLogin
+
+    if (!userLoginId) {
+        return res.status(400).json({ message: "UserLogin ID diperlukan" });
+    }
+
+    try {
+        const updated = await reportRepo.updateProcessedBy(id, userLoginId);
+        if (!updated) {
+            return res.status(404).json({ message: "Report tidak ditemukan" });
+        }
+        res.status(200).json(updated);
+    } catch (err) {
+        console.error("Error update processed_by:", err);
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
     }
 });
 
@@ -237,6 +260,140 @@ router.delete("/:id", async (req, res) => {
     } catch (error) {
         console.error("Error deleting action:", error);
         res.status(500).json({ message: error.message });
+    }
+});
+
+// === TAG MANAGEMENT ROUTES ===
+
+// Add a tag to tindakan
+router.post("/:tindakanId/tag", async (req, res) => {
+    try {
+        const { tindakanId } = req.params;
+        const { hash_tag } = req.body;
+        
+        if (!hash_tag) {
+            return res.status(400).json({ message: "Tag tidak boleh kosong" });
+        }
+        
+        const updatedTindakan = await tindakanRepo.addTag(tindakanId, hash_tag);
+        
+        res.status(200).json({ 
+            message: "Tag berhasil ditambahkan",
+            tindakan: updatedTindakan
+        });
+    } catch (error) {
+        console.error("Error adding tag:", error);
+        
+        if (error.message === "Tindakan tidak ditemukan.") {
+            return res.status(404).json({ message: error.message });
+        }
+        
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+// Remove a tag from tindakan
+router.delete("/:tindakanId/tag/:hashTag", async (req, res) => {
+    try {
+        const { tindakanId, hashTag } = req.params;
+        
+        const updatedTindakan = await tindakanRepo.removeTag(tindakanId, hashTag);
+        
+        res.status(200).json({ 
+            message: "Tag berhasil dihapus",
+            tindakan: updatedTindakan
+        });
+    } catch (error) {
+        console.error("Error removing tag:", error);
+        
+        if (error.message === "Tindakan tidak ditemukan.") {
+            return res.status(404).json({ message: error.message });
+        }
+        
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+// Update all tags for a tindakan
+router.put("/:tindakanId/tags", async (req, res) => {
+    try {
+        const { tindakanId } = req.params;
+        const { tags } = req.body;
+        
+        if (!Array.isArray(tags)) {
+            return res.status(400).json({ message: "Tags harus berupa array" });
+        }
+        
+        const updatedTindakan = await tindakanRepo.updateTags(tindakanId, tags);
+        
+        res.status(200).json({ 
+            message: "Tags berhasil diperbarui",
+            tindakan: updatedTindakan
+        });
+    } catch (error) {
+        console.error("Error updating tags:", error);
+        
+        if (error.message === "Tindakan tidak ditemukan.") {
+            return res.status(404).json({ message: error.message });
+        } else if (error.message.includes("Format tag tidak valid")) {
+            return res.status(400).json({ message: error.message });
+        }
+        
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+// Get all unique tags in the system
+router.get("/tags/all", async (req, res) => {
+    try {
+        const tags = await tindakanRepo.findAllUniqueTags();
+        
+        res.status(200).json({ 
+            totalTags: tags.length,
+            tags: tags
+        });
+    } catch (error) {
+        console.error("Error fetching tags:", error);
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+// Search for tags matching a query string (for autocomplete)
+router.get("/tags/search", async (req, res) => {
+    try {
+        const query = req.query.q || '';
+        const tags = await tindakanRepo.searchTags(query);
+        
+        res.status(200).json({ 
+            query: query,
+            totalResults: tags.length,
+            tags: tags
+        });
+    } catch (error) {
+        console.error("Error searching tags:", error);
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+// Get tindakan by tag
+router.get("/tags/:hashTag", async (req, res) => {
+    try {
+        const { hashTag } = req.params;
+        
+        const tindakan = await tindakanRepo.findByTag(hashTag);
+        
+        if (!tindakan || tindakan.length === 0) {
+            return res.status(404).json({ message: "Tidak ada tindakan dengan tag tersebut" });
+        }
+        
+        res.status(200).json({ 
+            totalResults: tindakan.length,
+            hashTag: hashTag,
+            tindakan: tindakan
+        });
+    } catch (error) {
+        console.error("Error searching by tag:", error);
+        res.status(500).json({ message: "Terjadi kesalahan pada server" });
     }
 });
 

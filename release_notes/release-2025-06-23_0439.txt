@@ -1,0 +1,21 @@
+🔄 Commit terbaru di branch DEV_Ismail
+
+📝 fix: update app.js, controllers/messageController.js, models/Report.js
+📅 2025-06-23_0439
+
+📂 Perubahan file:
+app.js
+controllers/messageController.js
+models/Report.js
+models/Tindakan.js
+repositories/reportRepo.js
+repositories/tindakanRepo.js
+repositories/userRepo.js
+rest.http
+routes/dashboardRoute.js
+routes/fixApi.js
+routes/reportRoutes.js
+routes/tindakanRoutes.js
+services/responseMessage/checkReportResponse.js
+
+🚀 Meluncur

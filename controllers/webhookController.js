@@ -3,6 +3,7 @@ const botFlowService = require("../services/botFlowService");
 const UserSession = require("../models/UserSession");
 const { sendMessageToWhatsApp } = require("./messageController");
 const downloadMediaFromMeta = require("../utils/downloadMediaFromMeta");
+const modeManager = require("../services/modeManager");
 
 exports.handleIncomingMessages = async (req, res) => {
     try {
@@ -95,11 +96,12 @@ exports.handleIncomingMessages = async (req, res) => {
                             const botReply = await botFlowService.handleUserMessage({ from, message: parsedMessage, sendReply });
 
                             if (botReply) {
-                                const session = await UserSession.findOne({ from, status: "in_progress" });
-                                if (!session || session.mode === "bot") {
+                                const effectiveMode = await modeManager.getEffectiveMode(from);
+                                if (effectiveMode === "bot") {
                                     await sendMessageToWhatsApp(from, botReply);
                                 } else {
-                                    console.log(`✋ Bot tidak balas karena mode: ${session.mode}`);
+                                    const isForceMode = await modeManager.isInForceMode(from);
+                                    console.log(`✋ Bot tidak balas karena effective mode: ${effectiveMode}${isForceMode ? ' (Force Mode)' : ''}`);
                                 }
                             }
                         }

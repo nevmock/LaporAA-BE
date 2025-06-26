@@ -29,9 +29,44 @@ Content-Type: application/json
     "kesimpulan": "Laporan sedang di kerjakan",
     "status": "Dalam Proses",
     "situasi": "Darurat",
-    "opd": "Dinas Kebersihan",
-    "photos": ["https://example.com/photo1.jpg", "https://example.com/photo2.jpg"]
+    "opd": ["Dinas Kebersihan", "Dinas Lingkungan Hidup"],
+    "photos": ["https://example.com/photo1.jpg", "https://example.com/photo2.jpg"],
+    "tag": [{"hash_tag": "PohonTumbang"}, {"hash_tag": "JalanTerhalang"}]
 }
+
+### Menambahkan tag baru
+POST http://localhost:3001/tindakan/68218eec0967afbc6b49fa23/tag
+Content-Type: application/json
+
+{
+    "hash_tag": "ButuhBantuan"
+}
+
+### Menghapus tag
+DELETE http://localhost:3001/tindakan/68218eec0967afbc6b49fa23/tag/ButuhBantuan
+
+### Memperbarui semua tag
+PUT http://localhost:3001/tindakan/68218eec0967afbc6b49fa23/tags
+Content-Type: application/json
+
+{
+    "tags": ["PohonTumbang", "JalanTerhalang", "Darurat"]
+}
+
+### Mendapatkan semua tag yang ada di sistem
+GET http://localhost:3001/tindakan/tags/all
+
+### Mencari tag untuk autocomplete (tanpa query - menampilkan populer)
+GET http://localhost:3001/tindakan/tags/search
+
+### Mencari tag untuk autocomplete (dengan query)
+GET http://localhost:3001/tindakan/tags/search?q=Pohon
+
+### Mencari tag untuk autocomplete (query lain)
+GET http://localhost:3001/tindakan/tags/search?q=Jal
+
+### Mencari tindakan berdasarkan tag
+GET http://localhost:3001/tindakan/tags/PohonTumbang
 
 ###
 GET http://localhost:3001/dashboard/efisiensi
@@ -64,25 +99,41 @@ POST https://api.laporaabupati.com/userLogin
 Content-Type: application/json
 
 {
-  "username": "superadmin",
-  "password": "superAdmin777!",
-  "role": "SuperAdmin"
+  "nama_admin":"M. Reza A.",
+  "username": "reza",
+  "password": "reza777",
+  "role": "Admin"
 }
 
 ###
 
+Tambahan akun admin :
+
+1.⁠ ⁠Budi G.
+Pass : budi777
+
+2.⁠ ⁠⁠Yoguntara S.
+Pass : yoguntara777
+
+3.⁠ ⁠⁠Anggi A. P.
+Pass : anggi777
+
+4.⁠ ⁠⁠Tiara R. R
+Pass : tiara777
+
+5.⁠ ⁠⁠M. Reza A.
+Pass : reza777
+
 ### 📄 Get all user logins
-GET http://localhost:3001/userLogin
+GET https://api.laporaabupati.com/userLogin
 Content-Type: application/json
 
 ### 📝 Update user login (change password or role)
-PUT http://localhost:3001/userLogin/6846de31b4b75f9855fdda9d
+PUT https://api.laporaabupati.com/userLogin/6849b4dc626cd56898c9dcab
 Content-Type: application/json
 
 {
-  "username": "admin",
-  "password": "admin777",
-  "role": "Admin"
+  "nama_admin":"Bupati"
 }
 
 ### ❌ Delete user login
@@ -96,9 +147,57 @@ GET http://localhost:3001/dashboard/harian
 GET http://localhost:3001/user/user-mode/6281385138754
 
 ### ❌ Hapus seluruh data user (profile, laporan, tindakan, session)
-DELETE https://api.laporaabupati.com/user/user/6288218868251
+DELETE https://api.laporaabupati.com/user/user/6281395930656
 Content-Type: application/json
 
 ### Fix Ditolak
 PATCH https://api.laporaabupati.com/fix/fix-ditolak
 
+### Fix Array OPD
+POST https://api.laporaabupati.com/fix/convert-opd-to-array
+
+###
+GET http://localhost:3001/reports/pinned
+
+###
+GET http://localhost:3001/reports/opd-list
+
+###
+GET http://localhost:3001/reports/pinned/LPRAA-87549274
+
+### Get report's pin status (may be pinned or unpinned)
+GET http://localhost:3001/reports/pinned/87548050
+
+### Toggle pin status by sessionId
+PUT http://localhost:3001/reports/session/87548050/toggle-pin
+Content-Type: application/json
+
+###
+GET http://localhost:3001/reports/test
+
+###
+GET http://localhost:3001/reports/opd-list
+
+### Get report history for a user
+GET http://localhost:3001/user-profile/6281385138754/report-history
+Content-Type: application/json
+
+### Get report history for a user
+GET https://api.laporaabupati.com/user-profile/6281385138754/report-history
+Content-Type: application/json
+
+### Add a report to user's reportHistory
+POST http://localhost:3001/user-profile/628123456789/report-history
+Content-Type: application/json
+
+{
+  "sessionId": "SESSION_ID_SAMPLE"
+}
+
+### Get all reports with status for a user
+GET http://localhost:3001/user-profile/6281385138754/reports-with-status
+Content-Type: application/json
+
+### Bulk sync reportHistory semua user
+POST http://localhost:3001/user-profile/bulk-sync-report-history
+Content-Type: application/json

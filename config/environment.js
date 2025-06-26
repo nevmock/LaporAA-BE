@@ -13,7 +13,15 @@ class EnvironmentConfig {
       },
       database: {
         uri: process.env.MONGO_URI,
-        options: {}
+        options: {
+          maxPoolSize: 10, // Maintain up to 10 socket connections
+          serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+          socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+          bufferMaxEntries: 0, // Disable mongoose buffering
+          bufferCommands: false, // Disable mongoose buffering
+          retryWrites: true,
+          retryReads: true
+        }
       },
       cron: {
         autoCloseFeedback: process.env.CRON_AUTO_CLOSE_FEEDBACK || '0 0 * * *',

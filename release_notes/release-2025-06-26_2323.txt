@@ -1,0 +1,11 @@
+🔄 Commit terbaru di branch DEV_Ismail
+
+📝 feat: update repositories/userProfileRepo.js, services/components/createReportHandler.js, services/components/mainMenuHandler.js
+📅 2025-06-26_2323
+
+📂 Perubahan file:
+repositories/userProfileRepo.js
+services/components/createReportHandler.js
+services/components/mainMenuHandler.js
+
+🚀 Meluncur

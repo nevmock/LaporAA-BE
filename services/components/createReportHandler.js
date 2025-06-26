@@ -202,9 +202,11 @@ module.exports = async (from, step, input, sendReply) => {
 
     // STEP 7: Review and confirm the report
     if (step === "REVIEW") {
+        // Cek jumlah laporan aktif (belum Selesai Pengaduan)
+
         if (lowerInput === "kirim" || lowerInput === "konfirmasi" || lowerInput === "selesai" || affirmative) {
             try {
-                const sessionId = generateSessionId(from);
+                const sessionId = await generateSessionId(from);
                 await reportRepo.create({
                     sessionId,
                     from,

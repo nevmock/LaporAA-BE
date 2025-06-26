@@ -29,13 +29,13 @@ router.get("/:id", async (req, res) => {
 
 // POST buat user login baru
 router.post("/", async (req, res) => {
-    const { username, password, role } = req.body;
+    const { nama_admin, username, password, role } = req.body;
     try {
         const existing = await userLoginRepo.findByUsername(username);
         if (existing) return res.status(409).json({ message: "Username already exists" });
 
         const hashed = await bcrypt.hash(password, 10);
-        const user = await userLoginRepo.create({ username, password: hashed, role });
+        const user = await userLoginRepo.create({ nama_admin,username, password: hashed, role });
 
         res.status(201).json(user);
     } catch (error) {
@@ -46,9 +46,10 @@ router.post("/", async (req, res) => {
 
 // PUT update user login
 router.put("/:id", async (req, res) => {
-    const { username, password, role } = req.body;
+    const { nama_admin,username, password, role } = req.body;
     try {
         const data = {
+            nama_admin,
             username,
             role,
         };

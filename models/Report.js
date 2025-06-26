@@ -61,6 +61,14 @@ const reportSchema = new mongoose.Schema({
     tindakan: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Tindakan",
+    },
+    processed_by: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "UserLogin",
+    },
+    is_pinned: {
+        type: Boolean,
+        default: false,
     }
 }, {
     timestamps: true,

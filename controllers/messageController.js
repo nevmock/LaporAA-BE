@@ -82,7 +82,11 @@ exports.sendMessageToWhatsApp = async (to, rawMessage, mode = "bot") => {
 // 🟢 Handler untuk menerima POST /send/:from dari frontend
 exports.sendMessageHandler = async (req, res) => {
     const from = req.params.from;
-    const rawMessage = req.body.message;
+    let rawMessage = req.body.message;
+
+    // Ambil data tambahan
+    const nama_admin = req.body.nama_admin;
+    const role = req.body.role;
 
     if (!rawMessage || typeof rawMessage !== "string") {
         return res.status(400).json({ error: "Pesan harus berupa string." });
@@ -91,6 +95,19 @@ exports.sendMessageHandler = async (req, res) => {
     try {
         const session = await UserSession.findOne({ from, status: "in_progress" });
         const mode = session?.mode || "bot";
+
+        // === FORMAT LABEL JIKA MODE MANUAL ===
+        if (mode === "manual") {
+            let label = "";
+            if (role === "Admin") {
+                label = `\n\n-Admin ${nama_admin ? " : " + nama_admin : ""}`;
+            } else if (role === "SuperAdmin") {
+                label = "\n\n-Superadmin";
+            } else if (role === "Bupati") {
+                label = "\n\n-Bupati";
+            }
+            rawMessage += label;
+        }
 
         await exports.sendMessageToWhatsApp(from, rawMessage, mode);
 

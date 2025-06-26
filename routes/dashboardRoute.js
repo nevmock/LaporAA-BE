@@ -49,29 +49,36 @@ router.get("/perangkat-daerah-summary", async (req, res) => {
             return res.status(400).json({ message: "Mode tidak valid" });
         }
 
+        // Memastikan array opd diperlakukan dengan benar
         const data = await Tindakan.aggregate([
             {
                 $match: {
                     status: { $in: ["Proses OPD Terkait", "Selesai Penanganan", "Selesai Pengaduan"] },
-                    opd: { $ne: "" },
+                    opd: { $exists: true, $ne: [] }, // Memastikan opd ada dan tidak kosong
                     createdAt: { $gte: startDate, $lte: endDate }
                 }
-
+            },
+            {
+                $unwind: "$opd" // Memecah array opd untuk menghitung setiap entri
             },
             {
                 $group: {
-                    _id: "$opd",
-                    total: { $sum: 1 }
+                    _id: "$opd", // Mengelompokkan berdasarkan nilai OPD
+                    total: { $sum: 1 } // Menghitung total kemunculan setiap OPD
                 }
             },
             {
-                $sort: { total: -1 }
+                $sort: { total: -1 } // Mengurutkan berdasarkan jumlah terbanyak
             }
         ]);
 
+        // Mengubah hasil menjadi format yang lebih mudah digunakan di frontend
         const result = {};
         data.forEach(d => {
-            result[d._id] = d.total;
+            // Memastikan _id tidak null atau undefined
+            if (d._id) {
+                result[d._id] = d.total;
+            }
         });
 
         return res.json(result);
@@ -145,7 +152,7 @@ router.get("/map", async (req, res) => {
                 },
             },
 
-            ...(status && status !== "Semua"
+            ...(status && status !== "Semua Status"
                 ? [
                     {
                         $match: {

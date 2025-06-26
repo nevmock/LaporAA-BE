@@ -9,6 +9,7 @@ const tindakanResponse = require("./responseMessage/tindakanResponse");
 const botFlowResponse = require("./responseMessage/botFlowResponse");
 const { combinedContext } = require("../utils/openAiHelper");
 const { affirmativeInputs, negativeInputs } = require("../utils/inputTypes");
+const modeManager = require("./modeManager");
 
 exports.handleUserMessage = async ({ from, message, sendReply }) => {
     const user = await userProfileRepo.findByFrom(from);
@@ -23,7 +24,9 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
 
     const context = await combinedContext(input);
 
-    if (session.mode === "manual") return null;
+    // Gunakan modeManager untuk mengecek mode yang sebenarnya
+    const effectiveMode = await modeManager.getEffectiveMode(from);
+    if (effectiveMode === "manual") return null;
 
     // === Greeting check untuk reset session dan tampilkan menu utama ===
     if ((step === "MAIN_MENU" && !session.currentAction && input === "menu") || (step === "MAIN_MENU" && !session.currentAction && context === "greeting")) {
@@ -102,8 +105,9 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
                     await session.save();
 
                     reply = botFlowResponse.puasReply(sapaan, nama, sessionId);
-                } else {
+                } else { // input === "belum"
                     if (!tindakan.hasBeenReprocessed) {
+                        // Pertama kali tidak puas - reprocess
                         tindakan.feedbackStatus = "Sudah Jawab Belum Beres";
                         tindakan.status = "Proses OPD Terkait";
                         tindakan.hasBeenReprocessed = true;
@@ -115,6 +119,7 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
 
                         reply = botFlowResponse.belumReply(sapaan, nama, sessionId, session.pendingFeedbackFor.length);
                     } else {
+                        // Sudah pernah reprocess tapi masih tidak puas - auto finalize
                         tindakan.feedbackStatus = "Sudah Jawab Beres";
                         tindakan.status = "Selesai Pengaduan";
                         tindakan.rating = 5;

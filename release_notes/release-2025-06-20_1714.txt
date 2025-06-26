@@ -1,0 +1,16 @@
+🔄 Commit terbaru di branch DEV_Ismail
+
+📝 feat: update models/Report.js, models/UserLogin.js, repositories/reportRepo.js
+📅 2025-06-20_1714
+
+📂 Perubahan file:
+models/Report.js
+models/UserLogin.js
+repositories/reportRepo.js
+rest.http
+routes/auth.js
+routes/reportRoutes.js
+routes/tindakanRoutes.js
+routes/userLogin.js
+
+🚀 Meluncur
