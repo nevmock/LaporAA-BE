@@ -93,6 +93,10 @@ async function bulkSyncReportHistoryForAllUsers() {
 }
 
 module.exports = {
+    findByFrom,
+    create,
+    appendToReportHistory,
+    deleteUserByFrom,
     getReportHistoryByFrom,
     addReportToHistory,
     getAllReportsWithStatusByFrom,
