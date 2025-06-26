@@ -41,3 +41,60 @@ exports.deleteUserByFrom = async (from) => {
 
   return { message: "User dan seluruh data terkait telah dihapus." };
 };
+
+// Get report history for a user by 'from'
+async function getReportHistoryByFrom(from) {
+    return await UserProfile.findOne({ from }, { reportHistory: 1, _id: 0 });
+}
+
+// Add a report to user's reportHistory
+async function addReportToHistory(from, sessionId) {
+    return await UserProfile.findOneAndUpdate(
+        { from },
+        { $addToSet: { reportHistory: sessionId } },
+        { new: true }
+    );
+}
+
+// Get all reports (with status) for a user by 'from'
+async function getAllReportsWithStatusByFrom(from) {
+    // Find all reports by 'from'
+    const reports = await Report.find({ from })
+        .populate({
+            path: "tindakan",
+            select: "status"
+        })
+        .select("sessionId createdAt updatedAt tindakan");
+    // Map to include status
+    return reports.map(r => ({
+        sessionId: r.sessionId,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+        status: r.tindakan ? r.tindakan.status : "Belum Ditindaklanjuti"
+    }));
+}
+
+// Bulk sync: masukkan semua report ke reportHistory setiap user
+async function bulkSyncReportHistoryForAllUsers() {
+    const allUsers = await UserProfile.find({});
+    let updatedCount = 0;
+    for (const user of allUsers) {
+        const reports = await Report.find({ from: user.from }).select("sessionId");
+        const sessionIds = reports.map(r => r.sessionId);
+        if (sessionIds.length > 0) {
+            await UserProfile.updateOne(
+                { _id: user._id },
+                { $addToSet: { reportHistory: { $each: sessionIds } } }
+            );
+            updatedCount++;
+        }
+    }
+    return { updated: updatedCount, total: allUsers.length };
+}
+
+module.exports = {
+    getReportHistoryByFrom,
+    addReportToHistory,
+    getAllReportsWithStatusByFrom,
+    bulkSyncReportHistoryForAllUsers
+};

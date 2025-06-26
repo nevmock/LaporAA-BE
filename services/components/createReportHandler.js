@@ -202,6 +202,12 @@ module.exports = async (from, step, input, sendReply) => {
 
     // STEP 7: Review and confirm the report
     if (step === "REVIEW") {
+        // Cek jumlah laporan aktif (belum Selesai Pengaduan)
+        const activeReports = await reportRepo.findActiveReportsByFrom(from);
+        if (activeReports.length >= 5) {
+            return sendReply(from, "Anda masih memiliki lebih dari 5 laporan yang sedang di proses. Silakan tunggu laporan Anda selesai di proses sebelum membuat laporan baru.");
+        }
+
         if (lowerInput === "kirim" || lowerInput === "konfirmasi" || lowerInput === "selesai" || affirmative) {
             try {
                 const sessionId = await generateSessionId(from);
