@@ -49,6 +49,7 @@ jobs:
             docker run -d \
               --name laporaa-api-dev \
               --restart unless-stopped \
+              --network laporaa-dev-network \
               -e NODE_ENV=production \
               -e PORT=3000 \
               -e WHATSAPP_ACCESS_TOKEN="${{ secrets.WHATSAPP_ACCESS_TOKEN }}" \
