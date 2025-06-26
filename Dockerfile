@@ -1,21 +1,21 @@
-# Gunakan image Node.js resmi versi LTS
-FROM node:20-alpine
+# Gunakan Node.js versi 22 berbasis Debian
+FROM node:22
 
-# Set working directory
+# Set working directory di dalam container
 WORKDIR /app
 
-# Salin file dependency terlebih dahulu untuk cache layer
+# Copy file dependency dan install
 COPY package*.json ./
+RUN npm install
 
-# Install dependencies
-RUN npm install --production
-# Jika untuk development, gunakan: RUN npm install
-
-# Salin seluruh source code ke dalam container
+# Salin seluruh source code
 COPY . .
 
-# Buka port (ubah jika aplikasimu menggunakan port lain)
+# Build aplikasi
+RUN npm run build
+
+# Ubah port ke 5XXX untuk lingkungan development
 EXPOSE 3000
 
-# Perintah untuk menjalankan server Express
-CMD ["node", "app.js"]
+# Jalankan aplikasi
+CMD ["npm", "run", "start"]
