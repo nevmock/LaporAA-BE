@@ -11,14 +11,11 @@ RUN apk add --no-cache git
 COPY package*.json ./
 RUN npm install
 
-# Clone repo dan pindahkan ke direktori src/utils
-RUN git clone https://github.com/hitamcoklat/Jawa-Barat-Geo-JSON.git /tmp/jabar-geojson \
-    && mkdir -p src/utils \
-    && mv /tmp/jabar-geojson/* src/utils/ \
-    && rm -rf /tmp/jabar-geojson
-
 # Salin seluruh source code
 COPY . .
+
+# Clone repo dan pindahkan ke direktori src/utils
+RUN git clone https://github.com/hitamcoklat/Jawa-Barat-Geo-JSON.git utils/Jawa-Barat-Geo-JSON
 
 # Ubah port ke 5XXX untuk lingkungan development
 EXPOSE 3000
