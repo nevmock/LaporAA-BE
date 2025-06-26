@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Copy file dependency dan install
 COPY package*.json ./
+
 RUN npm install
 
 # Salin seluruh source code
