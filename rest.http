@@ -182,6 +182,10 @@ GET http://localhost:3001/reports/opd-list
 GET http://localhost:3001/user-profile/6281385138754/report-history
 Content-Type: application/json
 
+### Get report history for a user
+GET https://api.laporaabupati.com/user-profile/6281385138754/report-history
+Content-Type: application/json
+
 ### Add a report to user's reportHistory
 POST http://localhost:3001/user-profile/628123456789/report-history
 Content-Type: application/json
