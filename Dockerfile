@@ -19,6 +19,7 @@ RUN git clone https://github.com/hitamcoklat/Jawa-Barat-Geo-JSON.git utils/Jawa-
     cd utils/Jawa-Barat-Geo-JSON && \
     git lfs pull
 
+
 # Buka port untuk akses
 EXPOSE 3000
 
