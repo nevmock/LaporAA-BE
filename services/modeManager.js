@@ -9,7 +9,7 @@ const UserSession = require("../models/UserSession");
  * 3. Force Manual Mode - Paksa manual tanpa timeout (saklar utama)
  */
 
-// ismail anugrah saputra
+// ismail anugrah saputra annugrah
 
 class ModeManager {
     /**
