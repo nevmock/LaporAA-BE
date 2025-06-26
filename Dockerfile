@@ -20,7 +20,7 @@ RUN git clone https://github.com/hitamcoklat/Jawa-Barat-Geo-JSON.git utils/Jawa-
     git lfs pull
 
 # Buka port untuk akses
-EXPOSE 3000
+EXPOSE 3001
 
 # Jalankan aplikasi
 CMD ["node", "app.js"]

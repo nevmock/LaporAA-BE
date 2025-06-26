@@ -51,7 +51,7 @@ jobs:
               --network host \
               --restart unless-stopped \
               -e NODE_ENV=production \
-              -e PORT=3000 \
+              -e PORT=3001 \
               -e WHATSAPP_ACCESS_TOKEN="${{ secrets.WHATSAPP_ACCESS_TOKEN }}" \
               -e WHATSAPP_PHONE_ID="${{ secrets.WHATSAPP_PHONE_ID }}" \
               -e VERIFY_TOKEN="${{ secrets.VERIFY_TOKEN }}" \
@@ -63,7 +63,7 @@ jobs:
               -e AI_PERIOD_LIMITER="${{ secrets.AI_PERIOD_LIMITER }}" \
               -e MAX_LIMITER_REQUEST="${{ secrets.MAX_LIMITER_REQUEST }}" \
               -e MAX_REPORT_PER_DAY="${{ secrets.MAX_REPORT_PER_DAY }}" \
-              -p "${{ secrets.PORT }}":3000 \
+              -p "${{ secrets.PORT }}":3001 \
               -v laporaa-api-dev:/app/public \
               nevmock/laporaa-api-dev:latest
 
