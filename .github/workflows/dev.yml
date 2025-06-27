@@ -64,10 +64,10 @@ jobs:
               -e MAX_LIMITER_REQUEST="${{ secrets.MAX_LIMITER_REQUEST }}" \
               -e MAX_REPORT_PER_DAY="${{ secrets.MAX_REPORT_PER_DAY }}" \
               -p "${{ secrets.PORT }}":3000 \
-              -v laporaa-api-dev:/app/public \
+              -v ~/LaporAA-BE/public:/app/public \
               nevmock/laporaa-api-dev:latest
 
-              
+
             docker cp ~/LaporAA-BE/utils/Jawa-Barat-Geo-JSON/. laporaa-api-dev:/app/utils/Jawa-Barat-Geo-JSON/
             docker restart laporaa-api-dev
             echo "🧹 Cleaning up unused Docker resources..."
