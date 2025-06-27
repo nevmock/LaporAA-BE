@@ -1,4 +1,4 @@
-name: 🚀 CI/CD Backend Development
+name: 🚀 CI/CD Backend Production
 
 on:
   push:
@@ -66,7 +66,6 @@ jobs:
               -p "${{ secrets.PORT }}":3000 \
               -v ~/LaporAA-BE/public:/app/public \
               nevmock/laporaa-api-prod:latest
-
 
             docker cp ~/LaporAA-BE/utils/Jawa-Barat-Geo-JSON/. laporaa-api-prod:/app/utils/Jawa-Barat-Geo-JSON/
             docker restart laporaa-api-prod
