@@ -105,8 +105,9 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
                     await session.save();
 
                     reply = botFlowResponse.puasReply(sapaan, nama, sessionId);
-                } else {
+                } else { // input === "belum"
                     if (!tindakan.hasBeenReprocessed) {
+                        // Pertama kali tidak puas - reprocess
                         tindakan.feedbackStatus = "Sudah Jawab Belum Beres";
                         tindakan.status = "Proses OPD Terkait";
                         tindakan.hasBeenReprocessed = true;
@@ -118,6 +119,7 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
 
                         reply = botFlowResponse.belumReply(sapaan, nama, sessionId, session.pendingFeedbackFor.length);
                     } else {
+                        // Sudah pernah reprocess tapi masih tidak puas - auto finalize
                         tindakan.feedbackStatus = "Sudah Jawab Beres";
                         tindakan.status = "Selesai Pengaduan";
                         tindakan.rating = 5;

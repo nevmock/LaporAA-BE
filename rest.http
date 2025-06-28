@@ -129,11 +129,11 @@ GET https://api.laporaabupati.com/userLogin
 Content-Type: application/json
 
 ### 📝 Update user login (change password or role)
-PUT http://localhost:3001/userLogin/684cec88272df89959c18200
+PUT https://api.laporaabupati.com/userLogin/6849b4dc626cd56898c9dcab
 Content-Type: application/json
 
 {
-  "nama_admin":"Boro Ganteng"
+  "nama_admin":"Bupati"
 }
 
 ### ❌ Delete user login
@@ -177,3 +177,27 @@ GET http://localhost:3001/reports/test
 
 ###
 GET http://localhost:3001/reports/opd-list
+
+### Get report history for a user
+GET http://localhost:3001/user-profile/6281385138754/report-history
+Content-Type: application/json
+
+### Get report history for a user
+GET https://api.laporaabupati.com/user-profile/6281385138754/report-history
+Content-Type: application/json
+
+### Add a report to user's reportHistory
+POST http://localhost:3001/user-profile/628123456789/report-history
+Content-Type: application/json
+
+{
+  "sessionId": "SESSION_ID_SAMPLE"
+}
+
+### Get all reports with status for a user
+GET http://localhost:3001/user-profile/6281385138754/reports-with-status
+Content-Type: application/json
+
+### Bulk sync reportHistory semua user
+POST http://localhost:3001/user-profile/bulk-sync-report-history
+Content-Type: application/json

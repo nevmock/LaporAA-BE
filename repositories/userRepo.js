@@ -43,6 +43,13 @@ exports.appendPendingFeedbacks = async (from, tindakanIds) => {
     );
 };
 
+exports.removePendingFeedback = async (from, tindakanId) => {
+    await UserSession.updateOne(
+        { from },
+        { $pull: { pendingFeedbackFor: tindakanId } } // hapus tindakanId dari array
+    );
+};
+
 // Set force mode manual (saklar utama)
 exports.setForceMode = async (from, force) => {
     let session = await UserSession.findOne({ from });

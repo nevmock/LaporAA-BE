@@ -94,38 +94,39 @@ router.put("/:reportId", async (req, res) => {
             await tindakanDarurat.save();
         }
 
-        // === CASE SELESAI ===
+        // === CASE SELESAI PENANGANAN ===
         if (status === "Selesai Penanganan") {
-            const formattedKesimpulan = (tindakan.kesimpulan || []).map(k => `- ${k.text}`).join("\n");
-            const chunks = splitIntoChunks(formattedKesimpulan, 2500);
+            // Jika sudah pernah di-reprocess, langsung finalisasi tanpa minta feedback
+            if (tindakan.hasBeenReprocessed) {
+                tindakan.status = "Selesai Pengaduan";
+                tindakan.feedbackStatus = "Auto Rated";
+                tindakan.rating = 5;
+                await tindakan.save();
 
-            await sendEvidencePhotosToUser(tindakan.photos, from);
+                const message = tindakanResponse.finalizeAndAskNewReport(sapaan, user.name);
+                await sendMessageToWhatsApp(from, message);
+                await userRepo.removePendingFeedback(from, tindakan._id);
+            } else {
+                // Proses normal: kirim kesimpulan dan minta feedback
+                const formattedKesimpulan = (tindakan.kesimpulan || []).map(k => `- ${k.text}`).join("\n");
+                const chunks = splitIntoChunks(formattedKesimpulan, 2500);
 
-            const openingMessage = tindakanResponse.selesaiPenangananMessage(
-                sapaan, user.name, report.sessionId, chunks[0]
-            );
-            await sendMessageToWhatsApp(from, openingMessage);
+                await sendEvidencePhotosToUser(tindakan.photos, from);
 
-            for (let i = 1; i < chunks.length; i++) {
-                await sendMessageToWhatsApp(from, chunks[i]);
+                const openingMessage = tindakanResponse.selesaiPenangananMessage(
+                    sapaan, user.name, report.sessionId, chunks[0]
+                );
+                await sendMessageToWhatsApp(from, openingMessage);
+
+                for (let i = 1; i < chunks.length; i++) {
+                    await sendMessageToWhatsApp(from, chunks[i]);
+                }
+
+                const tindakanFromDb = await tindakanRepo.findById(tindakan._id);
+                tindakanFromDb.feedbackStatus = "Sudah Ditanya";
+                await tindakanFromDb.save();
+                await userRepo.appendPendingFeedback(from, tindakan._id);
             }
-
-            const tindakanFromDb = await tindakanRepo.findById(tindakan._id);
-            tindakanFromDb.feedbackStatus = "Sudah Ditanya";
-            await tindakanFromDb.save();
-            await userRepo.appendPendingFeedback(from, tindakan._id);
-        }
-
-        // === CASE SELESAI OTOMATIS SETELAH REPROCESS ===
-        if (status === "Proses OPD Terkait" && tindakan.hasBeenReprocessed) {
-            tindakan.status = "Selesai Pengaduan";
-            tindakan.feedbackStatus = "Auto Rated";
-            tindakan.rating = 5;
-            await tindakan.save();
-
-            const message = tindakanResponse.finalizeAndAskNewReport(sapaan, user.name);
-            await sendMessageToWhatsApp(from, message);
-            await userRepo.removePendingFeedback(from, tindakan._id);
         }
 
         // === CASE Ditutup ===

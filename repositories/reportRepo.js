@@ -1,5 +1,6 @@
 const Report = require("../models/Report");
 const Tindakan = require("../models/Tindakan");
+const UserProfile = require("../models/UserProfile");
 
 exports.create = async ({ sessionId, from, user, location, message, photos, url, keterangan, status_laporan }) => {
     const newReport = await Report.create({ sessionId, from, user, location, message, photos, url, keterangan, status_laporan });
@@ -21,6 +22,14 @@ exports.create = async ({ sessionId, from, user, location, message, photos, url,
 
     newReport.tindakan = defaultTindakan._id;
     await newReport.save();
+
+    // Tambahkan sessionId ke reportHistory userProfile
+    if (from && sessionId) {
+        await UserProfile.findOneAndUpdate(
+            { from },
+            { $addToSet: { reportHistory: sessionId } }
+        );
+    }
 
     return await Report.findById(newReport._id)
         .populate("user")
@@ -133,4 +142,11 @@ exports.checkPinStatusBySessionId = async (sessionId) => {
         .populate("processed_by");
     
     return report;
+};
+
+// Cari semua report milik user (from) yang status tindakannya belum 'Selesai Pengaduan'
+exports.findActiveReportsByFrom = async (from) => {
+    const reports = await Report.find({ from })
+        .populate("tindakan");
+    return reports.filter(r => r.tindakan && r.tindakan.status !== "Selesai Pengaduan");
 };
