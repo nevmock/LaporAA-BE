@@ -3,7 +3,7 @@ name: 🚀 CI/CD Backend Production
 on:
   push:
     branches:
-      - PROD
+      - main
 
 jobs:
   build-and-deploy:

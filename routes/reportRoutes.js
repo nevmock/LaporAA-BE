@@ -695,7 +695,8 @@ router.get("/", async (req, res) => {
                         { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
                         { "tindakan.tag": { $regex: searchQuery, $options: "i" } },
                         { "tags": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by": { $regex: searchQuery, $options: "i" } }
+                        { "processed_by": { $regex: searchQuery, $options: "i" } },
+                        { "tindakan.trackingId": { $regex: searchQuery, $options: "i" } }
                     ]
                 }
             }] : []),
@@ -864,7 +865,8 @@ router.get("/new", async (req, res) => {
                         { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
                         { "tindakan.tag": { $regex: searchQuery, $options: "i" } },
                         { "tags": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by": { $regex: searchQuery, $options: "i" } }
+                        { "processed_by": { $regex: searchQuery, $options: "i" } },
+                        { "tindakan.trackingId": { $regex: searchQuery, $options: "i" } }
                     ]
                 }
             }] : []),
