@@ -7,6 +7,7 @@ const { sendMessageToWhatsApp, sendEvidencePhotosToUser } = require("../controll
 const userRepo = require("../repositories/userRepo");
 const Tindakan = require("../models/Tindakan");
 const tindakanResponse = require("../services/responseMessage/tindakanResponse");
+const { validateOpdMiddleware } = require("../middlewares/opdValidationMiddleware");
 
 // Helper: bagi teks panjang jadi beberapa pesan
 function splitIntoChunks(text, maxLength) {
@@ -48,7 +49,7 @@ router.get("/:reportId", async (req, res) => {
 });
 
 // === UPDATE tindakan ===
-router.put("/:reportId", async (req, res) => {
+router.put("/:reportId", validateOpdMiddleware, async (req, res) => {
     const { reportId } = req.params;
     const {
         hasil, kesimpulan, trackingId, prioritas, situasi, status,

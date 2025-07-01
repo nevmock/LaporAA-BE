@@ -160,6 +160,9 @@ PATCH https://api.laporaabupati.com/fix/fix-ditolak
 ### Fix Array OPD
 POST https://api.laporaabupati.com/fix/convert-opd-to-array
 
+### Fix Array OPD
+POST http://localhost:3001/fix/convert-opd-to-array
+
 ###
 GET http://localhost:3001/reports/pinned
 

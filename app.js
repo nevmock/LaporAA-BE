@@ -44,6 +44,7 @@ const authMiddleware = require("./middlewares/authMiddleware");
 const fix = require("./routes/fixApi");
 const modeRoutes = require("./routes/modeRoutes");
 const userProfileRoutes = require("./routes/userProfileRoutes");
+const geojsonRoutes = require("./routes/geojsonRoutes");
 
 const autoCloseFeedback = require("./utils/autoCloseFeedback");
 const limitMiddleware = require("./middlewares/limitMiddleware");
@@ -110,6 +111,7 @@ app.use("/user", userRoutes);
 app.use("/fix", fix);
 app.use("/mode", modeRoutes); // Routes terpusat untuk pengelolaan mode
 app.use("/user-profile", userProfileRoutes);
+app.use("/geojson", geojsonRoutes); // Routes untuk GeoJSON data
 
 // Apply authMiddleware to all routes except /webhook
 app.use(authMiddleware);
