@@ -125,6 +125,10 @@ Pass : tiara777
 Pass : reza777
 
 ### 📄 Get all user logins
+GET http://localhost:3001/userLogin
+Content-Type: application/json
+
+### 📄 Get all user logins
 GET https://api.laporaabupati.com/userLogin
 Content-Type: application/json
 

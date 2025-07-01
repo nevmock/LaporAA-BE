@@ -179,20 +179,7 @@ router.get("/summary-laporan", async (req, res) => {
             },
             ...(searchQuery ? [{
                 $match: {
-                    $or: [
-                        { sessionId: { $regex: searchQuery, $options: "i" } },
-                        { from: { $regex: searchQuery, $options: "i" } },
-                        { "location.desa": { $regex: searchQuery, $options: "i" } },
-                        { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.opd": { $elemMatch: { $regex: searchQuery, $options: "i" } } },
-                        { "user.name": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag": { $regex: searchQuery, $options: "i" } },
-                        { "tags": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.trackingId": { $regex: searchQuery, $options: "i" } }
-                    ]
+                    $or: buildSearchConditions(searchQuery)
                 }
             }] : []),
             ...(opdFilter ? [{
@@ -394,20 +381,7 @@ router.get("/dashboard-summary", async (req, res) => {
             },
             ...(searchQuery ? [{
                 $match: {
-                    $or: [
-                        { sessionId: { $regex: searchQuery, $options: "i" } },
-                        { from: { $regex: searchQuery, $options: "i" } },
-                        { "location.desa": { $regex: searchQuery, $options: "i" } },
-                        { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.opd": { $elemMatch: { $regex: searchQuery, $options: "i" } } },
-                        { "user.name": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag": { $regex: searchQuery, $options: "i" } },
-                        { "tags": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.trackingId": { $regex: searchQuery, $options: "i" } }
-                    ]
+                    $or: buildSearchConditions(searchQuery)
                 }
             }] : []),
             ...(opdFilter ? [{
@@ -684,20 +658,7 @@ router.get("/", async (req, res) => {
             },
             ...(searchQuery ? [{
                 $match: {
-                    $or: [
-                        { sessionId: { $regex: searchQuery, $options: "i" } },
-                        { from: { $regex: searchQuery, $options: "i" } },
-                        { "location.desa": { $regex: searchQuery, $options: "i" } },
-                        { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.opd": { $elemMatch: { $regex: searchQuery, $options: "i" } } },
-                        { "user.name": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag": { $regex: searchQuery, $options: "i" } },
-                        { "tags": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.trackingId": { $regex: searchQuery, $options: "i" } }
-                    ]
+                    $or: buildSearchConditions(searchQuery)
                 }
             }] : []),
             ...(statusFilter ? [{
@@ -854,20 +815,7 @@ router.get("/new", async (req, res) => {
             },
             ...(searchQuery ? [{
                 $match: {
-                    $or: [
-                        { sessionId: { $regex: searchQuery, $options: "i" } },
-                        { from: { $regex: searchQuery, $options: "i" } },
-                        { "location.desa": { $regex: searchQuery, $options: "i" } },
-                        { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.opd": { $elemMatch: { $regex: searchQuery, $options: "i" } } },
-                        { "user.name": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag": { $regex: searchQuery, $options: "i" } },
-                        { "tags": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.trackingId": { $regex: searchQuery, $options: "i" } }
-                    ]
+                    $or: buildSearchConditions(searchQuery)
                 }
             }] : []),
             ...(statusFilter ? [{
@@ -1073,20 +1021,7 @@ function buildDynamicFilterPipeline(query) {
     let filters = [];
     if (searchQuery) {
         filters.push({
-            $or: [
-                { sessionId: { $regex: searchQuery, $options: "i" } },
-                { from: { $regex: searchQuery, $options: "i" } },
-                { "location.desa": { $regex: searchQuery, $options: "i" } },
-                { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
-                { "tindakan.opd": { $elemMatch: { $regex: searchQuery, $options: "i" } } },
-                { "user.name": { $regex: searchQuery, $options: "i" } },
-                { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
-                { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
-                { "tindakan.tag": { $regex: searchQuery, $options: "i" } },
-                { "tags": { $regex: searchQuery, $options: "i" } },
-                { "processed_by": { $regex: searchQuery, $options: "i" } },
-                { "tindakan.trackingId": { $regex: searchQuery, $options: "i" } }
-            ]
+            $or: buildSearchConditions(searchQuery)
         });
     }
     if (opdFilter) {
@@ -1102,4 +1037,45 @@ function buildDynamicFilterPipeline(query) {
         filters.push({ is_pinned: isPinned });
     }
     return filters.length > 0 ? [{ $match: { $and: filters } }] : [];
+}
+
+// Helper function to build search conditions including trackingId
+function buildSearchConditions(searchQuery) {
+    const baseConditions = [
+        { sessionId: { $regex: searchQuery, $options: "i" } },
+        { from: { $regex: searchQuery, $options: "i" } },
+        { "location.desa": { $regex: searchQuery, $options: "i" } },
+        { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
+        { "tindakan.opd": { $elemMatch: { $regex: searchQuery, $options: "i" } } },
+        { "user.name": { $regex: searchQuery, $options: "i" } },
+        { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
+        { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
+        { "tindakan.tag": { $regex: searchQuery, $options: "i" } },
+        { "tags": { $regex: searchQuery, $options: "i" } },
+        { "processed_by": { $regex: searchQuery, $options: "i" } }
+    ];
+
+    // Handle trackingId search - both as number and string
+    const numericSearch = parseInt(searchQuery);
+    if (!isNaN(numericSearch)) {
+        // Exact match for numeric trackingId
+        baseConditions.push({ "tindakan.trackingId": numericSearch });
+    }
+
+    // Partial match using string conversion (for searching partial numbers)
+    baseConditions.push({ 
+        $expr: { 
+            $regexMatch: { 
+                input: { 
+                    $toString: {
+                        $ifNull: ["$tindakan.trackingId", ""]
+                    }
+                }, 
+                regex: searchQuery, 
+                options: "i" 
+            } 
+        } 
+    });
+
+    return baseConditions;
 }
