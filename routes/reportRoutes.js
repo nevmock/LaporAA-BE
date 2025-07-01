@@ -853,9 +853,243 @@ router.get("/new", async (req, res) => {
             { $count: "total" }
         ];
 
-        // Breakdown pipelines (tanpa skip/limit/sort)
+        // Dynamic breakdown pipelines - exclude the current filter being calculated
+        // Status breakdown (exclude status filter to show all possible status counts)
+        const statusBreakdownBasePipeline = [
+            {
+                $lookup: {
+                    from: "userprofiles",
+                    localField: "user",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "tindakans",
+                    localField: "tindakan",
+                    foreignField: "_id",
+                    as: "tindakan"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$tindakan",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "userlogins",
+                    localField: "processed_by",
+                    foreignField: "_id",
+                    as: "processed_by"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$processed_by",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    prioritasScore: {
+                        $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
+                    },
+                    statusScore: {
+                        $indexOfArray: [statusOrder, "$tindakan.status"]
+                    }
+                }
+            },
+            ...(searchQuery ? [{
+                $match: {
+                    $or: buildSearchConditions(searchQuery)
+                }
+            }] : []),
+            // Include OPD filter for status breakdown
+            ...(opdFilter ? [{
+                $match: {
+                    "tindakan.opd": { $in: [opdFilter] }
+                }
+            }] : []),
+            // Include situasi filter for status breakdown
+            ...(situasiFilter ? [{
+                $match: {
+                    "tindakan.situasi": situasiFilter
+                }
+            }] : []),
+            ...(typeof req.query.is_pinned !== "undefined" ? [{
+                $match: {
+                    "is_pinned": req.query.is_pinned === "true"
+                }
+            }] : []),
+        ];
+
+        // OPD breakdown (exclude OPD filter to show all possible OPD counts)
+        const opdBreakdownBasePipeline = [
+            {
+                $lookup: {
+                    from: "userprofiles",
+                    localField: "user",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "tindakans",
+                    localField: "tindakan",
+                    foreignField: "_id",
+                    as: "tindakan"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$tindakan",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "userlogins",
+                    localField: "processed_by",
+                    foreignField: "_id",
+                    as: "processed_by"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$processed_by",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    prioritasScore: {
+                        $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
+                    },
+                    statusScore: {
+                        $indexOfArray: [statusOrder, "$tindakan.status"]
+                    }
+                }
+            },
+            ...(searchQuery ? [{
+                $match: {
+                    $or: buildSearchConditions(searchQuery)
+                }
+            }] : []),
+            // Include status filter for OPD breakdown
+            ...(statusFilter ? [{
+                $match: {
+                    "tindakan.status": statusFilter
+                }
+            }] : []),
+            // Include situasi filter for OPD breakdown
+            ...(situasiFilter ? [{
+                $match: {
+                    "tindakan.situasi": situasiFilter
+                }
+            }] : []),
+            ...(typeof req.query.is_pinned !== "undefined" ? [{
+                $match: {
+                    "is_pinned": req.query.is_pinned === "true"
+                }
+            }] : []),
+        ];
+
+        // Situasi breakdown (exclude situasi filter to show all possible situasi counts)
+        const situasiBreakdownBasePipeline = [
+            {
+                $lookup: {
+                    from: "userprofiles",
+                    localField: "user",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "tindakans",
+                    localField: "tindakan",
+                    foreignField: "_id",
+                    as: "tindakan"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$tindakan",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "userlogins",
+                    localField: "processed_by",
+                    foreignField: "_id",
+                    as: "processed_by"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$processed_by",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    prioritasScore: {
+                        $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
+                    },
+                    statusScore: {
+                        $indexOfArray: [statusOrder, "$tindakan.status"]
+                    }
+                }
+            },
+            ...(searchQuery ? [{
+                $match: {
+                    $or: buildSearchConditions(searchQuery)
+                }
+            }] : []),
+            // Include status filter for situasi breakdown
+            ...(statusFilter ? [{
+                $match: {
+                    "tindakan.status": statusFilter
+                }
+            }] : []),
+            // Include OPD filter for situasi breakdown
+            ...(opdFilter ? [{
+                $match: {
+                    "tindakan.opd": { $in: [opdFilter] }
+                }
+            }] : []),
+            ...(typeof req.query.is_pinned !== "undefined" ? [{
+                $match: {
+                    "is_pinned": req.query.is_pinned === "true"
+                }
+            }] : []),
+        ];
+
         const statusBreakdownPipeline = [
-            ...basePipeline,
+            ...statusBreakdownBasePipeline,
             {
                 $group: {
                     _id: "$tindakan.status",
@@ -863,8 +1097,9 @@ router.get("/new", async (req, res) => {
                 }
             }
         ];
+        
         const opdBreakdownPipeline = [
-            ...basePipeline,
+            ...opdBreakdownBasePipeline,
             { $unwind: { path: "$tindakan.opd", preserveNullAndEmptyArrays: true } },
             {
                 $group: {
@@ -873,8 +1108,9 @@ router.get("/new", async (req, res) => {
                 }
             }
         ];
+        
         const situasiBreakdownPipeline = [
-            ...basePipeline,
+            ...situasiBreakdownBasePipeline,
             {
                 $group: {
                     _id: "$tindakan.situasi",
@@ -899,19 +1135,26 @@ router.get("/new", async (req, res) => {
         ]);
         const totalReports = countResult[0]?.total || 0;
 
-        // Format breakdown
+        // Format breakdown with dynamic counts
         const statusResult = {};
         statusBreakdown.forEach(item => {
             if (item._id) statusResult[item._id] = item.count;
         });
+        
         const opdResult = {};
         opdBreakdown.forEach(item => {
             if (item._id) opdResult[item._id] = item.count;
         });
+        
         const situasiResult = {};
         situasiBreakdown.forEach(item => {
             if (item._id) situasiResult[item._id] = item.count;
         });
+
+        // Calculate totals for each breakdown (for reference)
+        const statusTotal = Object.values(statusResult).reduce((sum, count) => sum + count, 0);
+        const opdTotal = Object.values(opdResult).reduce((sum, count) => sum + count, 0);
+        const situasiTotal = Object.values(situasiResult).reduce((sum, count) => sum + count, 0);
 
         res.status(200).json({
             page,
@@ -923,6 +1166,18 @@ router.get("/new", async (req, res) => {
                 status: statusResult,
                 opd: opdResult,
                 situasi: situasiResult
+            },
+            breakdownTotals: {
+                status: statusTotal,
+                opd: opdTotal,
+                situasi: situasiTotal
+            },
+            activeFilters: {
+                search: searchQuery || null,
+                status: statusFilter || null,
+                opd: opdFilter || null,
+                situasi: situasiFilter || null,
+                is_pinned: typeof req.query.is_pinned !== "undefined" ? req.query.is_pinned === "true" : null
             }
         });
     } catch (error) {
