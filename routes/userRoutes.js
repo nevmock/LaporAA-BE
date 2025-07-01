@@ -4,27 +4,129 @@ const userProfileRepo = require("../repositories/userProfileRepo");
 const UserSession = require("../models/UserSession");
 const Report = require("../models/Report");
 
-// Update forceModeManual
+// Toggle forceModeManual (saklar utama)
 router.patch('/session/force-mode/:from', async (req, res) => {
     try {
         const { force } = req.body; // boolean
         const { from } = req.params;
 
-        const session = await UserSession.findOneAndUpdate(
-            { from },
-            {
+        if (typeof force !== 'boolean') {
+            return res.status(400).json({ 
+                error: "Parameter 'force' harus berupa boolean (true/false)" 
+            });
+        }
+
+        let session = await UserSession.findOne({ from });
+        if (!session) {
+            // Buat session baru jika belum ada
+            session = await UserSession.create({
+                from,
+                currentAction: null,
+                step: "MAIN_MENU",
+                data: {},
                 forceModeManual: force,
-                mode: force ? 'manual' : 'bot', // optional: langsung set mode
-                manualModeUntil: force ? null : new Date(), // clear timer
-            },
-            { new: true }
-        );
+                mode: force ? 'manual' : 'bot',
+                manualModeUntil: null
+            });
+        } else {
+            // Update session yang sudah ada
+            session.forceModeManual = force;
+            
+            if (force) {
+                // Jika forceModeManual diaktifkan, set mode ke manual dan clear timeout
+                session.mode = 'manual';
+                session.manualModeUntil = null;
+            } else {
+                // Jika forceModeManual dimatikan, mode bisa dikembalikan ke bot
+                // Kecuali jika masih ada manual mode timeout yang aktif
+                if (!session.manualModeUntil || new Date() > session.manualModeUntil) {
+                    session.mode = 'bot';
+                    session.manualModeUntil = null;
+                }
+            }
+            
+            await session.save();
+        }
 
-        if (!session) return res.status(404).json({ message: "Session not found" });
-
-        res.json({ message: "Mode updated", session });
+        const effectiveMode = session.getEffectiveMode();
+        
+        res.json({ 
+            message: `Force mode manual ${force ? 'diaktifkan' : 'dinonaktifkan'} untuk ${from}`,
+            session: {
+                from: session.from,
+                forceModeManual: session.forceModeManual,
+                mode: session.mode,
+                effectiveMode: effectiveMode,
+                manualModeUntil: session.manualModeUntil
+            }
+        });
     } catch (err) {
-        res.status(500).json({ message: "Failed to update mode", error: err.message });
+        console.error("❌ Error updating force mode:", err);
+        res.status(500).json({ message: "Failed to update force mode", error: err.message });
+    }
+});
+
+// GET force mode status
+router.get('/session/force-mode/:from', async (req, res) => {
+    try {
+        const { from } = req.params;
+
+        let session = await UserSession.findOne({ from });
+        if (!session) {
+            return res.status(404).json({ 
+                error: "Session tidak ditemukan",
+                suggestion: "Session akan dibuat otomatis saat user mengirim pesan pertama"
+            });
+        }
+
+        const effectiveMode = session.getEffectiveMode();
+        
+        res.json({
+            from: session.from,
+            forceModeManual: session.forceModeManual,
+            mode: session.mode,
+            effectiveMode: effectiveMode,
+            manualModeUntil: session.manualModeUntil,
+            isManualModeExpired: session.manualModeUntil ? new Date() > session.manualModeUntil : null
+        });
+    } catch (err) {
+        console.error("❌ Error getting force mode status:", err);
+        res.status(500).json({ error: "Failed to get force mode status", details: err.message });
+    }
+});
+
+// Test endpoint untuk aktivasi manual mode dengan timeout (untuk testing)
+router.post('/session/activate-manual-mode/:from', async (req, res) => {
+    try {
+        const { from } = req.params;
+        const { minutes = 1 } = req.body;
+
+        let session = await UserSession.findOne({ from });
+        if (!session) {
+            session = await UserSession.create({
+                from,
+                currentAction: null,
+                step: "MAIN_MENU",
+                data: {},
+            });
+        }
+
+        await session.activateManualMode(minutes);
+        const effectiveMode = session.getEffectiveMode();
+
+        res.json({
+            message: `Manual mode diaktifkan untuk ${minutes} menit`,
+            session: {
+                from: session.from,
+                mode: session.mode,
+                effectiveMode: effectiveMode,
+                manualModeUntil: session.manualModeUntil,
+                forceModeManual: session.forceModeManual
+            }
+        });
+    } catch (err) {
+        console.error("❌ Error activating manual mode:", err);
+        res.status(500).json({ error: "Failed to activate manual mode", details: err.message });
     }
 });
 

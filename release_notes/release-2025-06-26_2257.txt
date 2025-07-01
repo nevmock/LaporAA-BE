@@ -1,0 +1,13 @@
+🔄 Commit terbaru di branch DEV_Ismail
+
+📝 feat: update app.js, repositories/reportRepo.js, repositories/userProfileRepo.js
+📅 2025-06-26_2257
+
+📂 Perubahan file:
+app.js
+repositories/reportRepo.js
+repositories/userProfileRepo.js
+rest.http
+services/components/createReportHandler.js
+
+🚀 Meluncur

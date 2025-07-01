@@ -30,8 +30,8 @@ const actionSchema = new mongoose.Schema({
     },
     situasi: {
         type: String,
-        enum: ["Darurat", "Permintaan Informasi", "Berpengawasan", "Tidak Berpengawasan"],
-        default: null,
+        enum: ["", "Darurat", "Permintaan Informasi", "Berpengawasan", "Tidak Berpengawasan"],
+        default: "",
     },
     status: {
         type: String,
@@ -39,9 +39,17 @@ const actionSchema = new mongoose.Schema({
         default: "Perlu Verifikasi",
         index: true
     },
+    tag: {
+        type: [
+            {
+                hash_tag: String,
+            }
+        ],
+        default: [],
+    },
     opd: {
-        type: String,
-        default: "",
+        type: [String],
+        default: [],
     },
     photos: {
         type: [String], // URL foto (kalau pakai upload ke cloud)

@@ -1,21 +1,26 @@
 # Gunakan image Node.js resmi versi LTS
 FROM node:20-alpine
 
-# Set working directory
+# Set working directory di dalam container
 WORKDIR /app
 
-# Salin file dependency terlebih dahulu untuk cache layer
+# Install git dan git-lfs (untuk mengambil file GeoJSON asli, bukan pointer)
+RUN apk add --no-cache git git-lfs && git lfs install
+
+# Copy file dependency dan install
 COPY package*.json ./
+RUN npm install
 
-# Install dependencies
-RUN npm install --production
-# Jika untuk development, gunakan: RUN npm install
-
-# Salin seluruh source code ke dalam container
+# Salin seluruh source code
 COPY . .
 
-# Buka port (ubah jika aplikasimu menggunakan port lain)
+# Clone repo dan ambil file LFS ke direktori src/utils
+RUN git clone https://github.com/hitamcoklat/Jawa-Barat-Geo-JSON.git utils/Jawa-Barat-Geo-JSON && \
+    cd utils/Jawa-Barat-Geo-JSON && \
+    git lfs pull
+
+# Buka port untuk akses
 EXPOSE 3000
 
-# Perintah untuk menjalankan server Express
+# Jalankan aplikasi
 CMD ["node", "app.js"]

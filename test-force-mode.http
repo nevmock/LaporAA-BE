@@ -1,0 +1,54 @@
+### Test Force Mode Manual API
+
+# Toggle Force Mode Manual untuk user tertentu
+PATCH http://localhost:3001/user/session/force-mode/6281234567890
+Content-Type: application/json
+
+{
+  "force": true
+}
+
+###
+
+# Cek status Force Mode Manual
+GET http://localhost:3001/user/session/force-mode/6281234567890
+
+###
+
+# Matikan Force Mode Manual
+PATCH http://localhost:3001/user/session/force-mode/6281234567890
+Content-Type: application/json
+
+{
+  "force": false
+}
+
+###
+
+# Test error handling - parameter salah
+PATCH http://localhost:3001/user/session/force-mode/6281234567890
+Content-Type: application/json
+
+{
+  "force": "invalid"
+}
+
+###
+
+# Test dengan user yang tidak ada
+GET http://localhost:3001/user/session/force-mode/999999999999
+
+###
+
+# Lihat semua API mode yang tersedia
+GET http://localhost:3001/user/user-mode/6281234567890
+
+###
+
+# Set mode manual biasa (bukan force)
+PATCH http://localhost:3001/user/user-mode/6281234567890
+Content-Type: application/json
+
+{
+  "mode": "manual"
+}

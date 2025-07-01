@@ -42,6 +42,8 @@ const userLogin = require("./routes/userLogin");
 const login = require("./routes/auth");
 const authMiddleware = require("./middlewares/authMiddleware");
 const fix = require("./routes/fixApi");
+const modeRoutes = require("./routes/modeRoutes");
+const userProfileRoutes = require("./routes/userProfileRoutes");
 
 const autoCloseFeedback = require("./utils/autoCloseFeedback");
 const limitMiddleware = require("./middlewares/limitMiddleware");
@@ -106,6 +108,8 @@ app.use("/uploadsTindakan", express.static(path.join(__dirname, "public/uploadsT
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 app.use("/user", userRoutes);
 app.use("/fix", fix);
+app.use("/mode", modeRoutes); // Routes terpusat untuk pengelolaan mode
+app.use("/user-profile", userProfileRoutes);
 
 // Apply authMiddleware to all routes except /webhook
 app.use(authMiddleware);
