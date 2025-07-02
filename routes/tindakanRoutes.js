@@ -8,6 +8,7 @@ const userRepo = require("../repositories/userRepo");
 const Tindakan = require("../models/Tindakan");
 const tindakanResponse = require("../services/responseMessage/tindakanResponse");
 const { validateOpdMiddleware } = require("../middlewares/opdValidationMiddleware");
+const ReportTrackingUtil = require("../services/reportTrackingUtil");
 
 // Helper: bagi teks panjang jadi beberapa pesan
 function splitIntoChunks(text, maxLength) {
@@ -57,6 +58,10 @@ router.put("/:reportId", validateOpdMiddleware, async (req, res) => {
     } = req.body;
 
     try {
+        // Get existing tindakan untuk tracking changes
+        const existingTindakan = await tindakanRepo.findByReportId(reportId);
+        const oldStatus = existingTindakan?.[0]?.status;
+
         const tindakan = await tindakanRepo.update({
             reportId,
             hasil,
@@ -75,6 +80,35 @@ router.put("/:reportId", validateOpdMiddleware, async (req, res) => {
 
         const report = await reportRepo.findById(reportId);
         if (!report) throw new Error("Report tidak ditemukan");
+
+        // Track update activities
+        const adminId = req.user?.userId || req.user?.id;
+        if (adminId) {
+            try {
+                // Track status change
+                if (oldStatus && oldStatus !== status) {
+                    await ReportTrackingUtil.trackStatusUpdate(adminId, reportId, tindakan._id, oldStatus, status);
+                }
+                
+                // Track OPD update
+                if (opd && opd.length > 0) {
+                    await ReportTrackingUtil.trackOpdUpdate(adminId, reportId, tindakan._id, opd);
+                }
+                
+                // Track conclusion update
+                if (kesimpulan && kesimpulan.length > 0) {
+                    await ReportTrackingUtil.trackConclusionUpdate(adminId, reportId, tindakan._id, kesimpulan);
+                }
+                
+                // Track evidence upload
+                if (photos && photos.length > 0) {
+                    await ReportTrackingUtil.trackEvidenceUpload(adminId, reportId, tindakan._id, photos.length);
+                }
+            } catch (trackingError) {
+                console.error('Error tracking activity:', trackingError);
+                // Don't block the main operation if tracking fails
+            }
+        }
 
         const user = await UserProfile.findById(report.user);
         const from = report.from;
