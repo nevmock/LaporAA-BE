@@ -52,6 +52,36 @@ exports.sendMessageToWhatsApp = async (to, rawMessage, mode = "bot") => {
                 caption: rawMessage.caption || "",
             },
         };
+    } else if (typeof rawMessage === "object" && rawMessage.type === "video") {
+        payload = {
+            messaging_product: "whatsapp",
+            to,
+            type: "video",
+            video: {
+                link: rawMessage.link,
+                caption: rawMessage.caption || "",
+            },
+        };
+    } else if (typeof rawMessage === "object" && rawMessage.type === "audio") {
+        payload = {
+            messaging_product: "whatsapp",
+            to,
+            type: "audio",
+            audio: {
+                link: rawMessage.link,
+            },
+        };
+    } else if (typeof rawMessage === "object" && rawMessage.type === "document") {
+        payload = {
+            messaging_product: "whatsapp",
+            to,
+            type: "document",
+            document: {
+                link: rawMessage.link,
+                caption: rawMessage.caption || "",
+                filename: rawMessage.filename || "document",
+            },
+        };
     } else {
         console.error("❌ Format pesan tidak valid:", rawMessage);
         return;
@@ -60,11 +90,24 @@ exports.sendMessageToWhatsApp = async (to, rawMessage, mode = "bot") => {
     // Kirim pesan ke WhatsApp
     await axios.post(url, payload, { headers });
 
-    // Simpan pesan ke database (opsional untuk image)
+    // Simpan pesan ke database (opsional untuk media)
+    let messageText = "";
+    if (typeof rawMessage === "string") {
+        messageText = rawMessage;
+    } else if (rawMessage.type === "image") {
+        messageText = `[Gambar] ${rawMessage.caption}`;
+    } else if (rawMessage.type === "video") {
+        messageText = `[Video] ${rawMessage.caption}`;
+    } else if (rawMessage.type === "audio") {
+        messageText = `[Audio] ${rawMessage.caption || ""}`;
+    } else if (rawMessage.type === "document") {
+        messageText = `[Dokumen] ${rawMessage.caption}`;
+    }
+    
     await Message.create({
         from: to,
         senderName: "Bot",
-        message: typeof rawMessage === "string" ? rawMessage : `[image] ${rawMessage.caption}`,
+        message: messageText,
         timestamp: new Date(),
     });
 
@@ -73,7 +116,7 @@ exports.sendMessageToWhatsApp = async (to, rawMessage, mode = "bot") => {
         global.io.emit("newMessage", {
             from: to,
             senderName: "Bot",
-            message: typeof rawMessage === "string" ? rawMessage : `[image] ${rawMessage.caption}`,
+            message: messageText,
             timestamp: new Date(),
         });
     }
@@ -184,4 +227,281 @@ exports.sendTutorialImagesToUser = async (to) => {
     }
 
     return true; // semua gambar berhasil
+};
+
+// 🟢 Handler untuk mengirim gambar dari frontend
+exports.sendImageHandler = async (req, res) => {
+    const from = req.params.from;
+    const caption = req.body.caption || "";
+    const nama_admin = req.body.nama_admin || "Admin";
+    const role = req.body.role || "Admin";
+    
+    if (!req.file) {
+        return res.status(400).json({ error: "Tidak ada file gambar yang diunggah." });
+    }
+
+    try {
+        const session = await UserSession.findOne({ from, status: "in_progress" });
+        const mode = session?.mode || "bot";
+        
+        // Construct image URL
+        const imageUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/uploads/${req.file.filename}`;
+        
+        // Format message with admin label if manual mode
+        let finalCaption = caption;
+        if (mode === "manual") {
+            let label = "";
+            if (role === "Admin") {
+                label = `\n\n-Admin ${nama_admin ? " : " + nama_admin : ""}`;
+            } else if (role === "SuperAdmin") {
+                label = "\n\n-Superadmin";
+            } else if (role === "Bupati") {
+                label = "\n\n-Bupati";
+            }
+            finalCaption = caption + label;
+        }
+        
+        // Send image to WhatsApp
+        await exports.sendMessageToWhatsApp(from, {
+            type: "image",
+            link: imageUrl,
+            caption: finalCaption
+        }, mode);
+        
+        // Save to database
+        await Message.create({
+            from,
+            senderName: "Admin",
+            message: finalCaption || "[Gambar]",
+            type: "image",
+            mediaUrl: `/uploads/${req.file.filename}`,
+            timestamp: new Date(),
+        });
+        
+        // Emit to frontend via socket
+        const io = req.app.get("io");
+        if (io) {
+            io.emit("newMessage", {
+                from,
+                senderName: "Admin",
+                message: finalCaption || "[Gambar]",
+                type: "image",
+                mediaUrl: `/uploads/${req.file.filename}`,
+                timestamp: new Date(),
+            });
+        }
+
+        res.json({ success: true, mode, filename: req.file.filename });
+    } catch (err) {
+        console.error("❌ Error kirim gambar:", err);
+        res.status(500).json({ error: "Gagal mengirim gambar." });
+    }
+};
+
+// 🟢 Handler untuk video upload
+exports.sendVideoHandler = async (req, res) => {
+    const from = req.params.from;
+    const caption = req.body.caption || "";
+    const nama_admin = req.body.nama_admin;
+    const role = req.body.role;
+
+    if (!req.file) {
+        return res.status(400).json({ error: "File video tidak ditemukan." });
+    }
+
+    try {
+        const session = await UserSession.findOne({ from, status: "in_progress" });
+        const mode = session?.mode || "bot";
+        
+        // Construct video URL
+        const videoUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/uploads/${req.file.filename}`;
+        
+        // Format message with admin label if manual mode
+        let finalCaption = caption;
+        if (mode === "manual") {
+            let label = "";
+            if (role === "Admin") {
+                label = `\n\n-Admin ${nama_admin ? " : " + nama_admin : ""}`;
+            } else if (role === "SuperAdmin") {
+                label = "\n\n-Superadmin";
+            } else if (role === "Bupati") {
+                label = "\n\n-Bupati";
+            }
+            finalCaption = caption + label;
+        }
+        
+        // Send video to WhatsApp
+        await exports.sendMessageToWhatsApp(from, {
+            type: "video",
+            link: videoUrl,
+            caption: finalCaption
+        }, mode);
+        
+        // Save to database
+        await Message.create({
+            from,
+            senderName: "Admin",
+            message: finalCaption || "[Video]",
+            type: "video",
+            mediaUrl: `/uploads/${req.file.filename}`,
+            timestamp: new Date(),
+        });
+        
+        // Emit to frontend via socket
+        const io = req.app.get("io");
+        if (io) {
+            io.emit("newMessage", {
+                from,
+                senderName: "Admin",
+                message: finalCaption || "[Video]",
+                type: "video",
+                mediaUrl: `/uploads/${req.file.filename}`,
+                timestamp: new Date(),
+            });
+        }
+
+        res.json({ success: true, mode, filename: req.file.filename });
+    } catch (err) {
+        console.error("❌ Error kirim video:", err);
+        res.status(500).json({ error: "Gagal mengirim video." });
+    }
+};
+
+// 🟢 Handler untuk audio upload
+exports.sendAudioHandler = async (req, res) => {
+    const from = req.params.from;
+    const caption = req.body.caption || "";
+    const nama_admin = req.body.nama_admin;
+    const role = req.body.role;
+
+    if (!req.file) {
+        return res.status(400).json({ error: "File audio tidak ditemukan." });
+    }
+
+    try {
+        const session = await UserSession.findOne({ from, status: "in_progress" });
+        const mode = session?.mode || "bot";
+        
+        // Construct audio URL
+        const audioUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/uploads/${req.file.filename}`;
+        
+        // Format message with admin label if manual mode
+        let finalCaption = caption;
+        if (mode === "manual") {
+            let label = "";
+            if (role === "Admin") {
+                label = `\n\n-Admin ${nama_admin ? " : " + nama_admin : ""}`;
+            } else if (role === "SuperAdmin") {
+                label = "\n\n-Superadmin";
+            } else if (role === "Bupati") {
+                label = "\n\n-Bupati";
+            }
+            finalCaption = caption + label;
+        }
+        
+        // Send audio to WhatsApp
+        await exports.sendMessageToWhatsApp(from, {
+            type: "audio",
+            link: audioUrl,
+            caption: finalCaption
+        }, mode);
+        
+        // Save to database
+        await Message.create({
+            from,
+            senderName: "Admin",
+            message: finalCaption || "[Audio]",
+            type: "audio",
+            mediaUrl: `/uploads/${req.file.filename}`,
+            timestamp: new Date(),
+        });
+        
+        // Emit to frontend via socket
+        const io = req.app.get("io");
+        if (io) {
+            io.emit("newMessage", {
+                from,
+                senderName: "Admin",
+                message: finalCaption || "[Audio]",
+                type: "audio",
+                mediaUrl: `/uploads/${req.file.filename}`,
+                timestamp: new Date(),
+            });
+        }
+
+        res.json({ success: true, mode, filename: req.file.filename });
+    } catch (err) {
+        console.error("❌ Error kirim audio:", err);
+        res.status(500).json({ error: "Gagal mengirim audio." });
+    }
+};
+
+// 🟢 Handler untuk document upload
+exports.sendDocumentHandler = async (req, res) => {
+    const from = req.params.from;
+    const caption = req.body.caption || "";
+    const nama_admin = req.body.nama_admin;
+    const role = req.body.role;
+
+    if (!req.file) {
+        return res.status(400).json({ error: "File dokumen tidak ditemukan." });
+    }
+
+    try {
+        const session = await UserSession.findOne({ from, status: "in_progress" });
+        const mode = session?.mode || "bot";
+        
+        // Construct document URL
+        const docUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/uploads/${req.file.filename}`;
+        
+        // Format message with admin label if manual mode
+        let finalCaption = caption;
+        if (mode === "manual") {
+            let label = "";
+            if (role === "Admin") {
+                label = `\n\n-Admin ${nama_admin ? " : " + nama_admin : ""}`;
+            } else if (role === "SuperAdmin") {
+                label = "\n\n-Superadmin";
+            } else if (role === "Bupati") {
+                label = "\n\n-Bupati";
+            }
+            finalCaption = caption + label;
+        }
+        
+        // Send document to WhatsApp
+        await exports.sendMessageToWhatsApp(from, {
+            type: "document",
+            link: docUrl,
+            caption: finalCaption,
+            filename: req.file.originalname
+        }, mode);
+        
+        // Save to database
+        await Message.create({
+            from,
+            senderName: "Admin",
+            message: finalCaption || "[Dokumen]",
+            type: "document",
+            mediaUrl: `/uploads/${req.file.filename}`,
+            timestamp: new Date(),
+        });
+        
+        // Emit to frontend via socket
+        const io = req.app.get("io");
+        if (io) {
+            io.emit("newMessage", {
+                from,
+                senderName: "Admin",
+                message: finalCaption || "[Dokumen]",
+                type: "document",
+                mediaUrl: `/uploads/${req.file.filename}`,
+                timestamp: new Date(),
+            });
+        }
+
+        res.json({ success: true, mode, filename: req.file.filename });
+    } catch (err) {
+        console.error("❌ Error kirim dokumen:", err);
+        res.status(500).json({ error: "Gagal mengirim dokumen." });
+    }
 };

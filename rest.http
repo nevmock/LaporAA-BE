@@ -208,3 +208,31 @@ Content-Type: application/json
 ### Bulk sync reportHistory semua user
 POST http://localhost:3001/user-profile/bulk-sync-report-history
 Content-Type: application/json
+
+###
+### FILE ORGANIZATION API ENDPOINTS
+###
+
+### 📁 Test API connection
+GET http://localhost:3001/api/file-organization/stats
+Content-Type: application/json
+
+### 📁 Verify file integrity (check for broken links)
+GET http://localhost:3001/api/file-organization/verify
+Content-Type: application/json
+
+### 📁 Organize and reorganize files into proper folders
+POST http://localhost:3001/api/file-organization/organize
+Content-Type: application/json
+
+### 📁 Get file organization statistics (production)
+GET https://api.laporaabupati.com/api/file-organization/stats
+Content-Type: application/json
+
+### 📁 Verify file integrity (production)
+GET https://api.laporaabupati.com/api/file-organization/verify
+Content-Type: application/json
+
+### 📁 Organize and reorganize files (production)
+POST https://api.laporaabupati.com/api/file-organization/organize
+Content-Type: application/json
