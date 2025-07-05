@@ -3,6 +3,7 @@ const AdminSession = require('../models/AdminSession');
 const Report = require('../models/Report');
 const Tindakan = require('../models/Tindakan');
 const UserLogin = require('../models/UserLogin');
+const mongoose = require('mongoose');
 
 class AdminPerformanceController {
     
@@ -87,6 +88,7 @@ class AdminPerformanceController {
                 $project: {
                     adminId: '$_id',
                     adminName: '$admin.nama_admin',
+                    username: '$admin.username',
                     role: '$admin.role',
                     totalActivities: 1,
                     reportActivities: 1,
@@ -157,6 +159,7 @@ class AdminPerformanceController {
                 $project: {
                     adminId: '$_id',
                     adminName: '$admin.nama_admin',
+                    username: '$admin.username',
                     role: '$admin.role',
                     totalProcessed: 1,
                     statusBreakdown: 1
@@ -222,6 +225,7 @@ class AdminPerformanceController {
                     date: '$_id.date',
                     adminId: '$_id.admin',
                     adminName: '$admin.nama_admin',
+                    username: '$admin.username',
                     activities: 1,
                     totalActivities: 1
                 }
@@ -273,6 +277,7 @@ class AdminPerformanceController {
                 $project: {
                     adminId: '$_id',
                     adminName: '$admin.nama_admin',
+                    username: '$admin.username',
                     role: '$admin.role',
                     totalSessions: 1,
                     totalDuration: 1,
@@ -344,12 +349,13 @@ class AdminPerformanceController {
     async getAdminStatus(req, res) {
         try {
             const activeAdmins = await AdminSession.find({ isActive: true })
-                .populate('admin', 'nama_admin role')
+                .populate('admin', 'nama_admin username role')
                 .sort({ lastActivity: -1 });
 
             const adminStatusList = activeAdmins.map(session => ({
                 adminId: session.admin._id,
                 adminName: session.admin.nama_admin,
+                username: session.admin.username,
                 role: session.admin.role,
                 loginTime: session.loginTime,
                 lastActivity: session.lastActivity,
@@ -438,6 +444,111 @@ class AdminPerformanceController {
         // Laporan per jam kerja, dll
         return []; // placeholder
     }
+
+    // Get reports by status for specific admin
+    async getReportsByStatus(req, res) {
+        try {
+            const { adminId, status, startDate, endDate } = req.query;
+            
+            console.log('getReportsByStatus called with:', { adminId, status, startDate, endDate });
+            
+            if (!adminId || !status) {
+                return res.status(400).json({ 
+                    message: 'adminId dan status diperlukan' 
+                });
+            }
+
+            // Set default date range jika tidak ada filter
+            const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+            const end = endDate ? new Date(endDate) : new Date();
+
+            console.log('Date range:', { start, end });
+
+            // Convert adminId to ObjectId if it's a valid ObjectId string
+            let adminObjectId;
+            try {
+                adminObjectId = new mongoose.Types.ObjectId(adminId);
+            } catch (err) {
+                // If adminId is not a valid ObjectId, use it as string
+                adminObjectId = adminId;
+            }
+
+            // Cari user berdasarkan adminId untuk mendapatkan nama admin
+            const admin = await UserLogin.findById(adminObjectId);
+            console.log('Found admin:', admin ? admin.nama_admin || admin.username : 'Not found');
+
+            // Pipeline aggregation untuk mendapatkan laporan dengan status tertentu
+            // Menggunakan processed_by dari Report dan status dari Tindakan
+            const reports = await Report.aggregate([
+                // Match laporan yang diproses oleh admin tertentu dalam rentang tanggal
+                {
+                    $match: {
+                        createdAt: { $gte: start, $lte: end },
+                        processed_by: adminObjectId
+                    }
+                },
+                // Lookup tindakan berdasarkan field tindakan di Report
+                {
+                    $lookup: {
+                        from: 'tindakans',
+                        localField: 'tindakan',
+                        foreignField: '_id',
+                        as: 'tindakan'
+                    }
+                },
+                // Unwind tindakan array
+                {
+                    $unwind: {
+                        path: '$tindakan',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                // Match status yang dicari
+                {
+                    $match: {
+                        'tindakan.status': status
+                    }
+                },
+                // Project fields yang dibutuhkan
+                {
+                    $project: {
+                        sessionId: 1,
+                        message: 1,
+                        createdAt: 1,
+                        'location.kecamatan': 1,
+                        'location.desa': 1,
+                        'location.description': 1,
+                        status: '$tindakan.status',
+                        tindakanDate: '$tindakan.createdAt',
+                        opd: '$tindakan.opd'
+                    }
+                },
+                // Sort by creation date descending
+                {
+                    $sort: { createdAt: -1 }
+                },
+                // Limit results
+                {
+                    $limit: 50
+                }
+            ]);
+
+            console.log(`Found ${reports.length} reports for admin ${adminId} with status ${status}`);
+
+            res.json({
+                reports,
+                total: reports.length,
+                adminId,
+                adminName: admin ? (admin.nama_admin || admin.username) : 'Unknown Admin',
+                status,
+                dateRange: { start, end }
+            });
+
+        } catch (error) {
+            console.error('Error getting reports by status:', error);
+            res.status(500).json({ message: 'Server error', error: error.message });
+        }
+    }
 }
 
 const adminPerformanceController = new AdminPerformanceController();
@@ -447,5 +558,6 @@ adminPerformanceController.getDashboard = adminPerformanceController.getDashboar
 adminPerformanceController.getAdminDetail = adminPerformanceController.getAdminDetail.bind(adminPerformanceController);
 adminPerformanceController.getAdminStatus = adminPerformanceController.getAdminStatus.bind(adminPerformanceController);
 adminPerformanceController.getMonthlyReport = adminPerformanceController.getMonthlyReport.bind(adminPerformanceController);
+adminPerformanceController.getReportsByStatus = adminPerformanceController.getReportsByStatus.bind(adminPerformanceController);
 
 module.exports = adminPerformanceController;

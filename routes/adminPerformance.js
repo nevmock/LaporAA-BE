@@ -19,4 +19,7 @@ router.get('/status', adminPerformanceController.getAdminStatus);
 // Laporan bulanan
 router.get('/monthly', adminPerformanceController.getMonthlyReport);
 
+// Laporan berdasarkan status untuk admin tertentu
+router.get('/reports-by-status', adminPerformanceController.getReportsByStatus);
+
 module.exports = router;

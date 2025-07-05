@@ -831,4 +831,75 @@ router.get("/new", async (req, res) => {
     }
 });
 
+// API endpoint untuk mendapatkan data bulan/periode yang memiliki data
+router.get('/available-periods', async (req, res) => {
+    try {
+        const { year = new Date().getFullYear() } = req.query;
+        const parsedYear = parseInt(year);
+
+        // Get months with data for the given year
+        const monthsWithData = await Report.aggregate([
+            {
+                $match: {
+                    createdAt: {
+                        $gte: new Date(parsedYear, 0, 1),
+                        $lt: new Date(parsedYear + 1, 0, 1)
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: { $month: '$createdAt' },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ]);
+
+        // Get years with data (last 5 years from current year)
+        const currentYear = new Date().getFullYear();
+        const yearsToCheck = Array.from({ length: 5 }, (_, i) => currentYear - i);
+        
+        const yearsWithData = await Report.aggregate([
+            {
+                $match: {
+                    createdAt: {
+                        $gte: new Date(Math.min(...yearsToCheck), 0, 1),
+                        $lt: new Date(Math.max(...yearsToCheck) + 1, 0, 1)
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: { $year: '$createdAt' },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ]);
+
+        // Return available periods
+        res.json({
+            availableMonths: monthsWithData.map(item => item._id),
+            availableYears: yearsWithData.map(item => item._id),
+            currentMonth: new Date().getMonth() + 1,
+            currentYear: new Date().getFullYear()
+        });
+
+    } catch (error) {
+        console.error('Error fetching available periods:', error);
+        res.status(500).json({ 
+            message: 'Error fetching available periods',
+            availableMonths: [],
+            availableYears: [],
+            currentMonth: new Date().getMonth() + 1,
+            currentYear: new Date().getFullYear()
+        });
+    }
+});
+
 module.exports = router;

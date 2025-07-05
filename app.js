@@ -15,7 +15,7 @@ const cron = require("node-cron");
 
 const { Server } = require("socket.io");
 
-// Initialize socket.io with 24-hour timeout (extremely long connection)
+// Initialize socket.io with REASONABLE timeouts (Fixed: was 24 hours!)
 const io = new Server(server, {
   cors: {
     origin: "*", // Allow all origins
@@ -25,16 +25,27 @@ const io = new Server(server, {
   },
   transports: ['websocket', 'polling'],
   allowEIO3: true,
-  pingTimeout: 86400000,    // 24 hours (24 * 60 * 60 * 1000)
-  pingInterval: 86400000,   // 24 hours ping interval
-  upgradeTimeout: 86400000, // 24 hours upgrade timeout
-  maxHttpBufferSize: 1e8,   // 100 MB
-  // Enhanced connection handling with 24-hour timeouts
-  connectTimeout: 86400000, // 24 hours connection timeout
+  
+  // ✅ REASONABLE TIMEOUTS (NOT 24 HOURS!)
+  pingTimeout: 60000,       // 60 seconds
+  pingInterval: 25000,      // 25 seconds
+  upgradeTimeout: 30000,    // 30 seconds
+  connectTimeout: 20000,    // 20 seconds
+  
+  // ✅ RESOURCE MANAGEMENT
+  maxHttpBufferSize: 1e6,   // 1 MB (reduced from 100MB)
   allowUpgrades: true,
-  // Keep connections alive for 24 hours
-  heartbeatTimeout: 86400000,
-  heartbeatInterval: 86400000
+  
+  // ✅ CONNECTION HEALTH
+  heartbeatTimeout: 60000,  // 60 seconds
+  heartbeatInterval: 25000, // 25 seconds
+  
+  // ✅ CLEANUP AND RECOVERY
+  cleanupEmptyChildNamespaces: true,
+  connectionStateRecovery: {
+    maxDisconnectionDuration: 2 * 60 * 1000, // 2 minutes
+    skipMiddlewares: true,
+  }
 });
 
 // Set io to app for use in routes
