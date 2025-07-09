@@ -50,6 +50,7 @@ jobs:
               --name laporaa-api-prod \
               --restart unless-stopped \
               -e NODE_ENV=production \
+              --network host \
               -e PORT=3000 \
               -e WHATSAPP_ACCESS_TOKEN="${{ secrets.WHATSAPP_ACCESS_TOKEN }}" \
               -e WHATSAPP_PHONE_ID="${{ secrets.WHATSAPP_PHONE_ID }}" \
@@ -66,7 +67,7 @@ jobs:
               -v ~/laporaa_backup/laporaaLL/LaporAA-BE/public:/app/public \
               nevmock/laporaa-api-prod:latest
             
-
+              
             docker cp ~/laporaa_backup/laporaaLL/LaporAA-BE/utils/Jawa-Barat-Geo-JSON/. laporaa-api-prod:/app/utils/Jawa-Barat-Geo-JSON/
             docker restart laporaa-api-prod
             echo "🧹 Cleaning up unused Docker resources..."
