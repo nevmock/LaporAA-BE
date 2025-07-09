@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - PROD
 
 jobs:
   build-and-deploy:
@@ -65,11 +64,11 @@ jobs:
               -e MAX_LIMITER_REQUEST="${{ secrets.MAX_LIMITER_REQUEST }}" \
               -e MAX_REPORT_PER_DAY="${{ secrets.MAX_REPORT_PER_DAY }}" \
               -p "${{ secrets.PORT }}":3000 \
-              -v ~/LaporAA-BE/public:/app/public \
+              -v ~/laporaa_backup/laporaaLL/LaporAA-BE/public:/app/public \
               nevmock/laporaa-api-prod:latest
 
             
-            docker cp ~/LaporAA-BE/utils/Jawa-Barat-Geo-JSON/. laporaa-api-prod:/app/utils/Jawa-Barat-Geo-JSON/
+            docker cp ~/laporaa_backup/laporaaLL/LaporAA-BE/utils/Jawa-Barat-Geo-JSON/. laporaa-api-prod:/app/utils/Jawa-Barat-Geo-JSON/
             docker restart laporaa-api-prod
             echo "🧹 Cleaning up unused Docker resources..."
             docker system prune -f
