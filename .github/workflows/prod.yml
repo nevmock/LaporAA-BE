@@ -50,7 +50,7 @@ jobs:
               --name laporaa-api-prod \
               --restart unless-stopped \
               -e NODE_ENV=production \
-              --network laporaa-prod-network \
+              --network host \
               -e PORT=3000 \
               -e WHATSAPP_ACCESS_TOKEN="${{ secrets.WHATSAPP_ACCESS_TOKEN }}" \
               -e WHATSAPP_PHONE_ID="${{ secrets.WHATSAPP_PHONE_ID }}" \
