@@ -15,38 +15,64 @@ const cron = require("node-cron");
 
 const { Server } = require("socket.io");
 
-// Initialize socket.io with REASONABLE timeouts (Fixed: was 24 hours!)
-const io = new Server(server, {
-  cors: {
-    origin: "*", // Allow all origins
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["*"],
-    credentials: true
-  },
-  transports: ['websocket', 'polling'],
-  allowEIO3: true,
+// Get VPS-optimized socket configuration with fallback
+let socketConfig;
+try {
+  const VPSSocketConfig = require("./config/vps-socket");
+  const isProduction = process.env.NODE_ENV === 'production';
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  socketConfig = isProduction ? 
+    VPSSocketConfig.getProdConfig() : 
+    isDevelopment ? 
+      VPSSocketConfig.getDevConfig() : 
+      VPSSocketConfig.getConfig();
   
-  // ✅ REASONABLE TIMEOUTS (NOT 24 HOURS!)
-  pingTimeout: 60000,       // 60 seconds
-  pingInterval: 25000,      // 25 seconds
-  upgradeTimeout: 30000,    // 30 seconds
-  connectTimeout: 20000,    // 20 seconds
-  
-  // ✅ RESOURCE MANAGEMENT
-  maxHttpBufferSize: 1e6,   // 1 MB (reduced from 100MB)
-  allowUpgrades: true,
-  
-  // ✅ CONNECTION HEALTH
-  heartbeatTimeout: 60000,  // 60 seconds
-  heartbeatInterval: 25000, // 25 seconds
-  
-  // ✅ CLEANUP AND RECOVERY
-  cleanupEmptyChildNamespaces: true,
-  connectionStateRecovery: {
-    maxDisconnectionDuration: 2 * 60 * 1000, // 2 minutes
-    skipMiddlewares: true,
-  }
-});
+  console.log(`🔧 Using ${isProduction ? 'PRODUCTION' : isDevelopment ? 'DEVELOPMENT' : 'DEFAULT'} socket configuration`);
+  console.log(`🚀 Transport priority: ${socketConfig.transports.join(', ')}`);
+} catch (error) {
+  console.error('❌ VPS socket config error, using fallback:', error.message);
+  // Fallback configuration
+  socketConfig = {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+      allowedHeaders: ["*"],
+      credentials: true
+    },
+    transports: ['polling', 'websocket'],
+    allowEIO3: true,
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    upgradeTimeout: 30000,
+    connectTimeout: 20000,
+    maxHttpBufferSize: 1e6,
+    allowUpgrades: true,
+    cleanupEmptyChildNamespaces: true,
+    connectionStateRecovery: {
+      maxDisconnectionDuration: 2 * 60 * 1000,
+      skipMiddlewares: true,
+    },
+    serveClient: false,
+    cookie: false,
+    path: "/socket.io/",
+    destroyUpgrade: true,
+    destroyUpgradeTimeout: 1000,
+  };
+  console.log('🔧 Using FALLBACK socket configuration');
+  console.log('🚀 Transport priority: polling, websocket');
+}
+
+// Initialize socket.io with VPS-optimized configuration
+let io;
+try {
+  console.log('🔧 Initializing Socket.IO server...');
+  io = new Server(server, socketConfig);
+  console.log('✅ Socket.IO server initialized successfully');
+} catch (error) {
+  console.error('❌ Failed to initialize Socket.IO server:', error);
+  console.error('Stack trace:', error.stack);
+  process.exit(1);
+}
 
 // Set io to app for use in routes
 app.set("io", io);
@@ -55,8 +81,17 @@ app.set("io", io);
 global.io = io;
 
 // Initialize event optimizer
-const eventOptimizer = new BackendEventOptimizer(io);
-app.set("eventOptimizer", eventOptimizer);
+let eventOptimizer;
+try {
+  console.log('🔧 Initializing event optimizer...');
+  eventOptimizer = new BackendEventOptimizer(io);
+  app.set("eventOptimizer", eventOptimizer);
+  console.log('✅ Event optimizer initialized successfully');
+} catch (error) {
+  console.error('❌ Failed to initialize event optimizer:', error);
+  console.error('Stack trace:', error.stack);
+  process.exit(1);
+}
 
 const webhookRoutes = require("./routes/webhookRoutes");
 const messageRoutes = require("./routes/messageRoutes");
@@ -96,6 +131,17 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Add health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // app.use(limitMiddleware);
 
 mongoose.connection.on('connected', () => {
@@ -117,11 +163,22 @@ mongoose.connect(process.env.MONGO_URI).then(() => {
   // Menjalankan server hanya jika bukan environment test
   const PORT = process.env.PORT || 3000;
   if (process.env.NODE_ENV !== 'test') {
-    server.listen(PORT, () => {
-      console.log(`🚀 Server berjalan di port ${PORT}`);
-    });
+    try {
+      server.listen(PORT, () => {
+        console.log(`🚀 Server berjalan di port ${PORT}`);
+        console.log(`📡 Socket.IO ready on port ${PORT}`);
+        console.log(`🌐 Health check available at http://localhost:${PORT}/health`);
+      });
+    } catch (error) {
+      console.error('❌ Failed to start server:', error);
+      process.exit(1);
+    }
   }
-}).catch(err => console.error("❌ MongoDB Connection Error:", err));
+}).catch(err => {
+  console.error("❌ MongoDB Connection Error:", err);
+  console.error("Stack trace:", err.stack);
+  process.exit(1);
+});
 
 // Enhanced socket event emitters for room-based targeting with optimization
 const emitToAdmins = (event, data) => {
@@ -336,12 +393,62 @@ io.on("connection", (socket) => {
   socket.emit("adminOnlineStatus", { status: "online" });
 });
 
-// Global error handler for Socket.IO
+// Global error handler for Socket.IO with enhanced logging
 io.engine.on("connection_error", (err) => {
-    console.error("❌ Socket.IO connection error:", err.req);
-    console.error("❌ Error code:", err.code);
-    console.error("❌ Error message:", err.message);
-    console.error("❌ Error context:", err.context);
+    console.error("❌ Socket.IO connection error details:");
+    console.error("   Request:", err.req?.url || 'unknown');
+    console.error("   Error code:", err.code);
+    console.error("   Error message:", err.message);
+    console.error("   Error context:", err.context);
+    console.error("   Headers:", err.req?.headers || {});
+    
+    // Log specific error patterns
+    if (err.message?.includes('websocket error')) {
+        console.error("🔧 WebSocket specific error - client will fallback to polling");
+    }
+    
+    if (err.code === 'ECONNRESET') {
+        console.error("🔧 Connection reset - likely client disconnected abruptly");
+    }
+    
+    if (err.code === 'ETIMEDOUT') {
+        console.error("🔧 Connection timeout - check network connectivity");
+    }
+});
+
+// Handle server-side socket errors
+io.on("error", (error) => {
+    console.error("❌ Socket.IO server error:", error);
+});
+
+// Monitor connection counts
+let connectionCount = 0;
+io.on("connection", (socket) => {
+    connectionCount++;
+    console.log(`🟢 User connected: ${socket.id} (Total: ${connectionCount})`);
+    
+    // Monitor client connection health
+    const connectionHealth = setInterval(() => {
+        if (socket.connected) {
+            socket.emit('ping', { timestamp: Date.now() });
+        } else {
+            clearInterval(connectionHealth);
+        }
+    }, 30000); // Ping every 30 seconds
+    
+    socket.on('disconnect', () => {
+        connectionCount--;
+        clearInterval(connectionHealth);
+        console.log(`🔴 User disconnected: ${socket.id} (Total: ${connectionCount})`);
+    });
+    
+    // Handle pong responses
+    socket.on('pong', (data) => {
+        const latency = Date.now() - data.timestamp;
+        console.log(`💓 Pong from ${socket.id}: ${latency}ms`);
+    });
+    
+    // Rest of your socket handling code...
 });
 
 // Simpan WebSocket ke app agar bisa digunakan di route lain
