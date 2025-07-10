@@ -50,3 +50,6 @@ pids/
 
 # custom script
 push.sh
+
+# geojson files
+*.geojson
