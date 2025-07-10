@@ -1,0 +1,11 @@
+🔄 Commit terbaru di branch DEV_Ismail
+
+📝 feat: update app.js, routes/auth.js, routes/tindakanRoutes.js
+📅 2025-07-02_1806
+
+📂 Perubahan file:
+app.js
+routes/auth.js
+routes/tindakanRoutes.js
+
+🚀 Meluncur

@@ -1,0 +1,10 @@
+🔄 Commit terbaru di branch DEV_Ismail
+
+📝 chore: update .gitignore, utils/Jawa-Barat-Geo-JSON
+📅 2025-07-10_1413
+
+📂 Perubahan file:
+.gitignore
+utils/Jawa-Barat-Geo-JSON
+
+🚀 Meluncur

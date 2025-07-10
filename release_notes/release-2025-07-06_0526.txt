@@ -1,0 +1,12 @@
+🔄 Commit terbaru di branch DEV_Ismail
+
+📝 feat: update app.js, controllers/adminPerformanceController.js, routes/adminPerformance.js
+📅 2025-07-06_0526
+
+📂 Perubahan file:
+app.js
+controllers/adminPerformanceController.js
+routes/adminPerformance.js
+routes/dashboardRoute.js
+
+🚀 Meluncur
