@@ -109,6 +109,12 @@ exports.updateRatingById = async (tindakanId, rating) => {
 
 // Add a tag to tindakan
 exports.addTag = async (tindakanId, hashTag) => {
+    // Validate ObjectId format
+    const mongoose = require('mongoose');
+    if (!mongoose.Types.ObjectId.isValid(tindakanId)) {
+        throw new Error(`Invalid tindakanId format: ${tindakanId}`);
+    }
+    
     const tindakan = await Tindakan.findById(tindakanId);
     if (!tindakan) throw new Error("Tindakan tidak ditemukan.");
     

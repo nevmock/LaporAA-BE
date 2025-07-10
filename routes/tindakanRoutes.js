@@ -306,6 +306,25 @@ router.post("/:tindakanId/tag", async (req, res) => {
         const { tindakanId } = req.params;
         const { hash_tag } = req.body;
         
+        // Enhanced logging for debugging
+        console.log("=== TAG ENDPOINT DEBUG ===");
+        console.log("tindakanId:", tindakanId);
+        console.log("tindakanId type:", typeof tindakanId);
+        console.log("tindakanId length:", tindakanId.length);
+        console.log("hash_tag:", hash_tag);
+        console.log("Request body:", req.body);
+        console.log("========================");
+        
+        // Validate tindakanId format
+        if (!tindakanId || tindakanId.length !== 24) {
+            console.error("❌ Invalid tindakanId format. Expected 24 characters, got:", tindakanId.length);
+            return res.status(400).json({ 
+                message: "Invalid tindakanId format",
+                received: tindakanId,
+                length: tindakanId.length
+            });
+        }
+        
         if (!hash_tag) {
             return res.status(400).json({ message: "Tag tidak boleh kosong" });
         }
