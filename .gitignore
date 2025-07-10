@@ -53,3 +53,5 @@ push.sh
 
 # geojson files
 *.geojson
+
+# hapus geojson files
