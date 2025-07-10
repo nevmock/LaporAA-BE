@@ -54,4 +54,7 @@ push.sh
 # geojson files
 *.geojson
 
+# Ignore all files in Jawa-Barat-Geo-JSON folder
+Jawa-Barat-Geo-JSON/
+
 # hapus geojson files
