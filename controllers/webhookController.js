@@ -5,6 +5,37 @@ const { sendMessageToWhatsApp } = require("./messageController");
 const downloadMediaFromMeta = require("../utils/downloadMediaFromMeta");
 const modeManager = require("../services/modeManager");
 
+// Enhanced socket event emitters for room-based targeting
+const emitToAdmins = (io, event, data) => {
+    if (io && io.to) {
+        io.to('admins').emit(event, data);
+        console.log(`📡 Emitted ${event} to admins room`);
+    } else {
+        console.warn('⚠️  Socket.IO not available for admin broadcast');
+    }
+};
+
+const emitToUser = (io, userId, event, data) => {
+    if (io && io.to) {
+        io.to(`user-${userId}`).emit(event, data);
+        console.log(`📡 Emitted ${event} to user ${userId}`);
+    }
+};
+
+const emitToChat = (io, sessionId, event, data) => {
+    if (io && io.to) {
+        io.to(`chat-${sessionId}`).emit(event, data);
+        console.log(`📡 Emitted ${event} to chat session ${sessionId}`);
+    }
+};
+
+const emitGlobalUpdate = (io, event, data) => {
+    if (io && io.to) {
+        io.to('global').emit(event, data);
+        console.log(`📡 Emitted ${event} to global room`);
+    }
+};
+
 exports.handleIncomingMessages = async (req, res) => {
     try {
         const data = req.body;
@@ -26,7 +57,7 @@ exports.handleIncomingMessages = async (req, res) => {
 
                             let parsedMessage = "Pesan tidak dikenal";
                             let messagePreviewForLog = "";
-                            let imagePath;
+                            let mediaPath;
 
                             if (messageType === "text") {
                                 parsedMessage = msg.text.body;
@@ -47,18 +78,99 @@ exports.handleIncomingMessages = async (req, res) => {
                                 const caption = msg.image?.caption || "";
 
                                 // ✅ Download foto ke local
-                                imagePath = await downloadMediaFromMeta(mediaId);
+                                mediaPath = await downloadMediaFromMeta(mediaId);
 
                                 parsedMessage = {
                                     type: "image",
                                     image: {
                                         id: mediaId,
-                                        url: imagePath,
+                                        url: mediaPath,
                                         caption
                                     }
                                 };
 
                                 messagePreviewForLog = `[Image] ${caption}`;
+                            } else if (messageType === "video") {
+                                const mediaId = msg.video.id;
+                                const caption = msg.video?.caption || "";
+
+                                // ✅ Download video ke local
+                                mediaPath = await downloadMediaFromMeta(mediaId);
+
+                                parsedMessage = {
+                                    type: "video",
+                                    video: {
+                                        id: mediaId,
+                                        url: mediaPath,
+                                        caption
+                                    }
+                                };
+
+                                messagePreviewForLog = `[Video] ${caption}`;
+                            } else if (messageType === "audio") {
+                                const mediaId = msg.audio.id;
+
+                                // ✅ Download audio ke local
+                                mediaPath = await downloadMediaFromMeta(mediaId);
+
+                                parsedMessage = {
+                                    type: "audio",
+                                    audio: {
+                                        id: mediaId,
+                                        url: mediaPath
+                                    }
+                                };
+
+                                messagePreviewForLog = `[Audio]`;
+                            } else if (messageType === "voice") {
+                                const mediaId = msg.voice.id;
+
+                                // ✅ Download voice note ke local
+                                mediaPath = await downloadMediaFromMeta(mediaId);
+
+                                parsedMessage = {
+                                    type: "voice",
+                                    voice: {
+                                        id: mediaId,
+                                        url: mediaPath
+                                    }
+                                };
+
+                                messagePreviewForLog = `[Voice Note]`;
+                            } else if (messageType === "document") {
+                                const mediaId = msg.document.id;
+                                const filename = msg.document.filename || "document";
+                                const caption = msg.document?.caption || "";
+
+                                // ✅ Download document (PDF, DOC, etc.) ke local
+                                mediaPath = await downloadMediaFromMeta(mediaId);
+
+                                parsedMessage = {
+                                    type: "document",
+                                    document: {
+                                        id: mediaId,
+                                        url: mediaPath,
+                                        filename,
+                                        caption
+                                    }
+                                };
+
+                                messagePreviewForLog = `[Document] ${filename} - ${caption}`;
+                            } else if (messageType === "sticker") {
+                                const mediaId = msg.sticker.id;
+
+                                // ✅ Download sticker ke local
+                                mediaPath = await downloadMediaFromMeta(mediaId);
+
+                                parsedMessage = {
+                                    type: "sticker",
+                                    sticker: {
+                                        id: mediaId,
+                                        url: mediaPath
+                                    }
+                                };
+
+                                messagePreviewForLog = `[Sticker]`;
                             } else {
                                 parsedMessage = "Pesan dengan format tidak didukung.";
                                 messagePreviewForLog = `[${messageType}]`;
@@ -70,25 +182,33 @@ exports.handleIncomingMessages = async (req, res) => {
                                 senderName: name,
                                 message: messagePreviewForLog,
                                 type: messageType,
-                                mediaUrl: messageType === "image" ? imagePath : undefined,
+                                mediaUrl: ["image", "video", "audio", "voice", "document", "sticker"].includes(messageType) ? mediaPath : undefined,
                                 timestamp: new Date()
                             };
 
                             await Message.create(messagePayload);
 
                             if (io) {
-                                io.emit("newMessage", messagePayload);
+                                // Emit to admins room for monitoring
+                                emitToAdmins(io, "newMessage", messagePayload);
+                                
+                                // Also emit globally for compatibility
+                                emitGlobalUpdate(io, "newMessage", messagePayload);
                             }
 
                             // Jalankan bot
                             const sendReply = (to, message) => {
                                 if (io) {
-                                    io.emit("newMessage", {
+                                    const botMessagePayload = {
                                         from: to,
                                         senderName: "Bot",
                                         message,
                                         timestamp: new Date()
-                                    });
+                                    };
+                                    
+                                    // Emit bot response to appropriate rooms
+                                    emitToAdmins(io, "newMessage", botMessagePayload);
+                                    emitGlobalUpdate(io, "newMessage", botMessagePayload);
                                 }
                                 return message;
                             };
