@@ -392,7 +392,6 @@ io.on("connection", (socket) => {
   // Handle pin toggle broadcast
   socket.on("report-pin-toggle", (data) => {
     const { sessionId, isPinned, userId, timestamp } = data;
-    console.log(`📌 Pin toggle: ${sessionId} - ${isPinned} by ${userId}`);
     
     // Broadcast to all other clients (except sender)
     socket.broadcast.emit("report-pin-toggled", {
@@ -414,7 +413,6 @@ io.on("connection", (socket) => {
   // Handle force mode toggle broadcast
   socket.on("report-force-mode-toggle", (data) => {
     const { from, forceMode, userId, timestamp } = data;
-    console.log(`🤖 Force mode toggle: ${from} - ${forceMode} by ${userId}`);
     
     // Broadcast to all other clients (except sender)
     socket.broadcast.emit("report-force-mode-toggled", {
@@ -436,7 +434,6 @@ io.on("connection", (socket) => {
   // Handle prioritas toggle broadcast
   socket.on("report-prioritas-toggle", (data) => {
     const { sessionId, tindakanId, prioritas, userId, timestamp } = data;
-    console.log(`⭐ Prioritas toggle: ${sessionId} - ${prioritas} by ${userId}`);
     
     // Broadcast to all other clients (except sender)
     socket.broadcast.emit("report-prioritas-toggled", {
