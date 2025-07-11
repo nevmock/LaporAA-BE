@@ -389,6 +389,76 @@ io.on("connection", (socket) => {
     emitGlobalUpdate("messageStatus", statusData);
   });
 
+  // ----------------------- REALTIME TOGGLE SYNC HANDLERS -----------------------
+  
+  // Handle pin toggle broadcast
+  socket.on("report-pin-toggle", (data) => {
+    const { sessionId, isPinned, userId, timestamp } = data;
+    console.log(`📌 Pin toggle: ${sessionId} - ${isPinned} by ${userId}`);
+    
+    // Broadcast to all other clients (except sender)
+    socket.broadcast.emit("report-pin-toggled", {
+      sessionId,
+      isPinned,
+      userId,
+      timestamp
+    });
+    
+    // Also emit to admin rooms for monitoring
+    emitToAdmins("report-pin-toggled", {
+      sessionId,
+      isPinned,
+      userId,
+      timestamp
+    });
+  });
+
+  // Handle force mode toggle broadcast
+  socket.on("report-force-mode-toggle", (data) => {
+    const { from, forceMode, userId, timestamp } = data;
+    console.log(`🤖 Force mode toggle: ${from} - ${forceMode} by ${userId}`);
+    
+    // Broadcast to all other clients (except sender)
+    socket.broadcast.emit("report-force-mode-toggled", {
+      from,
+      forceMode,
+      userId,
+      timestamp
+    });
+    
+    // Also emit to admin rooms for monitoring
+    emitToAdmins("report-force-mode-toggled", {
+      from,
+      forceMode,
+      userId,
+      timestamp
+    });
+  });
+
+  // Handle prioritas toggle broadcast
+  socket.on("report-prioritas-toggle", (data) => {
+    const { sessionId, tindakanId, prioritas, userId, timestamp } = data;
+    console.log(`⭐ Prioritas toggle: ${sessionId} - ${prioritas} by ${userId}`);
+    
+    // Broadcast to all other clients (except sender)
+    socket.broadcast.emit("report-prioritas-toggled", {
+      sessionId,
+      tindakanId,
+      prioritas,
+      userId,
+      timestamp
+    });
+    
+    // Also emit to admin rooms for monitoring
+    emitToAdmins("report-prioritas-toggled", {
+      sessionId,
+      tindakanId,
+      prioritas,
+      userId,
+      timestamp
+    });
+  });
+
   // Auto-emit admin online status when admin connects
   socket.emit("adminOnlineStatus", { status: "online" });
 });
