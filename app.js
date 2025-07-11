@@ -203,8 +203,7 @@ const userSockets = new Map(); // userId -> Set of socketIds
 
 // 🔵 WebSocket Connection with enhanced error handling
 io.on("connection", (socket) => {
-  console.log(`🟢 User connected: ${socket.id}`);
-  console.log(`✅ New client connected: ${socket.id}`);
+  // User connected
 
   // Handle authentication and room joining
   socket.on("authenticate", async (data) => {
@@ -264,8 +263,7 @@ io.on("connection", (socket) => {
 
   // Handle disconnect
   socket.on("disconnect", (reason) => {
-    console.log(`🔴 User disconnected: ${socket.id}`);
-    console.log(`❌ Client disconnected: ${socket.id} Reason: ${reason}`);
+    // User disconnected
     
     // Clean up user tracking
     const userInfo = connectedUsers.get(socket.id);
@@ -457,6 +455,30 @@ io.on("connection", (socket) => {
       userId,
       timestamp
     });
+  });
+
+  // ----------------------- TEST EVENT HANDLER -----------------------
+  // Handle test event untuk debugging socket communication
+  socket.on("test-event", (data) => {
+    console.log(`🧪 Test event received:`, data);
+    
+    // Echo back to sender
+    socket.emit("test-response", {
+      message: "Test received by backend",
+      originalData: data,
+      socketId: socket.id,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Broadcast to all other clients
+    socket.broadcast.emit("test-broadcast", {
+      message: "Test broadcast from backend",
+      originalData: data,
+      fromSocketId: socket.id,
+      timestamp: new Date().toISOString()
+    });
+    
+    console.log(`🧪 Test response and broadcast sent`);
   });
 
   // Auto-emit admin online status when admin connects
