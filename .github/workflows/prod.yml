@@ -1,0 +1,74 @@
+name: 🚀 CI/CD Backend Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: Production
+
+    steps:
+      - name: 📦 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🧰 Setup Node.js v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📥 Install Dependencies
+        run: npm install
+
+      - name: 🔐 Docker Login
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: 🛠 Build Docker Image
+        run: docker build -t nevmock/laporaa-api-prod:latest .
+
+      - name: 📤 Push Docker Image
+        run: docker push nevmock/laporaa-api-prod:latest
+
+      - name: 🚢 Deploy to VPS Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "🔁 Pulling latest Docker image..."
+            docker pull nevmock/laporaa-api-prod:latest
+
+            echo "🛑 Stopping and removing old container (if exists)..."
+            docker stop laporaa-api-prod || true
+            docker rm laporaa-api-prod || true
+
+            echo "🚀 Running new container..."
+            docker run -d \
+              --name laporaa-api-prod \
+              --restart unless-stopped \
+              -e NODE_ENV=production \
+              --network host \
+              -e PORT=3000 \
+              -e WHATSAPP_ACCESS_TOKEN="${{ secrets.WHATSAPP_ACCESS_TOKEN }}" \
+              -e WHATSAPP_PHONE_ID="${{ secrets.WHATSAPP_PHONE_ID }}" \
+              -e VERIFY_TOKEN="${{ secrets.VERIFY_TOKEN }}" \
+              -e MONGO_URI="${{ secrets.MONGO_URI }}" \
+              -e GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
+              -e OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
+              -e BASE_URL="${{ secrets.BASE_URL }}" \
+              -e AI_CONTEXT_READER="${{ secrets.AI_CONTEXT_READER }}" \
+              -e AI_PERIOD_LIMITER="${{ secrets.AI_PERIOD_LIMITER }}" \
+              -e MAX_LIMITER_REQUEST="${{ secrets.MAX_LIMITER_REQUEST }}" \
+              -e MAX_REPORT_PER_DAY="${{ secrets.MAX_REPORT_PER_DAY }}" \
+              -p "${{ secrets.PORT }}":3000 \
+              -v ~/laporaa_backup/laporaaLL/LaporAA-BE/public:/app/public \
+              nevmock/laporaa-api-prod:latest
+            
+              
+            docker cp ~/laporaa_backup/laporaaLL/LaporAA-BE/utils/Jawa-Barat-Geo-JSON/. laporaa-api-prod:/app/utils/Jawa-Barat-Geo-JSON/
+            docker restart laporaa-api-prod
+            echo "🧹 Cleaning up unused Docker resources..."
+            docker system prune -f
