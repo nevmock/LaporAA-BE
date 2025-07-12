@@ -68,8 +68,9 @@ jobs:
               -v /etc/localtime:/etc/localtime:ro \
               -v /etc/timezone:/etc/timezone:ro \
               nevmock/laporaa-api-prod:latest
-              
+            
             docker cp ~/laporaa_backup/laporaaLL/Jawa-Barat-Geo-JSON/. laporaa-api-prod:/app/utils/Jawa-Barat-Geo-JSON/
             docker restart laporaa-api-prod
             echo "🧹 Cleaning up unused Docker resources..."
             docker system prune -f
+            

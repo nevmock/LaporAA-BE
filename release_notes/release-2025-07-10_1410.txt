@@ -1,0 +1,9 @@
+🔄 Commit terbaru di branch DEV_Ismail
+
+📝 chore: update .gitignore
+📅 2025-07-10_1410
+
+📂 Perubahan file:
+.gitignore
+
+🚀 Meluncur

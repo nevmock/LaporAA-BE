@@ -210,6 +210,8 @@ router.get("/summary-dashboard", async (req, res) => {
         const { mode = "monthly", year, month, week } = req.query;
 
         let matchStage = {};
+        let previousMatchStage = {};
+        
         // Mode ALL
         if (mode === "all") {
             // Tidak ada filter tanggal
@@ -218,14 +220,22 @@ router.get("/summary-dashboard", async (req, res) => {
                 return res.status(400).json({ message: "Parameter 'year' diperlukan" });
             }
 
-            let startDate, endDate;
+            let startDate, endDate, previousStartDate, previousEndDate;
             if (mode === "yearly") {
                 startDate = dayjs(`${year}-01-01`).startOf("day").toDate();
                 endDate = dayjs(`${year}-12-31`).endOf("day").toDate();
+                previousStartDate = dayjs(`${year - 1}-01-01`).startOf("day").toDate();
+                previousEndDate = dayjs(`${year - 1}-12-31`).endOf("day").toDate();
             } else if (mode === "monthly") {
                 if (!month) return res.status(400).json({ message: "Parameter 'month' diperlukan" });
                 startDate = dayjs(`${year}-${month}-01`).startOf("month").toDate();
                 endDate = dayjs(`${year}-${month}-01`).endOf("month").toDate();
+                
+                // Previous month calculation
+                const currentMonth = dayjs(`${year}-${month}-01`);
+                const previousMonth = currentMonth.subtract(1, 'month');
+                previousStartDate = previousMonth.startOf("month").toDate();
+                previousEndDate = previousMonth.endOf("month").toDate();
             } else if (mode === "weekly") {
                 if (!month || !week) {
                     return res.status(400).json({ message: "Parameter 'month' dan 'week' diperlukan untuk mode 'weekly'" });
@@ -237,13 +247,20 @@ router.get("/summary-dashboard", async (req, res) => {
                 }
                 startDate = startOfWeek.startOf("day").toDate();
                 endDate = startOfWeek.endOf("week").endOf("day").toDate();
+                
+                // Previous week calculation
+                const previousWeekStart = startOfWeek.subtract(1, 'week');
+                previousStartDate = previousWeekStart.startOf("day").toDate();
+                previousEndDate = previousWeekStart.endOf("week").endOf("day").toDate();
             } else {
                 return res.status(400).json({ message: "Mode tidak valid" });
             }
 
             matchStage = { "tindakan.createdAt": { $gte: startDate, $lte: endDate } };
+            previousMatchStage = { "tindakan.createdAt": { $gte: previousStartDate, $lte: previousEndDate } };
         }
 
+        // Current period data
         const pipeline = [
             {
                 $lookup: {
@@ -267,12 +284,72 @@ router.get("/summary-dashboard", async (req, res) => {
 
         const summary = await Report.aggregate(pipeline);
 
+        // Previous period data (only if not "all" mode)
+        let previousSummary = [];
+        if (mode !== "all") {
+            const previousPipeline = [
+                {
+                    $lookup: {
+                        from: "tindakans",
+                        localField: "tindakan",
+                        foreignField: "_id",
+                        as: "tindakan"
+                    }
+                },
+                { $unwind: { path: "$tindakan", preserveNullAndEmptyArrays: true } },
+                { $match: previousMatchStage },
+                {
+                    $group: {
+                        _id: "$tindakan.status",
+                        count: { $sum: 1 }
+                    }
+                }
+            ];
+            previousSummary = await Report.aggregate(previousPipeline);
+        }
+
         const result = {};
+        const previousResult = {};
+        
+        // Process current period
         summary.forEach(item => {
             result[item._id || "Tanpa Status"] = item.count;
         });
 
-        res.status(200).json(result);
+        // Process previous period
+        previousSummary.forEach(item => {
+            previousResult[item._id || "Tanpa Status"] = item.count;
+        });
+
+        // Calculate trends for each status
+        const trendsResult = {};
+        const allStatuses = [
+            "Perlu Verifikasi", "Verifikasi Situasi", "Verifikasi Kelengkapan Berkas",
+            "Proses OPD Terkait", "Selesai Penanganan", "Selesai Pengaduan", "Ditutup"
+        ];
+
+        allStatuses.forEach(status => {
+            const current = result[status] || 0;
+            const previous = previousResult[status] || 0;
+            
+            let trend = 0;
+            if (previous > 0) {
+                trend = ((current - previous) / previous * 100);
+            } else if (current > 0) {
+                trend = 100; // 100% increase if previous was 0
+            }
+            
+            trendsResult[status] = {
+                current: current,
+                previous: previous,
+                trend: Math.round(trend * 100) / 100 // Round to 2 decimal places
+            };
+        });
+
+        res.status(200).json({
+            current: result,
+            trends: trendsResult
+        });
     } catch (error) {
         console.error("❌ Error summary-dashboard:", error);
         res.status(500).json({ message: "Terjadi kesalahan pada server" });
@@ -828,6 +905,77 @@ router.get("/new", async (req, res) => {
     } catch (error) {
         console.error("❌ Error fetching reports:", error);
         res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    }
+});
+
+// API endpoint untuk mendapatkan data bulan/periode yang memiliki data
+router.get('/available-periods', async (req, res) => {
+    try {
+        const { year = new Date().getFullYear() } = req.query;
+        const parsedYear = parseInt(year);
+
+        // Get months with data for the given year
+        const monthsWithData = await Report.aggregate([
+            {
+                $match: {
+                    createdAt: {
+                        $gte: new Date(parsedYear, 0, 1),
+                        $lt: new Date(parsedYear + 1, 0, 1)
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: { $month: '$createdAt' },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ]);
+
+        // Get years with data (last 5 years from current year)
+        const currentYear = new Date().getFullYear();
+        const yearsToCheck = Array.from({ length: 5 }, (_, i) => currentYear - i);
+        
+        const yearsWithData = await Report.aggregate([
+            {
+                $match: {
+                    createdAt: {
+                        $gte: new Date(Math.min(...yearsToCheck), 0, 1),
+                        $lt: new Date(Math.max(...yearsToCheck) + 1, 0, 1)
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: { $year: '$createdAt' },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ]);
+
+        // Return available periods
+        res.json({
+            availableMonths: monthsWithData.map(item => item._id),
+            availableYears: yearsWithData.map(item => item._id),
+            currentMonth: new Date().getMonth() + 1,
+            currentYear: new Date().getFullYear()
+        });
+
+    } catch (error) {
+        console.error('Error fetching available periods:', error);
+        res.status(500).json({ 
+            message: 'Error fetching available periods',
+            availableMonths: [],
+            availableYears: [],
+            currentMonth: new Date().getMonth() + 1,
+            currentYear: new Date().getFullYear()
+        });
     }
 });
 

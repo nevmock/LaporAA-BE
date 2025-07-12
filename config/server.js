@@ -1,12 +1,11 @@
 const express = require('express');
 const http = require('http');
-const socketIo = require('socket.io');
 
 class ServerConfig {
   constructor() {
     this.app = express();
     this.server = http.createServer(this.app);
-    this.io = socketIo(this.server);
+    // Socket.IO initialization moved to app.js to avoid double initialization
   }
 
   getApp() {
@@ -15,10 +14,6 @@ class ServerConfig {
 
   getServer() {
     return this.server;
-  }
-
-  getIO() {
-    return this.io;
   }
 
   async start(port) {

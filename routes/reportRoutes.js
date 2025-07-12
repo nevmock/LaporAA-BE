@@ -1254,6 +1254,136 @@ router.delete("/", async (req, res) => {
     }
 });
 
+// ========== PDF REPORT GENERATION ENDPOINTS ==========
+
+// Save report template
+router.post("/save-template", async (req, res) => {
+    try {
+        const { name, elements, settings } = req.body;
+        
+        // Here you could save to database
+        // For now, we'll just return success
+        
+        res.status(200).json({
+            message: "Template berhasil disimpan",
+            templateId: Date.now().toString()
+        });
+    } catch (error) {
+        console.error("Error saving template:", error);
+        res.status(500).json({ message: "Gagal menyimpan template" });
+    }
+});
+
+// Generate PDF report
+router.post("/generate-pdf", async (req, res) => {
+    try {
+        const { template, elements, dashboardData, metadata } = req.body;
+        
+        // For now, return a simple success response
+        // In production, you would use PDFKit or similar library
+        res.status(200).json({
+            message: "PDF generation endpoint ready",
+            template: template.title,
+            elementsCount: elements.length
+        });
+
+        // TODO: Implement actual PDF generation with PDFKit
+        /*
+        const PDFDocument = require('pdfkit');
+        const doc = new PDFDocument({ size: 'A4', margin: 50 });
+        
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="Laporan-${Date.now()}.pdf"`);
+        
+        doc.pipe(res);
+        
+        // Add content to PDF
+        doc.fontSize(20).text(template.title, { align: 'center' });
+        doc.moveDown();
+        
+        doc.fontSize(16).text(template.subtitle || '', { align: 'center' });
+        doc.moveDown();
+        
+        doc.fontSize(12).text(`Periode: ${template.period} ${template.year}${template.month ? `/${template.month}` : ''}`, { align: 'center' });
+        doc.moveDown(2);
+
+        // Add dashboard summary
+        doc.fontSize(14).text('RINGKASAN STATISTIK', { underline: true });
+        doc.moveDown();
+
+        if (dashboardData && dashboardData.current) {
+            const stats = dashboardData.current;
+            const totalAll = Object.values(stats).reduce((sum, count) => sum + (count || 0), 0);
+            
+            doc.fontSize(12);
+            doc.text(`Total Laporan: ${totalAll}`);
+            doc.text(`Perlu Verifikasi: ${stats["Perlu Verifikasi"] || 0}`);
+            doc.text(`Verifikasi Situasi: ${stats["Verifikasi Situasi"] || 0}`);
+            doc.text(`Verifikasi Kelengkapan Berkas: ${stats["Verifikasi Kelengkapan Berkas"] || 0}`);
+            doc.text(`Proses OPD Terkait: ${stats["Proses OPD Terkait"] || 0}`);
+            doc.text(`Selesai Penanganan: ${stats["Selesai Penanganan"] || 0}`);
+            doc.text(`Selesai Pengaduan: ${stats["Selesai Pengaduan"] || 0}`);
+            doc.text(`Ditutup: ${stats["Ditutup"] || 0}`);
+        }
+
+        doc.moveDown(2);
+
+        // Add custom elements
+        elements.forEach(element => {
+            if (element.type === 'header') {
+                doc.fontSize(16).text(element.content, { align: 'left' });
+                doc.moveDown();
+            } else if (element.type === 'text') {
+                doc.fontSize(12).text(element.content);
+                doc.moveDown();
+            } else if (element.type === 'summary-cards') {
+                doc.fontSize(14).text('SUMMARY CARDS', { underline: true });
+                doc.moveDown(0.5);
+                
+                if (dashboardData && dashboardData.current) {
+                    const stats = dashboardData.current;
+                    
+                    const tindakLanjut = (stats["Verifikasi Situasi"] || 0) + 
+                                       (stats["Verifikasi Kelengkapan Berkas"] || 0) + 
+                                       (stats["Proses OPD Terkait"] || 0);
+                    
+                    doc.fontSize(12);
+                    doc.text(`• Tindak Lanjut: ${tindakLanjut} laporan`);
+                    doc.text(`• Selesai Penanganan: ${stats["Selesai Penanganan"] || 0} laporan`);
+                    doc.text(`• Selesai Pengaduan: ${stats["Selesai Pengaduan"] || 0} laporan`);
+                    doc.text(`• Ditutup: ${stats["Ditutup"] || 0} laporan`);
+                }
+                doc.moveDown();
+            }
+        });
+
+        // Add metadata
+        doc.moveDown(3);
+        doc.fontSize(10);
+        doc.text(`Dibuat pada: ${metadata.generatedAt}`, { align: 'right' });
+        doc.text(`Dibuat oleh: ${metadata.generatedBy}`, { align: 'right' });
+
+        doc.end();
+        */
+
+    } catch (error) {
+        console.error("Error generating PDF:", error);
+        res.status(500).json({ message: "Gagal membuat PDF" });
+    }
+});
+
+// Get saved templates
+router.get("/templates", async (req, res) => {
+    try {
+        // Here you could fetch from database
+        // For now, return empty array
+        res.status(200).json([]);
+    } catch (error) {
+        console.error("Error fetching templates:", error);
+        res.status(500).json({ message: "Gagal mengambil template" });
+    }
+});
+
 module.exports = router;
 
 // Helper function to build dynamic filter pipeline
