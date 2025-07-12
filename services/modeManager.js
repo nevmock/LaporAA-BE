@@ -7,7 +7,7 @@ const UserSession = require("../models/UserSession");
  * 1. Bot Mode - Bot otomatis merespon
  * 2. Manual Mode - Hanya admin yang merespon
  * 3. Force Manual Mode - Paksa manual tanpa timeout (saklar utama)
- */ 
+ */
 
 class ModeManager {
     /**

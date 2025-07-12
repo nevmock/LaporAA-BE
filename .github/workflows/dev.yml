@@ -67,7 +67,6 @@ jobs:
               -v ~/LaporAA-BE/public:/app/public \
               nevmock/laporaa-api-dev:latest
 
-
             docker cp ~/LaporAA-BE/utils/Jawa-Barat-Geo-JSON/. laporaa-api-dev:/app/utils/Jawa-Barat-Geo-JSON/
             docker restart laporaa-api-dev
             echo "🧹 Cleaning up unused Docker resources..."

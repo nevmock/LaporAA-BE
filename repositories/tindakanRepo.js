@@ -1,4 +1,5 @@
 const Tindakan = require("../models/Tindakan");
+const { cleanOpdArray } = require("../utils/opdValidator");
 
 exports.update = async ({ reportId, hasil, trackingId, prioritas, situasi, status, opd, photos, url, keterangan, status_laporan, tag }) => {
     const tindakan = await Tindakan.findOne({ report: reportId });
@@ -9,7 +10,8 @@ exports.update = async ({ reportId, hasil, trackingId, prioritas, situasi, statu
     tindakan.prioritas = prioritas;
     tindakan.situasi = situasi;
     tindakan.status = status;
-    tindakan.opd = Array.isArray(opd) ? opd : opd ? [opd] : [];
+    // Validasi dan bersihkan array OPD menggunakan utility
+    tindakan.opd = cleanOpdArray(opd);
     tindakan.photos = photos;
     tindakan.updatedAt = new Date();
     tindakan.url = url;
@@ -107,6 +109,12 @@ exports.updateRatingById = async (tindakanId, rating) => {
 
 // Add a tag to tindakan
 exports.addTag = async (tindakanId, hashTag) => {
+    // Validate ObjectId format
+    const mongoose = require('mongoose');
+    if (!mongoose.Types.ObjectId.isValid(tindakanId)) {
+        throw new Error(`Invalid tindakanId format: ${tindakanId}`);
+    }
+    
     const tindakan = await Tindakan.findById(tindakanId);
     if (!tindakan) throw new Error("Tindakan tidak ditemukan.");
     

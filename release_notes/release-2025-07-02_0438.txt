@@ -1,0 +1,9 @@
+🔄 Commit terbaru di branch DEV_Ismail
+
+📝 feat: update routes/dashboardRoute.js
+📅 2025-07-02_0438
+
+📂 Perubahan file:
+routes/dashboardRoute.js
+
+🚀 Meluncur

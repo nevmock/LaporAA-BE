@@ -179,20 +179,7 @@ router.get("/summary-laporan", async (req, res) => {
             },
             ...(searchQuery ? [{
                 $match: {
-                    $or: [
-                        { sessionId: { $regex: searchQuery, $options: "i" } },
-                        { from: { $regex: searchQuery, $options: "i" } },
-                        { "location.desa": { $regex: searchQuery, $options: "i" } },
-                        { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.opd": { $elemMatch: { $regex: searchQuery, $options: "i" } } },
-                        { "user.name": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag": { $regex: searchQuery, $options: "i" } },
-                        { "tags": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.trackingId": { $regex: searchQuery, $options: "i" } }
-                    ]
+                    $or: buildSearchConditions(searchQuery)
                 }
             }] : []),
             ...(opdFilter ? [{
@@ -394,20 +381,7 @@ router.get("/dashboard-summary", async (req, res) => {
             },
             ...(searchQuery ? [{
                 $match: {
-                    $or: [
-                        { sessionId: { $regex: searchQuery, $options: "i" } },
-                        { from: { $regex: searchQuery, $options: "i" } },
-                        { "location.desa": { $regex: searchQuery, $options: "i" } },
-                        { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.opd": { $elemMatch: { $regex: searchQuery, $options: "i" } } },
-                        { "user.name": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag": { $regex: searchQuery, $options: "i" } },
-                        { "tags": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.trackingId": { $regex: searchQuery, $options: "i" } }
-                    ]
+                    $or: buildSearchConditions(searchQuery)
                 }
             }] : []),
             ...(opdFilter ? [{
@@ -684,19 +658,7 @@ router.get("/", async (req, res) => {
             },
             ...(searchQuery ? [{
                 $match: {
-                    $or: [
-                        { sessionId: { $regex: searchQuery, $options: "i" } },
-                        { from: { $regex: searchQuery, $options: "i" } },
-                        { "location.desa": { $regex: searchQuery, $options: "i" } },
-                        { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.opd": { $elemMatch: { $regex: searchQuery, $options: "i" } } },
-                        { "user.name": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag": { $regex: searchQuery, $options: "i" } },
-                        { "tags": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by": { $regex: searchQuery, $options: "i" } }
-                    ]
+                    $or: buildSearchConditions(searchQuery)
                 }
             }] : []),
             ...(statusFilter ? [{
@@ -853,19 +815,7 @@ router.get("/new", async (req, res) => {
             },
             ...(searchQuery ? [{
                 $match: {
-                    $or: [
-                        { sessionId: { $regex: searchQuery, $options: "i" } },
-                        { from: { $regex: searchQuery, $options: "i" } },
-                        { "location.desa": { $regex: searchQuery, $options: "i" } },
-                        { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.opd": { $elemMatch: { $regex: searchQuery, $options: "i" } } },
-                        { "user.name": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
-                        { "tindakan.tag": { $regex: searchQuery, $options: "i" } },
-                        { "tags": { $regex: searchQuery, $options: "i" } },
-                        { "processed_by": { $regex: searchQuery, $options: "i" } }
-                    ]
+                    $or: buildSearchConditions(searchQuery)
                 }
             }] : []),
             ...(statusFilter ? [{
@@ -903,9 +853,243 @@ router.get("/new", async (req, res) => {
             { $count: "total" }
         ];
 
-        // Breakdown pipelines (tanpa skip/limit/sort)
+        // Dynamic breakdown pipelines - exclude the current filter being calculated
+        // Status breakdown (exclude status filter to show all possible status counts)
+        const statusBreakdownBasePipeline = [
+            {
+                $lookup: {
+                    from: "userprofiles",
+                    localField: "user",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "tindakans",
+                    localField: "tindakan",
+                    foreignField: "_id",
+                    as: "tindakan"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$tindakan",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "userlogins",
+                    localField: "processed_by",
+                    foreignField: "_id",
+                    as: "processed_by"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$processed_by",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    prioritasScore: {
+                        $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
+                    },
+                    statusScore: {
+                        $indexOfArray: [statusOrder, "$tindakan.status"]
+                    }
+                }
+            },
+            ...(searchQuery ? [{
+                $match: {
+                    $or: buildSearchConditions(searchQuery)
+                }
+            }] : []),
+            // Include OPD filter for status breakdown
+            ...(opdFilter ? [{
+                $match: {
+                    "tindakan.opd": { $in: [opdFilter] }
+                }
+            }] : []),
+            // Include situasi filter for status breakdown
+            ...(situasiFilter ? [{
+                $match: {
+                    "tindakan.situasi": situasiFilter
+                }
+            }] : []),
+            ...(typeof req.query.is_pinned !== "undefined" ? [{
+                $match: {
+                    "is_pinned": req.query.is_pinned === "true"
+                }
+            }] : []),
+        ];
+
+        // OPD breakdown (exclude OPD filter to show all possible OPD counts)
+        const opdBreakdownBasePipeline = [
+            {
+                $lookup: {
+                    from: "userprofiles",
+                    localField: "user",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "tindakans",
+                    localField: "tindakan",
+                    foreignField: "_id",
+                    as: "tindakan"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$tindakan",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "userlogins",
+                    localField: "processed_by",
+                    foreignField: "_id",
+                    as: "processed_by"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$processed_by",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    prioritasScore: {
+                        $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
+                    },
+                    statusScore: {
+                        $indexOfArray: [statusOrder, "$tindakan.status"]
+                    }
+                }
+            },
+            ...(searchQuery ? [{
+                $match: {
+                    $or: buildSearchConditions(searchQuery)
+                }
+            }] : []),
+            // Include status filter for OPD breakdown
+            ...(statusFilter ? [{
+                $match: {
+                    "tindakan.status": statusFilter
+                }
+            }] : []),
+            // Include situasi filter for OPD breakdown
+            ...(situasiFilter ? [{
+                $match: {
+                    "tindakan.situasi": situasiFilter
+                }
+            }] : []),
+            ...(typeof req.query.is_pinned !== "undefined" ? [{
+                $match: {
+                    "is_pinned": req.query.is_pinned === "true"
+                }
+            }] : []),
+        ];
+
+        // Situasi breakdown (exclude situasi filter to show all possible situasi counts)
+        const situasiBreakdownBasePipeline = [
+            {
+                $lookup: {
+                    from: "userprofiles",
+                    localField: "user",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "tindakans",
+                    localField: "tindakan",
+                    foreignField: "_id",
+                    as: "tindakan"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$tindakan",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "userlogins",
+                    localField: "processed_by",
+                    foreignField: "_id",
+                    as: "processed_by"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$processed_by",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    prioritasScore: {
+                        $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
+                    },
+                    statusScore: {
+                        $indexOfArray: [statusOrder, "$tindakan.status"]
+                    }
+                }
+            },
+            ...(searchQuery ? [{
+                $match: {
+                    $or: buildSearchConditions(searchQuery)
+                }
+            }] : []),
+            // Include status filter for situasi breakdown
+            ...(statusFilter ? [{
+                $match: {
+                    "tindakan.status": statusFilter
+                }
+            }] : []),
+            // Include OPD filter for situasi breakdown
+            ...(opdFilter ? [{
+                $match: {
+                    "tindakan.opd": { $in: [opdFilter] }
+                }
+            }] : []),
+            ...(typeof req.query.is_pinned !== "undefined" ? [{
+                $match: {
+                    "is_pinned": req.query.is_pinned === "true"
+                }
+            }] : []),
+        ];
+
         const statusBreakdownPipeline = [
-            ...basePipeline,
+            ...statusBreakdownBasePipeline,
             {
                 $group: {
                     _id: "$tindakan.status",
@@ -913,8 +1097,9 @@ router.get("/new", async (req, res) => {
                 }
             }
         ];
+        
         const opdBreakdownPipeline = [
-            ...basePipeline,
+            ...opdBreakdownBasePipeline,
             { $unwind: { path: "$tindakan.opd", preserveNullAndEmptyArrays: true } },
             {
                 $group: {
@@ -923,8 +1108,9 @@ router.get("/new", async (req, res) => {
                 }
             }
         ];
+        
         const situasiBreakdownPipeline = [
-            ...basePipeline,
+            ...situasiBreakdownBasePipeline,
             {
                 $group: {
                     _id: "$tindakan.situasi",
@@ -949,19 +1135,26 @@ router.get("/new", async (req, res) => {
         ]);
         const totalReports = countResult[0]?.total || 0;
 
-        // Format breakdown
+        // Format breakdown with dynamic counts
         const statusResult = {};
         statusBreakdown.forEach(item => {
             if (item._id) statusResult[item._id] = item.count;
         });
+        
         const opdResult = {};
         opdBreakdown.forEach(item => {
             if (item._id) opdResult[item._id] = item.count;
         });
+        
         const situasiResult = {};
         situasiBreakdown.forEach(item => {
             if (item._id) situasiResult[item._id] = item.count;
         });
+
+        // Calculate totals for each breakdown (for reference)
+        const statusTotal = Object.values(statusResult).reduce((sum, count) => sum + count, 0);
+        const opdTotal = Object.values(opdResult).reduce((sum, count) => sum + count, 0);
+        const situasiTotal = Object.values(situasiResult).reduce((sum, count) => sum + count, 0);
 
         res.status(200).json({
             page,
@@ -973,6 +1166,18 @@ router.get("/new", async (req, res) => {
                 status: statusResult,
                 opd: opdResult,
                 situasi: situasiResult
+            },
+            breakdownTotals: {
+                status: statusTotal,
+                opd: opdTotal,
+                situasi: situasiTotal
+            },
+            activeFilters: {
+                search: searchQuery || null,
+                status: statusFilter || null,
+                opd: opdFilter || null,
+                situasi: situasiFilter || null,
+                is_pinned: typeof req.query.is_pinned !== "undefined" ? req.query.is_pinned === "true" : null
             }
         });
     } catch (error) {
@@ -1049,6 +1254,136 @@ router.delete("/", async (req, res) => {
     }
 });
 
+// ========== PDF REPORT GENERATION ENDPOINTS ==========
+
+// Save report template
+router.post("/save-template", async (req, res) => {
+    try {
+        const { name, elements, settings } = req.body;
+        
+        // Here you could save to database
+        // For now, we'll just return success
+        
+        res.status(200).json({
+            message: "Template berhasil disimpan",
+            templateId: Date.now().toString()
+        });
+    } catch (error) {
+        console.error("Error saving template:", error);
+        res.status(500).json({ message: "Gagal menyimpan template" });
+    }
+});
+
+// Generate PDF report
+router.post("/generate-pdf", async (req, res) => {
+    try {
+        const { template, elements, dashboardData, metadata } = req.body;
+        
+        // For now, return a simple success response
+        // In production, you would use PDFKit or similar library
+        res.status(200).json({
+            message: "PDF generation endpoint ready",
+            template: template.title,
+            elementsCount: elements.length
+        });
+
+        // TODO: Implement actual PDF generation with PDFKit
+        /*
+        const PDFDocument = require('pdfkit');
+        const doc = new PDFDocument({ size: 'A4', margin: 50 });
+        
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="Laporan-${Date.now()}.pdf"`);
+        
+        doc.pipe(res);
+        
+        // Add content to PDF
+        doc.fontSize(20).text(template.title, { align: 'center' });
+        doc.moveDown();
+        
+        doc.fontSize(16).text(template.subtitle || '', { align: 'center' });
+        doc.moveDown();
+        
+        doc.fontSize(12).text(`Periode: ${template.period} ${template.year}${template.month ? `/${template.month}` : ''}`, { align: 'center' });
+        doc.moveDown(2);
+
+        // Add dashboard summary
+        doc.fontSize(14).text('RINGKASAN STATISTIK', { underline: true });
+        doc.moveDown();
+
+        if (dashboardData && dashboardData.current) {
+            const stats = dashboardData.current;
+            const totalAll = Object.values(stats).reduce((sum, count) => sum + (count || 0), 0);
+            
+            doc.fontSize(12);
+            doc.text(`Total Laporan: ${totalAll}`);
+            doc.text(`Perlu Verifikasi: ${stats["Perlu Verifikasi"] || 0}`);
+            doc.text(`Verifikasi Situasi: ${stats["Verifikasi Situasi"] || 0}`);
+            doc.text(`Verifikasi Kelengkapan Berkas: ${stats["Verifikasi Kelengkapan Berkas"] || 0}`);
+            doc.text(`Proses OPD Terkait: ${stats["Proses OPD Terkait"] || 0}`);
+            doc.text(`Selesai Penanganan: ${stats["Selesai Penanganan"] || 0}`);
+            doc.text(`Selesai Pengaduan: ${stats["Selesai Pengaduan"] || 0}`);
+            doc.text(`Ditutup: ${stats["Ditutup"] || 0}`);
+        }
+
+        doc.moveDown(2);
+
+        // Add custom elements
+        elements.forEach(element => {
+            if (element.type === 'header') {
+                doc.fontSize(16).text(element.content, { align: 'left' });
+                doc.moveDown();
+            } else if (element.type === 'text') {
+                doc.fontSize(12).text(element.content);
+                doc.moveDown();
+            } else if (element.type === 'summary-cards') {
+                doc.fontSize(14).text('SUMMARY CARDS', { underline: true });
+                doc.moveDown(0.5);
+                
+                if (dashboardData && dashboardData.current) {
+                    const stats = dashboardData.current;
+                    
+                    const tindakLanjut = (stats["Verifikasi Situasi"] || 0) + 
+                                       (stats["Verifikasi Kelengkapan Berkas"] || 0) + 
+                                       (stats["Proses OPD Terkait"] || 0);
+                    
+                    doc.fontSize(12);
+                    doc.text(`• Tindak Lanjut: ${tindakLanjut} laporan`);
+                    doc.text(`• Selesai Penanganan: ${stats["Selesai Penanganan"] || 0} laporan`);
+                    doc.text(`• Selesai Pengaduan: ${stats["Selesai Pengaduan"] || 0} laporan`);
+                    doc.text(`• Ditutup: ${stats["Ditutup"] || 0} laporan`);
+                }
+                doc.moveDown();
+            }
+        });
+
+        // Add metadata
+        doc.moveDown(3);
+        doc.fontSize(10);
+        doc.text(`Dibuat pada: ${metadata.generatedAt}`, { align: 'right' });
+        doc.text(`Dibuat oleh: ${metadata.generatedBy}`, { align: 'right' });
+
+        doc.end();
+        */
+
+    } catch (error) {
+        console.error("Error generating PDF:", error);
+        res.status(500).json({ message: "Gagal membuat PDF" });
+    }
+});
+
+// Get saved templates
+router.get("/templates", async (req, res) => {
+    try {
+        // Here you could fetch from database
+        // For now, return empty array
+        res.status(200).json([]);
+    } catch (error) {
+        console.error("Error fetching templates:", error);
+        res.status(500).json({ message: "Gagal mengambil template" });
+    }
+});
+
 module.exports = router;
 
 // Helper function to build dynamic filter pipeline
@@ -1071,20 +1406,7 @@ function buildDynamicFilterPipeline(query) {
     let filters = [];
     if (searchQuery) {
         filters.push({
-            $or: [
-                { sessionId: { $regex: searchQuery, $options: "i" } },
-                { from: { $regex: searchQuery, $options: "i" } },
-                { "location.desa": { $regex: searchQuery, $options: "i" } },
-                { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
-                { "tindakan.opd": { $elemMatch: { $regex: searchQuery, $options: "i" } } },
-                { "user.name": { $regex: searchQuery, $options: "i" } },
-                { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
-                { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
-                { "tindakan.tag": { $regex: searchQuery, $options: "i" } },
-                { "tags": { $regex: searchQuery, $options: "i" } },
-                { "processed_by": { $regex: searchQuery, $options: "i" } },
-                { "tindakan.trackingId": { $regex: searchQuery, $options: "i" } }
-            ]
+            $or: buildSearchConditions(searchQuery)
         });
     }
     if (opdFilter) {
@@ -1100,4 +1422,45 @@ function buildDynamicFilterPipeline(query) {
         filters.push({ is_pinned: isPinned });
     }
     return filters.length > 0 ? [{ $match: { $and: filters } }] : [];
+}
+
+// Helper function to build search conditions including trackingId
+function buildSearchConditions(searchQuery) {
+    const baseConditions = [
+        { sessionId: { $regex: searchQuery, $options: "i" } },
+        { from: { $regex: searchQuery, $options: "i" } },
+        { "location.desa": { $regex: searchQuery, $options: "i" } },
+        { "location.kecamatan": { $regex: searchQuery, $options: "i" } },
+        { "tindakan.opd": { $elemMatch: { $regex: searchQuery, $options: "i" } } },
+        { "user.name": { $regex: searchQuery, $options: "i" } },
+        { "processed_by.nama_admin": { $regex: searchQuery, $options: "i" } },
+        { "tindakan.tag.hash_tag": { $regex: searchQuery, $options: "i" } },
+        { "tindakan.tag": { $regex: searchQuery, $options: "i" } },
+        { "tags": { $regex: searchQuery, $options: "i" } },
+        { "processed_by": { $regex: searchQuery, $options: "i" } }
+    ];
+
+    // Handle trackingId search - both as number and string
+    const numericSearch = parseInt(searchQuery);
+    if (!isNaN(numericSearch)) {
+        // Exact match for numeric trackingId
+        baseConditions.push({ "tindakan.trackingId": numericSearch });
+    }
+
+    // Partial match using string conversion (for searching partial numbers)
+    baseConditions.push({ 
+        $expr: { 
+            $regexMatch: { 
+                input: { 
+                    $toString: {
+                        $ifNull: ["$tindakan.trackingId", ""]
+                    }
+                }, 
+                regex: searchQuery, 
+                options: "i" 
+            } 
+        } 
+    });
+
+    return baseConditions;
 }
