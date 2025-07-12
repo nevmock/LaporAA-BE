@@ -60,7 +60,7 @@ jobs:
               -e OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
               -e BASE_URL="${{ secrets.BASE_URL }}" \
               -e AI_CONTEXT_READER="${{ secrets.AI_CONTEXT_READER }}" \
-              -e AI_PERIOD_LIMITER="${{ secrets.AI_PERIOD_LIMITER }}" \
+              -e PERIOD_LIMITER="${{ secrets.PERIOD_LIMITER }}" \
               -e MAX_LIMITER_REQUEST="${{ secrets.MAX_LIMITER_REQUEST }}" \
               -e MAX_REPORT_PER_DAY="${{ secrets.MAX_REPORT_PER_DAY }}" \
               -p "${{ secrets.PORT }}":3000 \
