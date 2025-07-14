@@ -44,9 +44,13 @@ const authMiddleware = require("./middlewares/authMiddleware");
 const fix = require("./routes/fixApi");
 const modeRoutes = require("./routes/modeRoutes");
 const userProfileRoutes = require("./routes/userProfileRoutes");
+const geojsonRoutes = require("./routes/geojsonRoutes");
+const adminPerformanceRoutes = require("./routes/adminPerformance");
 
 const autoCloseFeedback = require("./utils/autoCloseFeedback");
 const limitMiddleware = require("./middlewares/limitMiddleware");
+const activityTrackingMiddleware = require("./middlewares/activityTrackingMiddleware");
+const PerformanceScheduler = require("./utils/performanceScheduler");
 
 const corsOptions = {
   origin: '*',
@@ -106,19 +110,25 @@ app.use("/chat", messageRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 app.use("/uploadsTindakan", express.static(path.join(__dirname, "public/uploadsTindakan")));
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
+app.use("/public", express.static(path.join(__dirname, "public")));
 app.use("/user", userRoutes);
 app.use("/fix", fix);
 app.use("/mode", modeRoutes); // Routes terpusat untuk pengelolaan mode
 app.use("/user-profile", userProfileRoutes);
+app.use("/geojson", geojsonRoutes); // Routes untuk GeoJSON data
 
 // Apply authMiddleware to all routes except /webhook
 app.use(authMiddleware);
+
+// Apply activity tracking middleware to authenticated routes
+app.use(activityTrackingMiddleware());
 
 app.use("/reports", reportRoutes);
 app.use("/dashboard", dashboardRoute); 
 app.use("/reportCount", reportCountRoutes);
 app.use("/tindakan", tindakanRoutes);
 app.use("/api", tindakanUploadRoute);
+app.use("/performance", adminPerformanceRoutes);
 
 // Route default untuk cek server berjalan
 app.get("/", (req, res) => {
@@ -129,4 +139,7 @@ if (process.env.NODE_ENV !== 'test') {
   cron.schedule("0 0 * * *", () => {
     autoCloseFeedback();
   });
+  
+  // Initialize performance tracking scheduler
+  PerformanceScheduler.init();
 }

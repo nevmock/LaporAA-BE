@@ -125,6 +125,10 @@ Pass : tiara777
 Pass : reza777
 
 ### 📄 Get all user logins
+GET http://localhost:3001/userLogin
+Content-Type: application/json
+
+### 📄 Get all user logins
 GET https://api.laporaabupati.com/userLogin
 Content-Type: application/json
 
@@ -155,6 +159,9 @@ PATCH https://api.laporaabupati.com/fix/fix-ditolak
 
 ### Fix Array OPD
 POST https://api.laporaabupati.com/fix/convert-opd-to-array
+
+### Fix Array OPD
+POST http://localhost:3001/fix/convert-opd-to-array
 
 ###
 GET http://localhost:3001/reports/pinned

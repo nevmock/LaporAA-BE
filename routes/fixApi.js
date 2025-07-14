@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Tindakan = require("../models/Tindakan");
+const { cleanOpdArray } = require("../utils/opdValidator");
 
 router.patch("/fix-ditolak", async (req, res) => {
     try {
@@ -38,35 +39,21 @@ router.post("/convert-opd-to-array", async (req, res) => {
         // Proses setiap dokumen
         for (const tindakan of allTindakan) {
             try {
-                // Memeriksa jenis data dari opd
-                if (tindakan.opd === undefined || tindakan.opd === null) {
-                    // Jika undefined atau null, atur sebagai array kosong
-                    tindakan.opd = [];
-                    await tindakan.save();
-                    convertedCount++;
-                } else if (typeof tindakan.opd === 'string') {
-                    // Jika string, konversi ke array dengan satu elemen
-                    tindakan.opd = [tindakan.opd];
-                    await tindakan.save();
-                    convertedCount++;
-                } else if (!Array.isArray(tindakan.opd)) {
-                    // Jika bukan array dan bukan string, coba konversi ke string dan masukkan ke array
-                    const opdString = String(tindakan.opd);
-                    tindakan.opd = [opdString];
+                // Simpan opd lama untuk perbandingan
+                const oldOpd = tindakan.opd;
+                
+                // Bersihkan menggunakan utility function
+                const cleanedOpd = cleanOpdArray(tindakan.opd);
+                
+                // Cek apakah ada perubahan
+                const needsUpdate = JSON.stringify(oldOpd) !== JSON.stringify(cleanedOpd);
+                
+                if (needsUpdate) {
+                    tindakan.opd = cleanedOpd;
                     await tindakan.save();
                     convertedCount++;
                 } else {
-                    // Sudah berbentuk array, pastikan semua elemennya string
-                    const allStrings = tindakan.opd.every(item => typeof item === 'string');
-                    if (!allStrings) {
-                        // Jika ada elemen yang bukan string, konversi ke string
-                        tindakan.opd = tindakan.opd.map(item => String(item));
-                        await tindakan.save();
-                        convertedCount++;
-                    } else {
-                        // Sudah array of string, tidak perlu konversi
-                        skippedCount++;
-                    }
+                    skippedCount++;
                 }
             } catch (err) {
                 console.error(`Error saat memproses tindakan ID: ${tindakan._id}`, err);
@@ -75,15 +62,46 @@ router.post("/convert-opd-to-array", async (req, res) => {
         }
 
         res.status(200).json({
-            message: "Proses konversi OPD selesai",
+            message: "Proses konversi dan pembersihan OPD selesai",
             total: allTindakan.length,
             converted: convertedCount,
             skipped: skippedCount,
-            errors: errorCount
+            errors: errorCount,
+            details: {
+                description: "Konversi telah membersihkan string kosong dan spasi dari array OPD",
+                cleaningRules: [
+                    "String kosong ('') dihapus dari array",
+                    "String hanya spasi ('   ') dihapus dari array", 
+                    "null dan undefined dikonversi menjadi array kosong",
+                    "String tunggal dikonversi menjadi array dengan 1 elemen",
+                    "Semua elemen di-trim (hapus spasi di awal/akhir)"
+                ]
+            }
         });
     } catch (error) {
         console.error("❌ Error converting OPD data:", error);
         res.status(500).json({ message: "Terjadi kesalahan pada server saat konversi data" });
+    }
+});
+
+// API untuk testing validasi OPD
+router.post("/test-opd-validation", async (req, res) => {
+    try {
+        const { opd } = req.body;
+        
+        const { cleanOpdArray, validateAndCleanOpd } = require("../utils/opdValidator");
+        
+        const result = validateAndCleanOpd(opd);
+        
+        res.status(200).json({
+            message: "Test validasi OPD",
+            input: opd,
+            result: result,
+            inputType: Array.isArray(opd) ? 'array' : typeof opd
+        });
+    } catch (error) {
+        console.error("❌ Error testing OPD validation:", error);
+        res.status(500).json({ message: "Terjadi kesalahan pada server saat test validasi" });
     }
 });
 

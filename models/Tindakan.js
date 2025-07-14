@@ -50,6 +50,16 @@ const actionSchema = new mongoose.Schema({
     opd: {
         type: [String],
         default: [],
+        validate: {
+            validator: function(arr) {
+                // Validasi: tidak boleh ada string kosong atau hanya spasi
+                return arr.every(item => 
+                    typeof item === 'string' && 
+                    item.trim().length > 0
+                );
+            },
+            message: 'OPD tidak boleh berisi string kosong atau hanya spasi'
+        }
     },
     photos: {
         type: [String], // URL foto (kalau pakai upload ke cloud)
@@ -93,6 +103,20 @@ const actionSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+});
+
+// Pre-save middleware untuk membersihkan OPD sebelum disimpan
+actionSchema.pre('save', function(next) {
+    if (this.opd && Array.isArray(this.opd)) {
+        // Bersihkan array OPD dari string kosong atau spasi
+        this.opd = this.opd
+            .map(item => {
+                if (item === null || item === undefined) return '';
+                return String(item).trim();
+            })
+            .filter(item => item.length > 0);
+    }
+    next();
 });
 
 module.exports = mongoose.model("Tindakan", actionSchema);

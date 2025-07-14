@@ -1,0 +1,38 @@
+### Test API GeoJSON Kabupaten Bekasi
+### Base URL: http://localhost:3000
+
+### 1. Mendapatkan semua kecamatan di Kabupaten Bekasi dengan data GeoJSON
+GET http://localhost:3001/geojson/kabupaten-bekasi
+Content-Type: application/json
+
+###
+
+### 2. Mendapatkan daftar nama kecamatan saja (tanpa data GeoJSON)
+GET http://localhost:3001/geojson/kabupaten-bekasi/kecamatan-list
+Content-Type: application/json
+
+###
+
+### 3. Mendapatkan data GeoJSON kecamatan tertentu (contoh: Cikarang Utara)
+GET http://localhost:3001/geojson/kabupaten-bekasi/kecamatan/CIKARANG UTARA
+Content-Type: application/json
+
+###
+
+### 4. Mendapatkan data GeoJSON kecamatan tertentu (contoh: Tambun Selatan)
+GET http://localhost:3001/geojson/kabupaten-bekasi/kecamatan/TAMBUN SELATAN
+Content-Type: application/json
+
+###
+
+### 5. Mendapatkan data GeoJSON kecamatan tertentu (contoh: Babelan)
+GET http://localhost:3001/geojson/kabupaten-bekasi/kecamatan/BABELAN
+Content-Type: application/json
+
+###
+
+### 6. Test dengan kecamatan yang tidak ada (should return 404)
+GET http://localhost:3001/geojson/kabupaten-bekasi/kecamatan/KECAMATAN_TIDAK_ADA
+Content-Type: application/json
+
+###
