@@ -80,6 +80,9 @@ app.set("io", io);
 // Set global.io for usage in other modules like messageController.js
 global.io = io;
 
+// Set global.socketIO as alternative reference untuk backward compatibility
+global.socketIO = io;
+
 // Initialize event optimizer
 let eventOptimizer;
 try {
@@ -230,25 +233,26 @@ io.on("connection", (socket) => {
       userSockets.get(userId).add(socket.id);
       
       // Join appropriate rooms based on role
-      socket.join('global'); // Everyone joins global room
-      
-      if (role === 'admin' || role === 'super-admin') {
+      if (role === 'Admin' || role === 'SuperAdmin' || role === 'Bupati') {
         socket.join('admins');
-        socket.join(`admin-${userId}`);
-        console.log(`✅ Admin ${userId} joined admin rooms`);
-      } else {
-        socket.join(`user-${userId}`);
-        if (sessionId) {
-          socket.join(`chat-${sessionId}`);
-        }
-        console.log(`✅ User ${userId} joined user rooms`);
+        console.log(`👤 Admin ${userId} joined admins room`);
       }
       
-      socket.emit("authenticated", { success: true, rooms: Array.from(socket.rooms) });
+      // Join global room for all users
+      socket.join('global');
       
+      // Join user-specific room
+      socket.join(`user-${userId}`);
+      
+      // Join session-specific room if provided
+      if (sessionId) {
+        socket.join(`chat-${sessionId}`);
+      }
+      
+      console.log(`🔌 User ${userId} (${role}) authenticated and joined rooms`);
     } catch (error) {
-      console.error("❌ Authentication error:", error);
-      socket.emit("authenticationError", { error: "Authentication failed" });
+      console.error('❌ Authentication error:', error);
+      socket.emit('auth-error', { message: 'Authentication failed' });
     }
   });
 
@@ -307,7 +311,7 @@ io.on("connection", (socket) => {
       }
       
       // Send message via WhatsApp
-      await sendMessageToWhatsApp(to, finalMessage, mode);
+      await sendMessageToWhatsApp(to, finalMessage, mode, true);
       
       // Emit back to appropriate rooms
       const messagePayload = {

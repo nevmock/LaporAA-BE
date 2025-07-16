@@ -9,6 +9,7 @@ const Tindakan = require("../models/Tindakan");
 const tindakanResponse = require("../services/responseMessage/tindakanResponse");
 const { validateOpdMiddleware } = require("../middlewares/opdValidationMiddleware");
 const ReportTrackingUtil = require("../services/reportTrackingUtil");
+const RealTimeService = require("../services/realTimeService");
 
 // Helper: bagi teks panjang jadi beberapa pesan
 function splitIntoChunks(text, maxLength) {
@@ -118,7 +119,7 @@ router.put("/:reportId", validateOpdMiddleware, async (req, res) => {
         // === CASE DARURAT ===
         if (situasi === "Darurat") {
             const message = tindakanResponse.daruratMessage(sapaan, user.name, report.sessionId);
-            await sendMessageToWhatsApp(from, message);
+            await sendMessageToWhatsApp(from, message, "bot", true);
 
             const tindakanDarurat = await tindakanRepo.findById(tindakan._id);
             tindakanDarurat.status = "Selesai Pengaduan";
@@ -139,7 +140,7 @@ router.put("/:reportId", validateOpdMiddleware, async (req, res) => {
                 await tindakan.save();
 
                 const message = tindakanResponse.finalizeAndAskNewReport(sapaan, user.name);
-                await sendMessageToWhatsApp(from, message);
+                await sendMessageToWhatsApp(from, message, "bot", true);
                 await userRepo.removePendingFeedback(from, tindakan._id);
             } else {
                 // Proses normal: kirim kesimpulan dan minta feedback
@@ -151,10 +152,10 @@ router.put("/:reportId", validateOpdMiddleware, async (req, res) => {
                 const openingMessage = tindakanResponse.selesaiPenangananMessage(
                     sapaan, user.name, report.sessionId, chunks[0]
                 );
-                await sendMessageToWhatsApp(from, openingMessage);
+                await sendMessageToWhatsApp(from, openingMessage, "bot", true);
 
                 for (let i = 1; i < chunks.length; i++) {
-                    await sendMessageToWhatsApp(from, chunks[i]);
+                    await sendMessageToWhatsApp(from, chunks[i], "bot", true);
                 }
 
                 const tindakanFromDb = await tindakanRepo.findById(tindakan._id);
@@ -167,7 +168,22 @@ router.put("/:reportId", validateOpdMiddleware, async (req, res) => {
         // === CASE Ditutup ===
         if (status === "Ditutup") {
             const message = tindakanResponse.DitutupMessage(sapaan, user.name, report.sessionId, keterangan);
-            await sendMessageToWhatsApp(from, message);
+            await sendMessageToWhatsApp(from, message, "bot", true);
+        }
+
+        // Emit real-time update ketika status berubah
+        try {
+            const io = req.app.get("io");
+            if (io && oldStatus !== status) {
+                await RealTimeService.emitStatusChangeNotification(io, {
+                    reportId: reportId,
+                    oldStatus: oldStatus,
+                    newStatus: status,
+                    sessionId: report.sessionId
+                });
+            }
+        } catch (error) {
+            console.warn('⚠️ Failed to emit real-time status update:', error.message);
         }
 
         res.status(200).json(tindakan);
@@ -241,7 +257,7 @@ router.post("/:id/kesimpulan", async (req, res) => {
         const message = tindakanResponse.tindakLanjutLaporanMessage(
             sapaan, user.name, report.sessionId, report.message, latestKesimpulan
         );
-        await sendMessageToWhatsApp(from, message);
+        await sendMessageToWhatsApp(from, message, "bot", true);
 
         res.status(200).json(updated);
     } catch (error) {

@@ -1,6 +1,7 @@
 const Report = require("../models/Report");
 const Tindakan = require("../models/Tindakan");
 const UserProfile = require("../models/UserProfile");
+const RealTimeService = require("../services/realTimeService");
 
 exports.create = async ({ sessionId, from, user, location, message, photos, url, keterangan, status_laporan }) => {
     const newReport = await Report.create({ sessionId, from, user, location, message, photos, url, keterangan, status_laporan });
@@ -22,6 +23,23 @@ exports.create = async ({ sessionId, from, user, location, message, photos, url,
 
     newReport.tindakan = defaultTindakan._id;
     await newReport.save();
+
+    // Emit real-time notification menggunakan service
+    try {
+        // Gunakan global io instance yang di-set di app.js
+        const io = global.socketIO;
+        if (io) {
+            await RealTimeService.emitNewReportNotification(io, {
+                reportId: newReport._id,
+                sessionId: sessionId,
+                from: from,
+                message: message,
+                location: location
+            });
+        }
+    } catch (error) {
+        console.warn('⚠️ Failed to emit real-time update:', error.message);
+    }
 
     // Tambahkan sessionId ke reportHistory userProfile
     if (from && sessionId) {

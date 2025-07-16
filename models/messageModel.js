@@ -8,6 +8,7 @@ const messageSchema = new mongoose.Schema({
     type: { type: String, default: "text" }, // ✅ text / image / location / etc
     mediaUrl: String,                        // ✅ jika type === image
     timestamp: Date,
+    isAdminMessage: { type: Boolean, default: false } // ✅ flag untuk pesan admin
 });
 
 module.exports = mongoose.model("Message", messageSchema);

@@ -186,6 +186,19 @@ exports.handleIncomingMessages = async (req, res) => {
                                 timestamp: new Date()
                             };
 
+                            // Check for recent admin message with same content to prevent duplication
+                            const recentAdminMessage = await Message.findOne({
+                                from,
+                                message: messagePreviewForLog,
+                                isAdminMessage: true,
+                                timestamp: { $gte: new Date(Date.now() - 30000) } // Within last 30 seconds
+                            });
+
+                            if (recentAdminMessage) {
+                                console.log("🔄 Skipping duplicate message from webhook (admin already sent this):", messagePreviewForLog);
+                                continue; // Skip this message to prevent duplication
+                            }
+
                             await Message.create(messagePayload);
 
                             if (io) {
@@ -218,7 +231,7 @@ exports.handleIncomingMessages = async (req, res) => {
                             if (botReply) {
                                 const effectiveMode = await modeManager.getEffectiveMode(from);
                                 if (effectiveMode === "bot") {
-                                    await sendMessageToWhatsApp(from, botReply);
+                                    await sendMessageToWhatsApp(from, botReply, "bot", true);
                                 } else {
                                     const isForceMode = await modeManager.isInForceMode(from);
                                     console.log(`✋ Bot tidak balas karena effective mode: ${effectiveMode}${isForceMode ? ' (Force Mode)' : ''}`);

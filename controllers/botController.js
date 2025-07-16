@@ -17,7 +17,7 @@ exports.handleOutcomingMessage = async (req, res) => {
 
     const reply = await botFlowService.handleUserMessage(from, msgText);
 
-    await sendMessageToWhatsApp(from, reply);
+    await sendMessageToWhatsApp(from, reply, "bot", true);
     res.sendStatus(200);
   } catch (err) {
     console.error('❌ Error handle WA:', err);

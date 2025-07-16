@@ -46,14 +46,26 @@ const videoStorage = multer.diskStorage({
 const uploadVideo = multer({
     storage: videoStorage,
     fileFilter: (req, file, cb) => {
-        const allowedTypes = /mp4|webm|ogg|mov|avi|mkv/;
+        const allowedTypes = /mp4|webm|ogg|mov|avi|mkv|wmv|flv|3gp/;
+        const allowedMimeTypes = [
+            'video/mp4',
+            'video/webm', 
+            'video/ogg',
+            'video/quicktime', // MOV
+            'video/x-msvideo', // AVI
+            'video/x-matroska', // MKV
+            'video/x-ms-wmv', // WMV
+            'video/x-flv', // FLV
+            'video/3gpp' // 3GP
+        ];
+        
         const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = allowedTypes.test(file.mimetype);
+        const mimetype = allowedMimeTypes.includes(file.mimetype);
         
         if (mimetype && extname) {
             return cb(null, true);
         } else {
-            cb(new Error('Hanya file video yang diperbolehkan!'));
+            cb(new Error('Hanya file video yang diperbolehkan (MP4, WebM, MOV, AVI, MKV, WMV, FLV, 3GP)!'));
         }
     },
     limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
@@ -73,14 +85,29 @@ const audioStorage = multer.diskStorage({
 const uploadAudio = multer({
     storage: audioStorage,
     fileFilter: (req, file, cb) => {
-        const allowedTypes = /mp3|wav|ogg|m4a|aac|flac/;
+        const allowedTypes = /mp3|wav|ogg|m4a|aac|flac|opus|wma/;
+        const allowedMimeTypes = [
+            'audio/mpeg', // MP3
+            'audio/wav',
+            'audio/wave', 
+            'audio/x-wav',
+            'audio/ogg',
+            'audio/mp4', // M4A
+            'audio/aac',
+            'audio/x-aac',
+            'audio/flac',
+            'audio/x-flac',
+            'audio/opus',
+            'audio/x-ms-wma' // WMA
+        ];
+        
         const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = allowedTypes.test(file.mimetype);
+        const mimetype = allowedMimeTypes.includes(file.mimetype);
         
         if (mimetype && extname) {
             return cb(null, true);
         } else {
-            cb(new Error('Hanya file audio yang diperbolehkan!'));
+            cb(new Error('Hanya file audio yang diperbolehkan (MP3, WAV, OGG, M4A, AAC, FLAC, OPUS, WMA)!'));
         }
     },
     limits: { fileSize: 20 * 1024 * 1024 } // 20MB limit
@@ -100,8 +127,7 @@ const documentStorage = multer.diskStorage({
 const uploadDocument = multer({
     storage: documentStorage,
     fileFilter: (req, file, cb) => {
-        const allowedTypes = /pdf|doc|docx|xls|xlsx|ppt|pptx|txt/;
-        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const allowedTypes = /pdf|doc|docx|xls|xlsx|ppt|pptx|txt|rtf|odt|ods|odp/;
         const allowedMimeTypes = [
             'application/pdf',
             'application/msword',
@@ -110,13 +136,22 @@ const uploadDocument = multer({
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'application/vnd.ms-powerpoint',
             'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-            'text/plain'
+            'text/plain',
+            'text/rtf',
+            'application/rtf',
+            'application/vnd.oasis.opendocument.text', // ODT
+            'application/vnd.oasis.opendocument.spreadsheet', // ODS
+            'application/vnd.oasis.opendocument.presentation', // ODP
+            'application/zip' // untuk beberapa file office yang di-zip
         ];
         
-        if (allowedMimeTypes.includes(file.mimetype) && extname) {
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = allowedMimeTypes.includes(file.mimetype);
+        
+        if (mimetype && extname) {
             return cb(null, true);
         } else {
-            cb(new Error('Hanya file dokumen yang diperbolehkan!'));
+            cb(new Error('Hanya file dokumen yang diperbolehkan (PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, RTF, ODT, ODS, ODP)!'));
         }
     },
     limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
