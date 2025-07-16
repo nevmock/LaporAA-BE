@@ -1,0 +1,19 @@
+🔄 Commit terbaru di branch DEV_Ismail
+
+📝 feat: update app.js, controllers/botController.js, controllers/messageController.js
+📅 2025-07-16_1444
+
+📂 Perubahan file:
+app.js
+controllers/botController.js
+controllers/messageController.js
+controllers/webhookController.js
+models/messageModel.js
+repositories/reportRepo.js
+routes/messageRoutes.js
+routes/tindakanRoutes.js
+services/components/createReportHandler.js
+services/responseMessage/createReportReponse.js
+utils/downloadMediaFromMeta.js
+
+🚀 Meluncur

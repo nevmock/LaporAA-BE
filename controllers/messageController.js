@@ -7,7 +7,7 @@ const { convertWebpToJpegIfNeeded } = require("../utils/imageHelper");
 const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID;
 const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
 
-exports.sendMessageToWhatsApp = async (to, rawMessage, mode = "bot") => {
+exports.sendMessageToWhatsApp = async (to, rawMessage, mode = "bot", saveToDb = true) => {
     const url = `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_ID}/messages`;
     const headers = {
         Authorization: `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
@@ -23,7 +23,7 @@ exports.sendMessageToWhatsApp = async (to, rawMessage, mode = "bot") => {
         let idx = 0;
         while (idx < rawMessage.length) {
             const part = rawMessage.slice(idx, idx + MAX_MSG_LENGTH);
-            await exports.sendMessageToWhatsApp(to, part, mode);
+            await exports.sendMessageToWhatsApp(to, part, mode, saveToDb);
             await delay(700); // Biar aman, ga dibanned WA
             idx += MAX_MSG_LENGTH;
         }
@@ -90,30 +90,22 @@ exports.sendMessageToWhatsApp = async (to, rawMessage, mode = "bot") => {
     // Kirim pesan ke WhatsApp
     await axios.post(url, payload, { headers });
 
-    // Simpan pesan ke database (opsional untuk media)
-    let messageText = "";
-    if (typeof rawMessage === "string") {
-        messageText = rawMessage;
-    } else if (rawMessage.type === "image") {
-        messageText = `[Gambar] ${rawMessage.caption}`;
-    } else if (rawMessage.type === "video") {
-        messageText = `[Video] ${rawMessage.caption}`;
-    } else if (rawMessage.type === "audio") {
-        messageText = `[Audio] ${rawMessage.caption || ""}`;
-    } else if (rawMessage.type === "document") {
-        messageText = `[Dokumen] ${rawMessage.caption}`;
-    }
-    
-    await Message.create({
-        from: to,
-        senderName: "Bot",
-        message: messageText,
-        timestamp: new Date(),
-    });
-
-    // Emit ke frontend
-    if (global.io) {
-        global.io.emit("newMessage", {
+    // Simpan pesan ke database (opsional)
+    if (saveToDb) {
+        let messageText = "";
+        if (typeof rawMessage === "string") {
+            messageText = rawMessage;
+        } else if (rawMessage.type === "image") {
+            messageText = `[Gambar] ${rawMessage.caption}`;
+        } else if (rawMessage.type === "video") {
+            messageText = `[Video] ${rawMessage.caption}`;
+        } else if (rawMessage.type === "audio") {
+            messageText = `[Audio] ${rawMessage.caption || ""}`;
+        } else if (rawMessage.type === "document") {
+            messageText = `[Dokumen] ${rawMessage.caption}`;
+        }
+        
+        await Message.create({
             from: to,
             senderName: "Bot",
             message: messageText,
@@ -152,7 +144,28 @@ exports.sendMessageHandler = async (req, res) => {
             rawMessage += label;
         }
 
-        await exports.sendMessageToWhatsApp(from, rawMessage, mode);
+        await exports.sendMessageToWhatsApp(from, rawMessage, mode, false); // Don't save to DB
+
+        // Save admin message to database immediately
+        await Message.create({
+            from,
+            senderName: "Admin",
+            message: rawMessage,
+            timestamp: new Date(),
+            isAdminMessage: true // Flag to prevent webhook duplication
+        });
+
+        // Emit to frontend via socket with correct admin info
+        const io = req.app.get("io");
+        if (io) {
+            io.emit("newMessage", {
+                from,
+                senderName: "Admin",
+                message: rawMessage,
+                timestamp: new Date(),
+                isAdminMessage: true
+            });
+        }
 
         res.json({ success: true, mode });
     } catch (err) {
@@ -276,6 +289,7 @@ exports.sendImageHandler = async (req, res) => {
             type: "image",
             mediaUrl: `/uploads/${req.file.filename}`,
             timestamp: new Date(),
+            isAdminMessage: true
         });
         
         // Emit to frontend via socket
@@ -288,6 +302,7 @@ exports.sendImageHandler = async (req, res) => {
                 type: "image",
                 mediaUrl: `/uploads/${req.file.filename}`,
                 timestamp: new Date(),
+                isAdminMessage: true
             });
         }
 
@@ -345,6 +360,7 @@ exports.sendVideoHandler = async (req, res) => {
             type: "video",
             mediaUrl: `/uploads/${req.file.filename}`,
             timestamp: new Date(),
+            isAdminMessage: true
         });
         
         // Emit to frontend via socket
@@ -357,6 +373,7 @@ exports.sendVideoHandler = async (req, res) => {
                 type: "video",
                 mediaUrl: `/uploads/${req.file.filename}`,
                 timestamp: new Date(),
+                isAdminMessage: true
             });
         }
 
@@ -414,6 +431,7 @@ exports.sendAudioHandler = async (req, res) => {
             type: "audio",
             mediaUrl: `/uploads/${req.file.filename}`,
             timestamp: new Date(),
+            isAdminMessage: true
         });
         
         // Emit to frontend via socket
@@ -426,6 +444,7 @@ exports.sendAudioHandler = async (req, res) => {
                 type: "audio",
                 mediaUrl: `/uploads/${req.file.filename}`,
                 timestamp: new Date(),
+                isAdminMessage: true
             });
         }
 
@@ -484,6 +503,7 @@ exports.sendDocumentHandler = async (req, res) => {
             type: "document",
             mediaUrl: `/uploads/${req.file.filename}`,
             timestamp: new Date(),
+            isAdminMessage: true
         });
         
         // Emit to frontend via socket
@@ -496,6 +516,7 @@ exports.sendDocumentHandler = async (req, res) => {
                 type: "document",
                 mediaUrl: `/uploads/${req.file.filename}`,
                 timestamp: new Date(),
+                isAdminMessage: true
             });
         }
 

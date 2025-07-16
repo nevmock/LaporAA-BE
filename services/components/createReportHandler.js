@@ -34,7 +34,7 @@ module.exports = async (from, step, input, sendReply) => {
         return sendReply(from, createReportResponse.mintaKeluhan());
     }
 
-    // STEP 2: Append the complaint message or handle cancellation
+    // STEP 2: Append the complaint message or handle cancellation  
     if (step === "APPEND_MESSAGE") {
         const currentMessage = session.data.message || "";
 
@@ -56,12 +56,71 @@ module.exports = async (from, step, input, sendReply) => {
             return sendReply(from, createReportResponse.laporanDibatalkan(sapaan, nama));
         }
 
+        // Handle media files during message input
+        if (typeof input === "object" && input.type) {
+            let mediaMessage = "";
+            let mediaUrl = "";
+            
+            switch (input.type) {
+                case "image":
+                    mediaMessage = `[Gambar] ${input.image?.caption || ""}`;
+                    mediaUrl = input.image?.url || "";
+                    break;
+                case "video":  
+                    mediaMessage = `[Video] ${input.video?.caption || ""}`;
+                    mediaUrl = input.video?.url || "";
+                    break;
+                case "audio":
+                    mediaMessage = `[Audio]`;
+                    mediaUrl = input.audio?.url || "";
+                    break;
+                case "voice":
+                    mediaMessage = `[Pesan Suara]`;
+                    mediaUrl = input.voice?.url || "";
+                    break;
+                case "document":
+                    mediaMessage = `[Dokumen] ${input.document?.filename || ""} - ${input.document?.caption || ""}`;
+                    mediaUrl = input.document?.url || "";
+                    break;
+                case "sticker":
+                    mediaMessage = `[Sticker]`;
+                    mediaUrl = input.sticker?.url || "";
+                    break;
+                default:
+                    mediaMessage = "[File tidak didukung]";
+            }
+            
+            const updatedMessage = currentMessage
+                ? `${currentMessage}, ${mediaMessage}`
+                : mediaMessage;
+
+            // Store media URLs for later use
+            const mediaFiles = session.data.mediaFiles || [];
+            if (mediaUrl) {
+                mediaFiles.push({
+                    type: input.type,
+                    url: mediaUrl,
+                    message: mediaMessage
+                });
+            }
+
+            await userRepo.updateSession(from, {
+                step: "APPEND_MESSAGE",
+                data: { 
+                    ...session.data, 
+                    message: updatedMessage,
+                    mediaFiles: mediaFiles
+                }
+            });
+            return sendReply(from, createReportResponse.mediaDitambahkan(input.type));
+        }
+
         const updatedMessage = currentMessage
             ? `${currentMessage}, ${input}`
             : input;
 
         await userRepo.updateSession(from, {
-            step: "APPEND_MESSAGE",
+            step: "APPEND_MESSAGE", 
             data: { ...session.data, message: updatedMessage }
         });
         return sendReply(from, createReportResponse.keluhanDitambahkan());

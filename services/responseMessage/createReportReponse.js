@@ -280,6 +280,27 @@ function handlerDefault() {
   return randomResponse(responses);
 }
 
+function mediaDitambahkan(mediaType) {
+  const mediaTypes = {
+    image: "Gambar",
+    video: "Video", 
+    audio: "Audio",
+    voice: "Pesan suara",
+    document: "Dokumen",
+    sticker: "Sticker"
+  };
+  
+  const mediaName = mediaTypes[mediaType] || "File";
+  
+  const responses = [
+    `${mediaName} telah ditambahkan ke keluhan Anda. Jika ada keluhan tambahan, silakan tulis lagi. Jika cukup, ketik *kirim*.\n\nAtau ketik *menu* untuk kembali ke menu utama.`,
+    `${mediaName} berhasil dicatat. Tambahkan keluhan lain jika masih ada, atau ketik *kirim* jika dirasa cukup.\n\nAtau ketik *menu* untuk kembali ke menu utama.`,
+    `${mediaName} sudah kami terima. Tulis keluhan tambahan jika ada, atau ketik *kirim* untuk melanjutkan.\n\nAtau ketik *menu* untuk kembali ke menu utama.`,
+    `${mediaName} telah disimpan. Jika masih ada keluhan, silakan tulis lagi. Jika tidak, ketik *kirim*.\n\nAtau ketik *menu* untuk kembali ke menu utama.`,
+  ];
+  return randomResponse(responses);
+}
+
 module.exports = {
   mintaKeluhan,
   keluhanDitambahkan,
@@ -305,4 +326,5 @@ module.exports = {
   gagalSimpanLaporan,
   ulangLaporan,
   handlerDefault,
+  mediaDitambahkan,
 };
