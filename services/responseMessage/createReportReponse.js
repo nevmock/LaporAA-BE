@@ -116,11 +116,11 @@ function lokasiDiterima(wilayah) {
 
 function mintaFoto() {
   const responses = [
-    `Silakan kirim *1–3 foto* untuk bukti. Cek kembali apakah foto yang akan dikirim sudah jelas dan relevan.`,
-    `Mohon kirimkan 1 sampai 3 foto bukti yang relevan.`,
-    `Kirimkan foto bukti (maksimal 3), dan pastikan fotonya jelas.`,
-    `Silakan sertakan foto bukti, minimal 1 foto dan maksimal 3 foto.`,
-    `Kirimkan 1-3 foto untuk bukti laporan Anda.`,
+    `Silakan kirim *1–3 media* (foto/video/pesan suara) untuk bukti. Cek kembali apakah media yang akan dikirim sudah jelas dan relevan.`,
+    `Mohon kirimkan 1 sampai 3 media bukti (foto/video/suara) yang relevan.`,
+    `Kirimkan media bukti (maksimal 3), bisa foto, video, atau pesan suara dan pastikan medianya jelas.`,
+    `Silakan sertakan media bukti, minimal 1 media dan maksimal 3 media (foto/video/suara).`,
+    `Kirimkan 1-3 media (foto/video/pesan suara) untuk bukti laporan Anda.`,
   ];
   return randomResponse(responses);
 }
@@ -159,12 +159,17 @@ function minimalFoto(sapaan, nama) {
 }
 
 function ringkasanLaporan(session) {
+  const mediaCount = session.photos?.length || 0;
+  const mediaTypes = session.photos?.map(photo => {
+    if (typeof photo === 'string') return 'foto';
+    return photo.type === 'image' ? 'foto' : 
+           photo.type === 'video' ? 'video' : 
+           photo.type === 'voice' ? 'suara' : 'media';
+  }).join(', ') || 'tidak ada';
+  
   const responses = [
-    `Berikut ringkasan laporan Anda:\n\n📍 *Lokasi:* ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n\n📝 *Keluhan:*\n${session.message}\n\n📷 *Jumlah Foto:* ${session.photos.length}\n\nJika sudah benar, ketik *konfirmasi*. Jika ingin mengirim ulang, ketik *batal*.`,
-    `Ringkasan laporan:\n\n*Lokasi:* ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n\n*Keluhan:*\n${session.message}\n\n*Jumlah Foto:* ${session.photos.length}\n\nKetik *konfirmasi* jika sudah konfirmasi laporannya, atau ketik *batal* untuk mengulang.`,
-    // `Cek kembali laporan Anda:\n\n*Lokasi:* ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n\n*Keluhan:*\n${session.message}\n\n*Foto:* ${session.photos.length}\n\nKetik *benar* jika benar, atau ketik *salah* untuk mengulang kembali.`,
-    // `Berikut detail laporan Anda:\n\n*Lokasi:* ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n\n*Keluhan:*\n${session.message}\n\n*Jumlah Foto:* ${session.photos.length}\n\nKetik *benar* jika sudah benar laporannya, atau ketik *salah* untuk mengulang.`,
-    // `Laporan Anda adalah:\n\n*Lokasi:* ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n\n*Keluhan:*\n${session.message}\n\n*Foto:* ${session.photos.length}\n\nJika laporan sudah konfirmasi, ketik *konfirmasi*, atau ketik *salah* untuk mengulang kembali.`
+    `Berikut ringkasan laporan Anda:\n\n📍 *Lokasi:* ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n\n📝 *Keluhan:*\n${session.message}\n\n📷 *Media Bukti:* ${mediaCount} (${mediaTypes})\n\nJika sudah benar, ketik *konfirmasi*. Jika ingin mengirim ulang, ketik *batal*.`,
+    `Ringkasan laporan:\n\n*Lokasi:* ${session.location.desa}, ${session.location.kecamatan}, ${session.location.kabupaten}\n\n*Keluhan:*\n${session.message}\n\n*Media Bukti:* ${mediaCount} (${mediaTypes})\n\nKetik *konfirmasi* jika sudah konfirmasi laporannya, atau ketik *batal* untuk mengulang.`,
   ];
   return randomResponse(responses);
 }
@@ -301,6 +306,55 @@ function mediaDitambahkan(mediaType) {
   return randomResponse(responses);
 }
 
+// New functions for video and media support
+function hanyaFotoVideo() {
+  const responses = [
+    `Pada tahap ini Anda harus *mengirim foto, video, atau pesan suara* sebagai bukti. Silakan kirim media bukti.\n\nAtau ketik *menu* jika ingin memulai melapor dari awal.`,
+    `Anda berada di tahap pengiriman media bukti. Silakan *kirim foto, video, atau pesan suara*.\n\nNamun, jika Anda ingin mengulang pelaporan dari awal, ketik *menu*.`,
+    `Tolong *kirim hanya media bukti* (foto/video/suara) saja di tahap ini.\n\nNamun, jika Anda ingin melapor ulang dari awal, ketik *menu*`,
+    `Mohon kirimkan *media bukti* (foto/video/suara) saja.\n\nTapi, jika Anda ingin membuat laporan dari awal lagi, silakan ketik *menu*`,
+    `Anda diharuskan mengirim media bukti di tahap ini. Silakan *kirim foto, video, atau pesan suara*.\n\nJika Anda ingin mengulangi laporan dari awal, ketik *menu*`,
+  ];
+  return randomResponse(responses);
+}
+
+function sudah3Media() {
+  const responses = [
+    `Kami telah menerima 3 media bukti. Coba periksa kembali, apakah media yang Anda kirim sudah sesuai?\n\nJika sudah cukup, ketik *kirim*, atau ketik *batal* untuk mengulang.`,
+    `Sudah ada 3 media bukti yang diterima.\n\nKetik *kirim* jika sudah cukup, atau *batal* untuk ulang.`,
+    `3 media bukti dari Anda sudah diterima.\n\nKetik *kirim* jika sudah benar, atau *batal* untuk ulang.`,
+    `Kami sudah menerima 3 media bukti.\n\nSilakan cek kembali, lalu ketik *kirim* jika sudah sesuai, atau *batal* jika ingin mengulang.`,
+    `3 media bukti berhasil diterima.\n\nKetik *kirim* jika sudah cukup, atau *batal* untuk ulang.`,
+  ];
+  return randomResponse(responses);
+}
+
+function mediaBerhasilDiterima(mediaType, sisa) {
+  const mediaTypeText = mediaType === "image" ? "Foto" : 
+                       mediaType === "video" ? "Video" : 
+                       mediaType === "voice" ? "Pesan suara" : "Media";
+  
+  const responses = [
+    `${mediaTypeText} bukti berhasil diterima. Anda masih bisa mengirim ${sisa} media lagi.\n\nKetik *kirim* jika sudah cukup, atau *batal* untuk mengulang.`,
+    `${mediaTypeText} bukti sudah masuk. Anda masih bisa mengirim ${sisa} media lagi.\n\nJika sudah cukup ketik *kirim*, jika ingin mengulang ketik *batal*`,
+    `${mediaTypeText} bukti telah diterima. Sisa media yang bisa dikirim: ${sisa}.\n\nKetik *kirim* jika sudah cukup, ketik *batal* jika ingin mengulang`,
+    `${mediaTypeText} bukti sudah diterima. Anda masih bisa tambah ${sisa} media lagi.\n\nJika cukup ketik *kirim*, jika ingin mengulang ketik *batal*`,
+    `${mediaTypeText} bukti berhasil disimpan oleh kami. Anda masih bisa kirim ${sisa} media lagi.\n\nJika cukup ketik *kirim*, jika ingin diulang ketik *batal*`,
+  ];
+  return randomResponse(responses);
+}
+
+function minimalMedia(sapaan, nama) {
+  const responses = [
+    `Mohon maaf ${sapaan} ${nama}, minimal perlu 1 media bukti (foto/video/suara) sebelum melanjutkan.`,
+    `Minimal 1 media bukti diperlukan untuk melanjutkan melapor, ${sapaan} ${nama}.`,
+    `Anda harus mengirimkan setidaknya 1 media bukti, ${sapaan} ${nama}.`,
+    `Anda tidak bisa melanjutkan jika tidak menyertakan media bukti, ${sapaan} ${nama}.`,
+    `Mohon kirim minimal 1 media bukti (foto/video/suara), ${sapaan} ${nama}.`,
+  ];
+  return randomResponse(responses);
+}
+
 module.exports = {
   mintaKeluhan,
   keluhanDitambahkan,
@@ -327,4 +381,9 @@ module.exports = {
   ulangLaporan,
   handlerDefault,
   mediaDitambahkan,
+  // New exports for video/media support
+  hanyaFotoVideo,
+  sudah3Media,
+  mediaBerhasilDiterima,
+  minimalMedia,
 };

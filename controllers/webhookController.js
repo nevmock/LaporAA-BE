@@ -24,7 +24,7 @@ const emitToUser = (io, userId, event, data) => {
 
 const emitToChat = (io, sessionId, event, data) => {
     if (io && io.to) {
-        io.to(`chat-${sessionId}`).emit(event, data);
+        io.to(`chat_${sessionId}`).emit(event, data);
         console.log(`📡 Emitted ${event} to chat session ${sessionId}`);
     }
 };
@@ -205,6 +205,10 @@ exports.handleIncomingMessages = async (req, res) => {
                                 // Emit to admins room for monitoring
                                 emitToAdmins(io, "newMessage", messagePayload);
                                 
+                                // Emit to specific chat room for real-time updates
+                                console.log(`🚀 Emitting to chat room chat_${from} for user message`);
+                                emitToChat(io, from, "newMessage", messagePayload);
+                                
                                 // Also emit globally for compatibility
                                 emitGlobalUpdate(io, "newMessage", messagePayload);
                             }
@@ -221,6 +225,7 @@ exports.handleIncomingMessages = async (req, res) => {
                                     
                                     // Emit bot response to appropriate rooms
                                     emitToAdmins(io, "newMessage", botMessagePayload);
+                                    emitToChat(io, to, "newMessage", botMessagePayload);
                                     emitGlobalUpdate(io, "newMessage", botMessagePayload);
                                 }
                                 return message;
@@ -228,14 +233,23 @@ exports.handleIncomingMessages = async (req, res) => {
 
                             const botReply = await botFlowService.handleUserMessage({ from, message: parsedMessage, sendReply });
 
+                            console.log(`🤖 Bot processing for ${from}:`, {
+                                input: messagePreviewForLog,
+                                botReply: botReply ? "Reply generated" : "No reply",
+                                effectiveMode: await modeManager.getEffectiveMode(from)
+                            });
+
                             if (botReply) {
                                 const effectiveMode = await modeManager.getEffectiveMode(from);
                                 if (effectiveMode === "bot") {
+                                    console.log(`✅ Sending bot reply to ${from}:`, botReply.substring(0, 100) + "...");
                                     await sendMessageToWhatsApp(from, botReply, "bot", true);
                                 } else {
                                     const isForceMode = await modeManager.isInForceMode(from);
                                     console.log(`✋ Bot tidak balas karena effective mode: ${effectiveMode}${isForceMode ? ' (Force Mode)' : ''}`);
                                 }
+                            } else {
+                                console.log(`⚠️ No bot reply generated for message from ${from}: ${messagePreviewForLog}`);
                             }
                         }
                     }

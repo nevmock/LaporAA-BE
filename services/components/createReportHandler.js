@@ -7,6 +7,7 @@ const messageController = require("../../controllers/messageController");
 const createReportResponse = require("../responseMessage/createReportReponse");
 const checkReportResponse = require("../responseMessage/checkReportResponse");
 const { affirmativeInputs, negativeInputs } = require("../../utils/inputTypes");
+const { compressMedia } = require("../../utils/mediaCompressor");
 
 module.exports = async (from, step, input, sendReply) => {
     const session = await userRepo.getOrCreateSession(from);
@@ -208,14 +209,14 @@ module.exports = async (from, step, input, sendReply) => {
         return sendReply(from, createReportResponse.konfirmasiLokasi());
     }
 
-    // STEP 6: Ask for photos (1–3)
+    // STEP 6: Ask for photos/videos (1–3)
     if (step === "ASK_PHOTO") {
         const photos = session.data.photos || [];
 
         if (typeof input === "string") {
             if (lowerInput === "kirim" || affirmative) {
                 if (photos.length < 1) {
-                    return sendReply(from, createReportResponse.minimalFoto(sapaan, nama)); // Need at least one photo
+                    return sendReply(from, createReportResponse.minimalMedia(sapaan, nama)); // Need at least one media
                 }
 
                 await userRepo.updateSession(from, {
@@ -231,32 +232,78 @@ module.exports = async (from, step, input, sendReply) => {
                 return sendReply(from, createReportResponse.laporanDibatalkanMenu());
             }
 
-            return sendReply(from, createReportResponse.hanyaFoto());
+            return sendReply(from, createReportResponse.hanyaFotoVideo());
         }
 
-        // Ensure that the input is a valid image URL
-        if (!input.image?.url) {
-            return sendReply(from, createReportResponse.hanyaFoto());
+        // Handle both image and video inputs
+        let mediaUrl = null;
+        let mediaType = null;
+        let mediaCaption = "";
+
+        if (input.image?.url) {
+            mediaUrl = input.image.url;
+            mediaType = "image";
+            mediaCaption = input.image.caption || "";
+        } else if (input.video?.url) {
+            mediaUrl = input.video.url;
+            mediaType = "video";
+            mediaCaption = input.video.caption || "";
+        } else if (input.voice?.url) {
+            mediaUrl = input.voice.url;
+            mediaType = "voice";
+            mediaCaption = "";
+        } else {
+            return sendReply(from, createReportResponse.hanyaFotoVideo());
         }
 
-        const newPhotoUrl = input.image.url;
-        const updatedPhotos = [...photos, newPhotoUrl];
+        // Compress media before storing
+        try {
+            const compressedUrl = await compressMedia(mediaUrl, mediaType);
+            
+            const mediaData = {
+                url: compressedUrl || mediaUrl, // fallback to original if compression fails
+                type: mediaType,
+                caption: mediaCaption,
+                originalUrl: mediaUrl // keep original for reference
+            };
 
-        // Allow only 3 photos
-        if (updatedPhotos.length >= 3) {
+            const updatedPhotos = [...photos, mediaData];
+
+            // Allow only 3 media files
+            if (updatedPhotos.length >= 3) {
+                await userRepo.updateSession(from, {
+                    step: "REVIEW",
+                    data: { ...session.data, photos: updatedPhotos }
+                });
+                return sendReply(from, createReportResponse.sudah3Media());
+            }
+
             await userRepo.updateSession(from, {
-                step: "REVIEW",
+                step: "ASK_PHOTO",
                 data: { ...session.data, photos: updatedPhotos }
             });
-            return sendReply(from, createReportResponse.sudah3Foto());
+
+            const mediaTypeText = mediaType === "image" ? "foto" : 
+                                 mediaType === "video" ? "video" : "pesan suara";
+            return sendReply(from, createReportResponse.mediaBerhasilDiterima(mediaTypeText, 3 - updatedPhotos.length));
+        } catch (error) {
+            console.error("Error processing media:", error);
+            // Fallback: store original without compression
+            const mediaData = {
+                url: mediaUrl,
+                type: mediaType,
+                caption: mediaCaption
+            };
+
+            const updatedPhotos = [...photos, mediaData];
+
+            await userRepo.updateSession(from, {
+                step: "ASK_PHOTO",
+                data: { ...session.data, photos: updatedPhotos }
+            });
+
+            return sendReply(from, createReportResponse.mediaBerhasilDiterima(mediaType, 3 - updatedPhotos.length));
         }
-
-        await userRepo.updateSession(from, {
-            step: "ASK_PHOTO",
-            data: { ...session.data, photos: updatedPhotos }
-        });
-
-        return sendReply(from, createReportResponse.fotoBerhasilDiterima(3 - updatedPhotos.length));
     }
 
     // STEP 7: Review and confirm the report

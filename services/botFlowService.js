@@ -12,24 +12,47 @@ const { affirmativeInputs, negativeInputs } = require("../utils/inputTypes");
 const modeManager = require("./modeManager");
 
 exports.handleUserMessage = async ({ from, message, sendReply }) => {
+    console.log(`🤖 BotFlowService handling message from ${from}:`, {
+        messageType: typeof message,
+        messageValue: typeof message === 'string' ? message : JSON.stringify(message),
+        timestamp: new Date().toISOString()
+    });
+
     const user = await userProfileRepo.findByFrom(from);
     const nama = user?.name || "Warga";
     const jenisKelamin = user?.jenis_kelamin || "";
     const sapaan = jenisKelamin.toLowerCase() === "pria" ? "Pak" : jenisKelamin.toLowerCase() === "wanita" ? "Bu" : "";
 
     let session = await userRepo.getOrCreateSession(from);
+    console.log(`📋 User session for ${from}:`, {
+        step: session.step,
+        currentAction: session.currentAction,
+        hasSession: !!session
+    });
+
     const ratingInput = message;
     const input = typeof message === "string" ? message.trim().toLowerCase() : message;
     const step = session.step;
 
     const context = await combinedContext(input);
+    console.log(`🧠 AI Context for "${input}":`, context);
 
     // Gunakan modeManager untuk mengecek mode yang sebenarnya
     const effectiveMode = await modeManager.getEffectiveMode(from);
-    if (effectiveMode === "manual") return null;
+    console.log(`⚙️ Effective mode for ${from}:`, effectiveMode);
+    
+    if (effectiveMode === "manual") {
+        console.log(`🚫 Returning null - manual mode active for ${from}`);
+        return null;
+    }
 
     // === Greeting check untuk reset session dan tampilkan menu utama ===
-    if ((step === "MAIN_MENU" && !session.currentAction && input === "menu") || (step === "MAIN_MENU" && !session.currentAction && context === "greeting")) {
+    // Handle first message or menu command
+    if (
+        (step === "MAIN_MENU" && !session.currentAction && input === "menu") || 
+        (step === "MAIN_MENU" && !session.currentAction && context === "greeting") ||
+        (!session.step || session.step === "MAIN_MENU") && (context === "greeting" || input === "halo" || input === "hai" || input === "hello")
+    ) {
         await userRepo.resetSession(from);
         return mainMenuHandler(from, input, sendReply);
     }
@@ -157,7 +180,13 @@ exports.handleUserMessage = async ({ from, message, sendReply }) => {
         return checkReportHandler(from, step, input, sendReply);
     }
 
+    // === Handle first time user or unrecognized input ===
+    if (!session.step || session.step === "UNDEFINED" || !session.currentAction) {
+        await userRepo.resetSession(from);
+        return mainMenuHandler(from, input, sendReply);
+    }
+
     // === Fallback: Reset session jika tidak cocok ===
     await userRepo.resetSession(from);
-    return sendReply(from, botFlowResponse.mainSapaan());
+    return sendReply(from, botFlowResponse.mainSapaan());;
 };

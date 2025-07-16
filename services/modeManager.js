@@ -151,6 +151,26 @@ class ModeManager {
     }
 
     /**
+     * Reset user mode ke bot (untuk testing/debugging)
+     * @param {string} from - Nomor WhatsApp user
+     * @returns {Object} Session info
+     */
+    async resetToBotMode(from) {
+        const session = await this.getOrCreateSession(from);
+        
+        session.mode = "bot";
+        session.forceModeManual = false;
+        session.manualModeUntil = null;
+        
+        await session.save();
+        return {
+            success: true,
+            message: "Mode berhasil direset ke bot mode",
+            ...this.getSessionInfo(session)
+        };
+    }
+
+    /**
      * Cek apakah user sedang dalam mode manual (efektif)
      */
     async isInManualMode(from) {
