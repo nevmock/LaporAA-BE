@@ -48,15 +48,17 @@ class RealTimeService {
                     reportId: reportData.reportId,
                     sessionId: reportData.sessionId,
                     from: reportData.from,
+                    userName: reportData.userName,
                     message: reportData.message,
                     location: reportData.location,
+                    coordinates: reportData.coordinates,
                     timestamp: new Date()
                 });
 
                 // Update pending count
                 await this.emitPendingCountUpdate(io);
                 
-                console.log(`📋 Real-time: New report notification sent (${reportData.sessionId})`);
+                console.log(`📋 Real-time: New report notification sent (${reportData.sessionId}) from ${reportData.userName}`);
             }
         } catch (error) {
             console.error("❌ Error emitting new report notification:", error);

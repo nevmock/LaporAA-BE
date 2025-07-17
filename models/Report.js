@@ -55,7 +55,24 @@ const reportSchema = new mongoose.Schema({
         required: true,
     },
     photos: {
-        type: [String],
+        type: [{
+            url: {
+                type: String,
+                required: true
+            },
+            type: {
+                type: String,
+                enum: ['image', 'video', 'audio'],
+                required: true
+            },
+            caption: {
+                type: String,
+                default: ''
+            },
+            originalUrl: {
+                type: String
+            }
+        }],
         default: [],
     },
     tindakan: {

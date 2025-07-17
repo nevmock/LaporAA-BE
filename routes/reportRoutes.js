@@ -4,6 +4,93 @@ const reportRepo = require("../repositories/reportRepo");
 const Report = require("../models/Report");
 const Tindakan = require("../models/Tindakan");
 
+/**
+ * Helper function untuk photos transformation di MongoDB aggregation
+ * Digunakan untuk memastikan konsistensi struktur photos di semua endpoint
+ */
+const getPhotosTransformation = () => {
+    return {
+        photos: {
+            $cond: {
+                if: { $isArray: "$photos" },
+                then: {
+                    $map: {
+                        input: "$photos",
+                        as: "photo",
+                        in: {
+                            $cond: {
+                                if: { $eq: [{ $type: "$$photo" }, "string"] },
+                                then: {
+                                    url: "$$photo",
+                                    type: "image",
+                                    caption: "",
+                                    originalUrl: "$$photo"
+                                },
+                                else: {
+                                    url: { $ifNull: ["$$photo.url", "$$photo"] },
+                                    type: { $ifNull: ["$$photo.type", "image"] },
+                                    caption: { $ifNull: ["$$photo.caption", ""] },
+                                    originalUrl: { $ifNull: ["$$photo.originalUrl", "$$photo.url"] }
+                                }
+                            }
+                        }
+                    }
+                },
+                else: []
+            }
+        }
+    };
+};
+
+/**
+ * Helper function untuk menambahkan field yang dibutuhkan frontend untuk compatibility
+ */
+const getPhotosCompatibilityFields = () => {
+    return {
+        // Add firstPhotoUrl for frontend compatibility
+        firstPhotoUrl: {
+            $cond: {
+                if: { $gt: [{ $size: { $ifNull: ["$photos", []] } }, 0] },
+                then: {
+                    $let: {
+                        vars: {
+                            firstPhoto: { $arrayElemAt: ["$photos", 0] }
+                        },
+                        in: {
+                            $cond: {
+                                if: { $eq: [{ $type: "$$firstPhoto" }, "string"] },
+                                then: "$$firstPhoto",
+                                else: { $ifNull: ["$$firstPhoto.url", "$$firstPhoto"] }
+                            }
+                        }
+                    }
+                },
+                else: null
+            }
+        },
+        // Also add photos as string array for backward compatibility
+        photosCompat: {
+            $cond: {
+                if: { $isArray: "$photos" },
+                then: {
+                    $map: {
+                        input: "$photos",
+                        as: "photo",
+                        in: {
+                            $cond: {
+                                if: { $eq: [{ $type: "$$photo" }, "string"] },
+                                then: "$$photo",
+                                else: { $ifNull: ["$$photo.url", "$$photo"] }
+                            }
+                        }
+                    }
+                },
+                else: []
+            }
+        }
+    };
+};
+
 /* ---------- STATIC ENDPOINTS FIRST ---------- */
 router.get("/test", async (req, res) => {
     try {
@@ -38,6 +125,8 @@ router.get("/map", async (req, res) => {
             },
             {
                 $addFields: {
+                    // Ensure photos field is always array of objects with correct structure
+                    ...getPhotosTransformation(),
                     prioritasScore: {
                         $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
                     },
@@ -169,6 +258,8 @@ router.get("/summary-laporan", async (req, res) => {
             },
             {
                 $addFields: {
+                    // Ensure photos field is always array of objects with correct structure
+                    ...getPhotosTransformation(),
                     prioritasScore: {
                         $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
                     },
@@ -371,6 +462,8 @@ router.get("/dashboard-summary", async (req, res) => {
             },
             {
                 $addFields: {
+                    // Ensure photos field is always array of objects with correct structure
+                    ...getPhotosTransformation(),
                     prioritasScore: {
                         $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
                     },
@@ -648,6 +741,8 @@ router.get("/", async (req, res) => {
             },
             {
                 $addFields: {
+                    // Ensure photos field is always array of objects with correct structure
+                    ...getPhotosTransformation(),
                     prioritasScore: {
                         $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
                     },
@@ -805,6 +900,8 @@ router.get("/new", async (req, res) => {
             },
             {
                 $addFields: {
+                    // Ensure photos field is always array of objects with correct structure
+                    ...getPhotosTransformation(),
                     prioritasScore: {
                         $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
                     },
@@ -900,6 +997,8 @@ router.get("/new", async (req, res) => {
             },
             {
                 $addFields: {
+                    // Ensure photos field is always array of objects with correct structure
+                    ...getPhotosTransformation(),
                     prioritasScore: {
                         $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
                     },
@@ -978,6 +1077,8 @@ router.get("/new", async (req, res) => {
             },
             {
                 $addFields: {
+                    // Ensure photos field is always array of objects with correct structure
+                    ...getPhotosTransformation(),
                     prioritasScore: {
                         $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
                     },
@@ -1056,6 +1157,8 @@ router.get("/new", async (req, res) => {
             },
             {
                 $addFields: {
+                    // Ensure photos field is always array of objects with correct structure
+                    ...getPhotosTransformation(),
                     prioritasScore: {
                         $cond: [{ $eq: ["$tindakan.prioritas", "Ya"] }, 1, 0]
                     },

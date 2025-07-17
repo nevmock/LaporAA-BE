@@ -3,8 +3,68 @@ const Tindakan = require("../models/Tindakan");
 const UserProfile = require("../models/UserProfile");
 const RealTimeService = require("../services/realTimeService");
 
+// Helper function to ensure photos field has consistent structure
+const normalizePhotos = (photos) => {
+    if (!Array.isArray(photos)) return [];
+    
+    return photos.map(photo => {
+        if (typeof photo === 'string') {
+            return {
+                url: photo,
+                type: 'image',
+                caption: '',
+                originalUrl: photo
+            };
+        }
+        
+        if (typeof photo === 'object' && photo !== null) {
+            return {
+                url: photo.url || photo,
+                type: photo.type || 'image',
+                caption: photo.caption || '',
+                originalUrl: photo.originalUrl || photo.url || photo
+            };
+        }
+        
+        return {
+            url: '',
+            type: 'image',
+            caption: '',
+            originalUrl: ''
+        };
+    });
+};
+
+// Helper function to transform report object after fetch
+const transformReportPhotos = (report) => {
+    if (!report) return report;
+    
+    if (report.toObject) {
+        report = report.toObject();
+    }
+    
+    if (report.photos) {
+        report.photos = normalizePhotos(report.photos);
+    }
+    
+    return report;
+};
+
 exports.create = async ({ sessionId, from, user, location, message, photos, url, keterangan, status_laporan }) => {
-    const newReport = await Report.create({ sessionId, from, user, location, message, photos, url, keterangan, status_laporan });
+    // Normalize photos before creating
+    const normalizedPhotos = normalizePhotos(photos);
+    
+    const newReport = await Report.create({ 
+        sessionId, 
+        from, 
+        user, 
+        location, 
+        message, 
+        photos: normalizedPhotos, 
+        url, 
+        keterangan, 
+        status_laporan 
+    });
 
     const defaultTindakan = await Tindakan.create({
         report: newReport._id,
@@ -29,12 +89,24 @@ exports.create = async ({ sessionId, from, user, location, message, photos, url,
         // Gunakan global io instance yang di-set di app.js
         const io = global.socketIO;
         if (io) {
+            // Get user data for notification
+            const user = await UserProfile.findOne({ from });
+            const locationText = location.description || 
+                (location.desa && location.kecamatan ? `${location.desa}, ${location.kecamatan}` : '') ||
+                (location.latitude && location.longitude ? `${location.latitude}, ${location.longitude}` : '') ||
+                'Lokasi tidak diketahui';
+            
             await RealTimeService.emitNewReportNotification(io, {
                 reportId: newReport._id,
                 sessionId: sessionId,
                 from: from,
+                userName: user?.name || 'Anonim',
                 message: message,
-                location: location
+                location: locationText,
+                coordinates: location.latitude && location.longitude ? {
+                    lat: location.latitude,
+                    lng: location.longitude
+                } : null
             });
         }
     } catch (error) {
@@ -49,39 +121,47 @@ exports.create = async ({ sessionId, from, user, location, message, photos, url,
         );
     }
 
-    return await Report.findById(newReport._id)
+    return transformReportPhotos(await Report.findById(newReport._id)
         .populate("user")
         .populate("tindakan")
-        .populate("processed_by");
+        .populate("processed_by"));
 };
 
 exports.findAll = async () => {
-    return await Report.find()
+    const reports = await Report.find()
         .populate("user")
         .populate("tindakan")
         .populate("processed_by")
         .sort({ createdAt: -1 });
+    
+    return reports.map(transformReportPhotos);
 };
 
 exports.findBySessionId = async (sessionId) => {
-    return await Report.findOne({ sessionId })
+    const report = await Report.findOne({ sessionId })
         .populate("user")
         .populate("tindakan")
         .populate("processed_by");
+    
+    return transformReportPhotos(report);
 };
 
 exports.findById = async (id) => {
-    return await Report.findById(id)
+    const report = await Report.findById(id)
         .populate("user")
         .populate("tindakan")
         .populate("processed_by");
+    
+    return transformReportPhotos(report);
 };
 
 exports.findByTindakanId = async (tindakanId) => {
-    return await Report.findOne({ tindakan: tindakanId })
+    const report = await Report.findOne({ tindakan: tindakanId })
         .populate("user")
         .populate("tindakan")
         .populate("processed_by");
+    
+    return transformReportPhotos(report);
 };
 
 exports.deleteManyBySessionIds = async (sessionIds) => {
@@ -129,27 +209,33 @@ exports.togglePinnedBySessionId = async (sessionId) => {
     report.is_pinned = !report.is_pinned;
     await report.save();
     
-    return await Report.findById(report._id)
+    const updatedReport = await Report.findById(report._id)
         .populate("user")
         .populate("tindakan")
         .populate("processed_by");
+    
+    return transformReportPhotos(updatedReport);
 };
 
 // Find all pinned reports
 exports.findAllPinned = async () => {
-    return await Report.find({ is_pinned: true })
+    const reports = await Report.find({ is_pinned: true })
         .populate("user")
         .populate("tindakan")
         .populate("processed_by")
         .sort({ createdAt: -1 });
+    
+    return reports.map(transformReportPhotos);
 };
 
 // Find pinned report by sessionId
 exports.findPinnedBySessionId = async (sessionId) => {
-    return await Report.findOne({ sessionId, is_pinned: true })
+    const report = await Report.findOne({ sessionId, is_pinned: true })
         .populate("user")
         .populate("tindakan")
         .populate("processed_by");
+    
+    return transformReportPhotos(report);
 };
 
 // Check pin status of a report by sessionId - returns report with pin status info
@@ -159,12 +245,14 @@ exports.checkPinStatusBySessionId = async (sessionId) => {
         .populate("tindakan")
         .populate("processed_by");
     
-    return report;
+    return transformReportPhotos(report);
 };
 
 // Cari semua report milik user (from) yang status tindakannya belum 'Selesai Pengaduan'
 exports.findActiveReportsByFrom = async (from) => {
     const reports = await Report.find({ from })
         .populate("tindakan");
-    return reports.filter(r => r.tindakan && r.tindakan.status !== "Selesai Pengaduan");
+    
+    const activeReports = reports.filter(r => r.tindakan && r.tindakan.status !== "Selesai Pengaduan");
+    return activeReports.map(transformReportPhotos);
 };

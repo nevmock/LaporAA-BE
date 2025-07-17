@@ -48,7 +48,7 @@ try {
     maxHttpBufferSize: 1e6,
     allowUpgrades: true,
     cleanupEmptyChildNamespaces: true,
-    connectionStateRecovery: {
+    connectionStateRecovery : {
       maxDisconnectionDuration: 2 * 60 * 1000,
       skipMiddlewares: true,
     },
@@ -103,6 +103,7 @@ const reportRoutes = require("./routes/reportRoutes");
 const reportCountRoutes = require("./routes/reportCount");
 const tindakanRoutes = require("./routes/tindakanRoutes");
 const tindakanUploadRoute = require("./routes/tindakanUpload");
+const assetRoutes = require("./routes/assetRoutes");
 const dashboardRoute = require("./routes/dashboardRoute");
 const userLogin = require("./routes/userLogin");
 const login = require("./routes/auth");
@@ -145,6 +146,54 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Add migration status endpoint
+app.get('/migration-status', async (req, res) => {
+  try {
+    const migrationManager = require('./migrations/index');
+    const status = await migrationManager.getMigrationStatus();
+    res.json({
+      status: 'OK',
+      migrations: status,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// ----------------------- BOT MODE RESET ENDPOINT -----------------------
+// Add bot mode reset endpoint for debugging (before auth middleware)
+app.get('/reset-bot-mode/:phoneNumber', async (req, res) => {
+  try {
+    const { phoneNumber } = req.params;
+    
+    if (!phoneNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number is required"
+      });
+    }
+
+    const modeManager = require("./services/modeManager");
+    const result = await modeManager.resetToBotMode(phoneNumber);
+    
+    console.log(`✅ Bot mode reset via API for ${phoneNumber}:`, result);
+    
+    res.json(result);
+    
+  } catch (error) {
+    console.error(`❌ Error resetting bot mode via API:`, error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 // app.use(limitMiddleware);
 
 mongoose.connection.on('connected', () => {
@@ -160,8 +209,19 @@ mongoose.connection.on('disconnected', () => {
 });
 
 // Koneksi ke MongoDB
-mongoose.connect(process.env.MONGO_URI).then(() => {
+mongoose.connect(process.env.MONGO_URI).then(async () => {
   console.log("✅ MongoDB Connected");
+
+  // Run database migrations
+  try {
+    console.log("🔄 Running database migrations...");
+    const migrationManager = require('./migrations/index');
+    await migrationManager.runMigrations();
+    console.log("✅ Database migrations completed");
+  } catch (error) {
+    console.error("❌ Migration error:", error);
+    process.exit(1); // Exit if migrations fail
+  }
 
   // Menjalankan server hanya jika bukan environment test
   const PORT = process.env.PORT || 3000;
@@ -482,6 +542,61 @@ io.on("connection", (socket) => {
     console.log(`🧪 Test response and broadcast sent`);
   });
 
+  // ----------------------- BOT MODE RESET -----------------------
+  // Handle reset bot mode untuk debugging
+  socket.on("reset-bot-mode", async (data) => {
+    console.log(`🤖 Reset bot mode request:`, data);
+    
+    try {
+      const { from } = data;
+      if (!from) {
+        socket.emit("reset-bot-mode-response", {
+          success: false,
+          message: "Phone number (from) is required"
+        });
+        return;
+      }
+
+      const modeManager = require("./services/modeManager");
+      const result = await modeManager.resetToBotMode(from);
+      
+      console.log(`✅ Bot mode reset result for ${from}:`, result);
+      
+      socket.emit("reset-bot-mode-response", result);
+      
+    } catch (error) {
+      console.error(`❌ Error resetting bot mode:`, error);
+      socket.emit("reset-bot-mode-response", {
+        success: false,
+        message: error.message
+      });
+    }
+  });
+
+  // Handle room joining from frontend
+  socket.on("join_room", (roomId) => {
+    try {
+      socket.join(roomId);
+      console.log(`🏠 Socket ${socket.id} joined room: ${roomId}`);
+      socket.emit('room_joined', { roomId, success: true });
+    } catch (error) {
+      console.error(`❌ Error joining room ${roomId}:`, error);
+      socket.emit('room_join_error', { roomId, error: error.message });
+    }
+  });
+
+  // Handle room leaving from frontend
+  socket.on("leave_room", (roomId) => {
+    try {
+      socket.leave(roomId);
+      console.log(`🚪 Socket ${socket.id} left room: ${roomId}`);
+      socket.emit('room_left', { roomId, success: true });
+    } catch (error) {
+      console.error(`❌ Error leaving room ${roomId}:`, error);
+      socket.emit('room_leave_error', { roomId, error: error.message });
+    }
+  });
+
   // Auto-emit admin online status when admin connects
   socket.emit("adminOnlineStatus", { status: "online" });
 });
@@ -552,6 +667,38 @@ app.use("/webhook", webhookRoutes);
 app.use("/userLogin", userLogin);
 app.use("/auth", login);
 app.use("/chat", messageRoutes);
+
+// Download routes with forced download headers
+app.get("/download/uploads/*", (req, res) => {
+    const filePath = req.path.replace("/download", "");
+    const fullPath = path.join(__dirname, "public", filePath.slice(1)); // Remove leading slash
+    const fileName = path.basename(fullPath);
+    
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.sendFile(fullPath, (err) => {
+        if (err) {
+            console.error('Download error:', err);
+            res.status(404).send('File not found');
+        }
+    });
+});
+
+app.get("/download/uploadsTindakan/*", (req, res) => {
+    const filePath = req.path.replace("/download", "");
+    const fullPath = path.join(__dirname, "public", filePath.slice(1)); // Remove leading slash
+    const fileName = path.basename(fullPath);
+    
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.sendFile(fullPath, (err) => {
+        if (err) {
+            console.error('Download error:', err);
+            res.status(404).send('File not found');
+        }
+    });
+});
+
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 app.use("/uploadsTindakan", express.static(path.join(__dirname, "public/uploadsTindakan")));
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
@@ -565,7 +712,7 @@ app.use("/geojson", geojsonRoutes); // Routes untuk GeoJSON data
 app.use("/files", fileManagementRoutes); // File management routes
 app.use("/api/file-organization", fileOrganizationRoutes); // File organization routes
 
-// 🔵 Performance Dashboard Route
+//  Performance Dashboard Route
 app.get("/dashboard/performance", (req, res) => {
     res.sendFile(path.join(__dirname, "public/admin-performance-dashboard.html"));
 });
@@ -581,6 +728,7 @@ app.use("/dashboard", dashboardRoute);
 app.use("/reportCount", reportCountRoutes);
 app.use("/tindakan", tindakanRoutes);
 app.use("/api", tindakanUploadRoute);
+app.use("/assets", assetRoutes);
 app.use("/performance", adminPerformanceRoutes);
 app.use("/mode-management", modeManagementRoutes); // New route for mode management
 
@@ -597,3 +745,5 @@ if (process.env.NODE_ENV !== 'test') {
   // Initialize performance tracking scheduler
   PerformanceScheduler.init();
 }
+
+module.exports = app;

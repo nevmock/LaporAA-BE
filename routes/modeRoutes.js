@@ -130,10 +130,18 @@ router.delete('/:from', async (req, res) => {
 router.get('/:from', async (req, res) => {
     try {
         const { from } = req.params;
-        const session = await modeManager.getOrCreateSession(from);
-        const info = modeManager.getSessionInfo(session);
-
-        res.json(info);
+        const { debug = false } = req.query;
+        
+        if (debug === 'true') {
+            // Detailed debug info
+            const info = await modeManager.getDetailedModeStatus(from);
+            res.json(info);
+        } else {
+            // Standard info
+            const session = await modeManager.getOrCreateSession(from);
+            const info = modeManager.getSessionInfo(session);
+            res.json(info);
+        }
     } catch (err) {
         console.error("❌ Error getting mode info:", err);
         res.status(500).json({
@@ -205,6 +213,55 @@ router.get('/:from/is-manual', async (req, res) => {
         console.error("❌ Error checking manual mode:", err);
         res.status(500).json({
             error: "Gagal cek manual mode",
+            details: err.message
+        });
+    }
+});
+
+/**
+ * Cleanup expired sessions
+ * POST /mode/cleanup
+ */
+router.post('/cleanup', async (req, res) => {
+    try {
+        const result = await modeManager.cleanupExpiredSessions();
+        res.json(result);
+    } catch (err) {
+        console.error("❌ Error cleaning up sessions:", err);
+        res.status(500).json({
+            error: "Gagal cleanup sessions",
+            details: err.message
+        });
+    }
+});
+
+/**
+ * Debug endpoint - fix mode conflicts
+ * POST /mode/debug/fix/:from
+ */
+router.post('/debug/fix/:from', async (req, res) => {
+    try {
+        const { from } = req.params;
+        const session = await modeManager.getOrCreateSession(from);
+        
+        console.log(`🔧 Fixing mode conflicts for ${from}`);
+        
+        // Jalankan getEffectiveMode untuk auto-fix expired timeouts
+        const effectiveMode = session.getEffectiveMode();
+        await session.save();
+        
+        const info = modeManager.getSessionInfo(session);
+        
+        res.json({
+            message: `Mode conflicts fixed for ${from}`,
+            before: req.body,
+            after: info,
+            effectiveMode
+        });
+    } catch (err) {
+        console.error("❌ Error fixing mode conflicts:", err);
+        res.status(500).json({
+            error: "Gagal fix mode conflicts",
             details: err.message
         });
     }
