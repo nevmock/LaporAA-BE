@@ -1,0 +1,219 @@
+### Mode Switching Bug Fix Testing
+# Use these HTTP requests to manually test the mode switching fixes
+
+@baseUrl = http://localhost:3001
+@testUser = 6281234567890
+
+### 1. Get Current Mode Status
+GET {{baseUrl}}/mode/{{testUser}}
+
+### 2. Get Debug Mode Status (with conflict detection)
+GET {{baseUrl}}/mode/{{testUser}}?debug=true
+
+### 3. Reset to Clean State
+POST {{baseUrl}}/mode/force/{{testUser}}
+Content-Type: application/json
+
+{
+  "force": false
+}
+
+###
+PUT {{baseUrl}}/mode/{{testUser}}
+Content-Type: application/json
+
+{
+  "mode": "bot"
+}
+
+### 4. Test Normal Mode Switching
+
+# Switch to manual
+PUT {{baseUrl}}/mode/{{testUser}}
+Content-Type: application/json
+
+{
+  "mode": "manual"
+}
+
+###
+# Switch to bot
+PUT {{baseUrl}}/mode/{{testUser}}
+Content-Type: application/json
+
+{
+  "mode": "bot"
+}
+
+### 5. Test Manual Mode with Timeout
+
+# Set manual mode with 1 minute timeout
+POST {{baseUrl}}/mode/manual/{{testUser}}
+Content-Type: application/json
+
+{
+  "minutes": 1
+}
+
+### 6. Test Force Mode
+
+# Activate force mode
+POST {{baseUrl}}/mode/force/{{testUser}}
+Content-Type: application/json
+
+{
+  "force": true
+}
+
+###
+# Try to switch mode (should be blocked)
+PUT {{baseUrl}}/mode/{{testUser}}
+Content-Type: application/json
+
+{
+  "mode": "bot"
+}
+
+###
+# Try manual mode with timeout (should be blocked)
+POST {{baseUrl}}/mode/manual/{{testUser}}
+Content-Type: application/json
+
+{
+  "minutes": 5
+}
+
+### 7. Test Force Mode Deactivation with Timeout Restore
+
+# First, set up manual mode with timeout
+POST {{baseUrl}}/mode/force/{{testUser}}
+Content-Type: application/json
+
+{
+  "force": false
+}
+
+###
+POST {{baseUrl}}/mode/manual/{{testUser}}
+Content-Type: application/json
+
+{
+  "minutes": 10
+}
+
+###
+# Activate force mode (should save timeout)
+POST {{baseUrl}}/mode/force/{{testUser}}
+Content-Type: application/json
+
+{
+  "force": true
+}
+
+###
+# Deactivate force mode (should restore timeout)
+POST {{baseUrl}}/mode/force/{{testUser}}
+Content-Type: application/json
+
+{
+  "force": false
+}
+
+### 8. Debug and Troubleshooting
+
+# Fix mode conflicts
+POST {{baseUrl}}/mode/debug/fix/{{testUser}}
+Content-Type: application/json
+
+{}
+
+###
+# Cleanup expired sessions
+POST {{baseUrl}}/mode/cleanup
+
+### 9. Get All Users in Manual Mode
+GET {{baseUrl}}/mode/manual/list
+
+### 10. Check if User is in Manual Mode
+GET {{baseUrl}}/mode/check-manual/{{testUser}}
+
+### 11. Reset User Mode to Default
+DELETE {{baseUrl}}/mode/{{testUser}}
+
+### 12. Test Edge Cases
+
+# Invalid mode
+PUT {{baseUrl}}/mode/{{testUser}}
+Content-Type: application/json
+
+{
+  "mode": "invalid"
+}
+
+###
+# Invalid timeout duration
+POST {{baseUrl}}/mode/manual/{{testUser}}
+Content-Type: application/json
+
+{
+  "minutes": 2000
+}
+
+###
+# Invalid force parameter
+POST {{baseUrl}}/mode/force/{{testUser}}
+Content-Type: application/json
+
+{
+  "force": "invalid"
+}
+
+### 13. Performance Testing
+
+# Rapid mode switching (should handle gracefully)
+PUT {{baseUrl}}/mode/{{testUser}}
+Content-Type: application/json
+
+{
+  "mode": "manual"
+}
+
+###
+PUT {{baseUrl}}/mode/{{testUser}}
+Content-Type: application/json
+
+{
+  "mode": "bot"
+}
+
+###
+PUT {{baseUrl}}/mode/{{testUser}}
+Content-Type: application/json
+
+{
+  "mode": "manual"
+}
+
+###
+PUT {{baseUrl}}/mode/{{testUser}}
+Content-Type: application/json
+
+{
+  "mode": "bot"
+}
+
+### 14. Final Cleanup
+POST {{baseUrl}}/mode/force/{{testUser}}
+Content-Type: application/json
+
+{
+  "force": false
+}
+
+###
+PUT {{baseUrl}}/mode/{{testUser}}
+Content-Type: application/json
+
+{
+  "mode": "bot"
+}

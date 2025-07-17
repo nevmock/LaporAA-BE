@@ -46,22 +46,63 @@ class ModeManager {
     async setForceMode(from, force) {
         const session = await this.getOrCreateSession(from);
         
+        const previousForceMode = session.forceModeManual;
+        
+        // Store previous timeout info before modifying
+        const previousTimeout = session.manualModeUntil;
+        const hadActiveTimeout = previousTimeout && new Date() < previousTimeout;
+        
         session.forceModeManual = force;
         
         if (force) {
-            // Force mode ON: Set manual dan hapus timeout
+            // Force mode ON: Set manual dan simpan info timeout untuk restore nanti
+            console.log(`🔒 Force mode ENABLED for ${from}`);
+            
+            // Simpan timeout info untuk restore nanti (jika ada)
+            if (session.manualModeUntil) {
+                session.data = session.data || {};
+                session.data.savedTimeout = session.manualModeUntil;
+                console.log(`💾 Saved timeout: ${session.manualModeUntil}`);
+            }
+            
             session.mode = "manual";
             session.manualModeUntil = null;
         } else {
-            // Force mode OFF: Cek apakah ada timeout manual yang masih aktif
-            if (!session.manualModeUntil || new Date() > session.manualModeUntil) {
+            // Force mode OFF: Logic pengembalian yang lebih baik
+            console.log(`🔓 Force mode DISABLED for ${from}`);
+            
+            // Restore timeout jika ada yang disimpan
+            const savedTimeout = session.data?.savedTimeout;
+            if (savedTimeout && new Date() < new Date(savedTimeout)) {
+                console.log(`🔄 Restoring saved timeout: ${savedTimeout}`);
+                session.mode = "manual";
+                session.manualModeUntil = new Date(savedTimeout);
+                // Clear saved timeout
+                if (session.data) {
+                    delete session.data.savedTimeout;
+                }
+            } else {
+                // Cek apakah ada timeout manual yang masih aktif (dari sebelum force mode)
+                if (hadActiveTimeout) {
+                    console.log(`⏱️ Previous timeout was active, but may have expired during force mode`);
+                }
+                
+                // Tidak ada timeout aktif atau sudah expired, kembalikan ke bot
+                console.log(`🤖 No active timeout, returning to bot mode for ${from}`);
                 session.mode = "bot";
                 session.manualModeUntil = null;
+                
+                // Clear saved timeout if exists
+                if (session.data?.savedTimeout) {
+                    delete session.data.savedTimeout;
+                }
             }
-            // Jika ada timeout aktif, biarkan tetap manual sampai timeout habis
         }
         
         await session.save();
+        
+        console.log(`✅ Force mode ${force ? 'activated' : 'deactivated'} for ${from} (${previousForceMode} -> ${force})`);
+        
         return this.getSessionInfo(session);
     }
 
@@ -83,7 +124,19 @@ class ModeManager {
             };
         }
         
+        // Validasi durasi
+        if (minutes < 0.1 || minutes > 1440) {
+            return {
+                success: false,
+                message: "Durasi harus antara 0.1 dan 1440 menit (24 jam)",
+                ...this.getSessionInfo(session)
+            };
+        }
+        
+        console.log(`⏱️ Setting manual mode with ${minutes} minutes timeout for ${from}`);
+        
         await session.activateManualMode(minutes);
+        
         return {
             success: true,
             message: `Manual mode diaktifkan untuk ${minutes} menit`,
@@ -113,9 +166,22 @@ class ModeManager {
             };
         }
         
+        // Jika sedang ada manual mode dengan timeout dan ingin switch ke bot
+        // pastikan timeout benar-benar di-clear
+        if (mode === "bot" && session.manualModeUntil) {
+            console.log(`🔄 Clearing manual mode timeout for ${from}`);
+            session.manualModeUntil = null;
+        }
+        
+        // Jika switch ke manual mode tanpa timeout, clear existing timeout
+        if (mode === "manual") {
+            session.manualModeUntil = null;
+        }
+        
         session.mode = mode;
-        session.manualModeUntil = null; // Clear timeout jika ada
         await session.save();
+        
+        console.log(`✅ Mode changed to ${mode} for ${from}`);
         
         return {
             success: true,
@@ -238,10 +304,61 @@ class ModeManager {
             }
         );
         
+        console.log(`🧹 Cleanup: ${result.modifiedCount} expired sessions returned to bot mode`);
+        
         return {
             message: `${result.modifiedCount} session expired dikembalikan ke bot mode`,
             modifiedCount: result.modifiedCount
         };
+    }
+
+    /**
+     * Debug: Get detailed mode status for troubleshooting
+     */
+    async getDetailedModeStatus(from) {
+        const session = await this.getOrCreateSession(from);
+        const now = new Date();
+        const effectiveMode = session.getEffectiveMode();
+        
+        return {
+            from: session.from,
+            mode: session.mode,
+            effectiveMode: effectiveMode,
+            forceModeManual: session.forceModeManual,
+            manualModeUntil: session.manualModeUntil,
+            isManualModeExpired: session.manualModeUntil ? now > session.manualModeUntil : null,
+            timeLeftMs: session.manualModeUntil && now < session.manualModeUntil ? 
+                session.manualModeUntil.getTime() - now.getTime() : null,
+            timeLeftMinutes: session.manualModeUntil && now < session.manualModeUntil ? 
+                Math.ceil((session.manualModeUntil - now) / (1000 * 60)) : null,
+            timestamp: now.toISOString(),
+            conflicts: this.detectModeConflicts(session)
+        };
+    }
+
+    /**
+     * Detect potential mode conflicts
+     */
+    detectModeConflicts(session) {
+        const conflicts = [];
+        const now = new Date();
+        
+        // Force mode dengan timeout aktif
+        if (session.forceModeManual && session.manualModeUntil) {
+            conflicts.push("Force mode aktif tapi ada manual timeout - timeout akan diabaikan");
+        }
+        
+        // Manual mode dengan timeout expired tapi mode masih manual
+        if (session.mode === "manual" && session.manualModeUntil && now > session.manualModeUntil && !session.forceModeManual) {
+            conflicts.push("Manual mode timeout expired tapi mode belum dikembalikan ke bot");
+        }
+        
+        // Bot mode dengan timeout aktif
+        if (session.mode === "bot" && session.manualModeUntil && now < session.manualModeUntil) {
+            conflicts.push("Bot mode aktif tapi ada manual timeout yang belum expired");
+        }
+        
+        return conflicts;
     }
 }
 
